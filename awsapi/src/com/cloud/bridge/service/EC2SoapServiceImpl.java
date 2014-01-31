@@ -1535,26 +1535,27 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 
 	
     public static DescribeAddressesResponse toDescribeAddressesResponse(EC2DescribeAddressesResponse engineResponse) {
-    	List<DescribeAddressesResponseItemType> items = new ArrayList<DescribeAddressesResponseItemType>();
-    	EC2Address[] addressSet = engineResponse.getAddressSet();
-    	
-    	for (EC2Address addr: addressSet) {
+	List<DescribeAddressesResponseItemType> items = new ArrayList<DescribeAddressesResponseItemType>();
+	EC2Address[] addressSet = engineResponse.getAddressSet();
+
+	for (EC2Address addr : addressSet) {
     		DescribeAddressesResponseItemType item = new DescribeAddressesResponseItemType();
     		item.setPublicIp(addr.getIpAddress());
     		item.setInstanceId(addr.getAssociatedInstanceId());
+    		item.setDomain("standard"); // Since VPC is not supported by AWSAPI default to 'standard'
     		items.add(item);
-    	}
-    	DescribeAddressesResponseInfoType descAddrRespInfoType = new DescribeAddressesResponseInfoType();
-    	descAddrRespInfoType.setItem(items.toArray(new DescribeAddressesResponseItemType[0]));
-    	
-    	DescribeAddressesResponseType descAddrRespType = new DescribeAddressesResponseType();   	
-    	descAddrRespType.setRequestId(UUID.randomUUID().toString());
-    	descAddrRespType.setAddressesSet(descAddrRespInfoType);
-    	
-    	DescribeAddressesResponse descAddrResp = new DescribeAddressesResponse();
-    	descAddrResp.setDescribeAddressesResponse(descAddrRespType);
-    	
-    	return descAddrResp;
+	}
+	DescribeAddressesResponseInfoType descAddrRespInfoType = new DescribeAddressesResponseInfoType();
+	descAddrRespInfoType.setItem(items.toArray(new DescribeAddressesResponseItemType[0]));
+
+	DescribeAddressesResponseType descAddrRespType = new DescribeAddressesResponseType();
+	descAddrRespType.setRequestId(UUID.randomUUID().toString());
+	descAddrRespType.setAddressesSet(descAddrRespInfoType);
+
+	DescribeAddressesResponse descAddrResp = new DescribeAddressesResponse();
+	descAddrResp.setDescribeAddressesResponse(descAddrRespType);
+
+	return descAddrResp;
     }
 
     public static AllocateAddressResponse toAllocateAddressResponse(final EC2Address ec2Address) {
