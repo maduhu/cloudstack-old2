@@ -69,7 +69,8 @@ public class UserVmDaoImpl extends GenericDaoBase<UserVmVO, Long> implements Use
     protected SearchBuilder<UserVmVO> HostRunningSearch;
     protected SearchBuilder<UserVmVO> StateChangeSearch;
     protected SearchBuilder<UserVmVO> AccountHostSearch;
-
+    protected SearchBuilder<UserVmVO> NameSearch;
+    
     protected SearchBuilder<UserVmVO> DestroySearch;
     protected SearchBuilder<UserVmVO> AccountDataCenterVirtualSearch;
     protected GenericSearchBuilder<UserVmVO, Long> CountByAccountPod;
@@ -123,6 +124,10 @@ public class UserVmDaoImpl extends GenericDaoBase<UserVmVO, Long> implements Use
 
     @PostConstruct
     void init() {
+    	NameSearch = createSearchBuilder();
+        NameSearch.and("name", NameSearch.entity().getInstanceName(), SearchCriteria.Op.EQ);
+        NameSearch.done();
+        
         AccountSearch = createSearchBuilder();
         AccountSearch.and("account", AccountSearch.entity().getAccountId(), SearchCriteria.Op.EQ);
         AccountSearch.done();
@@ -205,6 +210,13 @@ public class UserVmDaoImpl extends GenericDaoBase<UserVmVO, Long> implements Use
         assert _updateTimeAttr != null : "Couldn't get this updateTime attribute";
     }
 
+    @Override
+    public UserVmVO findByName(String name) {
+        SearchCriteria<UserVmVO> sc = NameSearch.create();
+        sc.setParameters("name", name);
+        return findOneIncludingRemovedBy(sc);
+    }
+    
     @Override
     public List<UserVmVO> listByAccountAndPod(long accountId, long podId) {
 	SearchCriteria<UserVmVO> sc = AccountPodSearch.create();

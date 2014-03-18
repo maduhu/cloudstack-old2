@@ -33,6 +33,8 @@ public interface UserVmDao extends GenericDao<UserVmVO, Long> {
     List<UserVmVO> listByLastHostId(Long hostId);
     List<UserVmVO> listUpByHostId(Long hostId);
 
+    UserVmVO findByName(String name);
+    
     /**
      * Updates display name and group for vm; enables/disables ha
      * @param id vm id.

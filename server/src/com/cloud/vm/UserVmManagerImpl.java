@@ -1598,7 +1598,7 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
         if (!VirtualMachineName.isValidVmName(vmName, _instance)) {
             return null;
         }
-        return VirtualMachineName.getVmId(vmName);
+        return _vmDao.findByName(vmName).getId();
     }
 
     @Override
@@ -3232,7 +3232,7 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
         if (!VirtualMachineName.isValidVmName(name)) {
             return null;
         }
-        return findById(VirtualMachineName.getVmId(name));
+        return findById(_vmDao.findByName(name).getId());
     }
 
     @Override
