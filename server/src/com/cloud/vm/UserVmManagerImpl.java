@@ -2755,29 +2755,17 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
         }
 
         long id = _vmDao.getNextInSequence(Long.class, "id");
-
+        String uuidName = UUID.randomUUID().toString();
+        String instanceName = null;
+        displayName = instanceName = VirtualMachineName.getVmName(id, owner.getId(), _instance);
+        
         if (hostName != null) {
             // Check is hostName is RFC compliant
             checkNameForRFCCompliance(hostName);
-        }
-
-        String instanceName = null;
-        String uuidName = UUID.randomUUID().toString();
-        if (_instanceNameFlag && hypervisor.equals(HypervisorType.VMware)) {
-            if (hostName == null) {
-                if (displayName != null) {
-                    hostName = displayName;
-                } else {
-                    hostName = uuidName;
-                }
-            }
         } else {
-            if (hostName == null) {
-                hostName = uuidName;
-            }
+        	hostName = displayName;
         }
-
-        instanceName = VirtualMachineName.getVmName(id, owner.getId(), _instance);
+        
 
         // Check if VM with instanceName already exists.
         VMInstanceVO vmObj = _vmInstanceDao.findVMByInstanceName(instanceName);
