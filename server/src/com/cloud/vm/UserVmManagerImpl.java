@@ -2757,14 +2757,9 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
         long id = _vmDao.getNextInSequence(Long.class, "id");
         String uuidName = UUID.randomUUID().toString();
         String instanceName = null;
-        displayName = instanceName = VirtualMachineName.getVmName(id, owner.getId(), _instance);
-        
-        if (hostName != null) {
-            // Check is hostName is RFC compliant
-            checkNameForRFCCompliance(hostName);
-        } else {
-        	hostName = displayName;
-        }
+        instanceName = VirtualMachineName.getVmName(id, owner.getId(), _instance);
+        displayName = instanceName;
+        hostName = instanceName;
         
 
         // Check if VM with instanceName already exists.
