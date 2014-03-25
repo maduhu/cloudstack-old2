@@ -73,6 +73,8 @@ import com.cloud.stack.models.CloudStackUserVm;
 import com.cloud.stack.models.CloudStackVolume;
 import com.cloud.stack.models.CloudStackZone;
 import com.cloud.utils.component.ManagerBase;
+import com.cloud.vm.UserVmVO;
+import com.cloud.vm.dao.UserVmDao;
 
 /**
  * EC2Engine processes the ec2 commands and calls their cloudstack analogs
@@ -91,6 +93,9 @@ public class EC2Engine extends ManagerBase {
     private CloudStackApi _eng = null;
 
     private CloudStackAccount currentAccount = null;
+    
+    @Inject
+    protected UserVmDao _vmDao = null;
 
     public EC2Engine() throws IOException {
     }
@@ -1417,8 +1422,13 @@ public class EC2Engine extends ManagerBase {
             // now actually deploy the vms
             for( int i=0; i < createInstances; i++ ) {
                 try{
+                	UserVmVO vmVO = _vmDao.findByName(request.getKeyName());
+                	String displayName = "";
+                	if (vmVO != null){
+                		displayName = vmVO.getDisplayName();
+                	}
                     CloudStackUserVm resp = getApi().deployVirtualMachine(svcOffering.getId(),
-                            request.getTemplateId(), zoneId, null, null, null, null,
+                            request.getTemplateId(), zoneId, null, null, displayName, null,
                             null, null, null, request.getKeyName(), null, null,
                             groupIds, groupNames, request.getSize().longValue(), request.getUserData());
                     EC2Instance vm = new EC2Instance();
