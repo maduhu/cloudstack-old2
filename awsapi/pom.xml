@@ -329,6 +329,7 @@
         <configuration>
           <webXml>./web/web.xml</webXml>
           <warSourceDirectory>./target/generated-webapp</warSourceDirectory>
+          <attachClasses>true</attachClasses>
         </configuration>
       </plugin>
       <plugin>
