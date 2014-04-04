@@ -2758,7 +2758,7 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
         String uuidName = UUID.randomUUID().toString();
         String instanceName = null;
         instanceName = VirtualMachineName.getVmName(id, owner.getId(), _instance);
-        if(displayName == null) {
+        if(displayName == null || displayName.isEmpty()) {
             displayName = instanceName;
         }
         
