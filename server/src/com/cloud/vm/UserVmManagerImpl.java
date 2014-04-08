@@ -1598,7 +1598,7 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
         if (!VirtualMachineName.isValidVmName(vmName, _instance)) {
             return null;
         }
-        return VirtualMachineName.getVmId(vmName);
+        return _vmDao.findByName(vmName).getId();
     }
 
     @Override
@@ -2755,16 +2755,20 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
         }
 
         long id = _vmDao.getNextInSequence(Long.class, "id");
-
+        String uuidName = UUID.randomUUID().toString();
+        String instanceName = null;
+        instanceName = VirtualMachineName.getVmName(id, owner.getId(), _instance);
+        if(displayName == null || displayName.isEmpty()) {
+            displayName = instanceName;
+        }
+        
         if (hostName != null) {
             // Check is hostName is RFC compliant
             checkNameForRFCCompliance(hostName);
         }
-
-        String instanceName = null;
-        String uuidName = UUID.randomUUID().toString();
-        if (_instanceNameFlag && hypervisor.equals(HypervisorType.VMware)) {
-            if (hostName == null) {
+        
+        if (_instanceNameFlag) {
+	        if (hostName == null) {
                 if (displayName != null) {
                     hostName = displayName;
                 } else {
@@ -2775,9 +2779,8 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
             if (hostName == null) {
                 hostName = uuidName;
             }
+ 	        hostName = displayName;
         }
-
-        instanceName = VirtualMachineName.getVmName(id, owner.getId(), _instance);
 
         // Check if VM with instanceName already exists.
         VMInstanceVO vmObj = _vmInstanceDao.findVMByInstanceName(instanceName);
@@ -3232,7 +3235,7 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
         if (!VirtualMachineName.isValidVmName(name)) {
             return null;
         }
-        return findById(VirtualMachineName.getVmId(name));
+        return findById(_vmDao.findByName(name).getId());
     }
 
     @Override

@@ -27,68 +27,55 @@ public class VirtualMachineName {
     public static final String SEPARATOR = "-";
     
     public static String getVnetName(long vnetId) {
-        StringBuilder vnet = new StringBuilder();
+    	StringBuilder vnet = new StringBuilder();
         Formatter formatter = new Formatter(vnet);
         formatter.format("%04x", vnetId);
         return vnet.toString();
     }
     
     public static boolean isValidVmName(String vmName) {
-        return isValidVmName(vmName, null);
+    	return isValidVmName(vmName, null);
     }
     
     public static boolean isValidVmName(String vmName, String instance) {
-        String[] tokens = vmName.split(SEPARATOR);
-        /*Some vms doesn't have vlan/vnet id*/
-        if (tokens.length != 5 && tokens.length != 4) {
+    	String[] tokens = vmName.split(SEPARATOR);
+        if (tokens.length != 2 || !tokens[0].equals("i")) {
             return false;
         }
 
-        if (!tokens[0].equals("i")) {
-            return false;
-        }
-        
-        try {
-            Long.parseLong(tokens[1]);
-            Long.parseLong(tokens[2]);
-            if (tokens.length == 5 && !Vlan.UNTAGGED.equalsIgnoreCase(tokens[4])) {
-            	Long.parseLong(tokens[4], 16);
-            }
-        } catch (NumberFormatException e) {
-            return false;
-        }
-        
-        return instance == null || instance.equals(tokens[3]);
+        return tokens[1].length() == 6;
+
     }
     
     public static String getVmName(long vmId, long userId, String instance) {
-        StringBuilder vmName = new StringBuilder("i");
-        vmName.append(SEPARATOR).append(userId).append(SEPARATOR).append(vmId);
-        vmName.append(SEPARATOR).append(instance);
+    	StringBuilder vmName = new StringBuilder("i");
+
+        long vmUniqueId = vmId;
+        vmUniqueId += 1<<27;
+        vmUniqueId = (vmUniqueId * 1968954653L) % (1L<<32L);
+        StringBuilder hexId = new StringBuilder(Long.toHexString(vmUniqueId));
+        for(int i = hexId.length(); i < 8; i++)
+        {
+            hexId.insert(0,"0");
+        }
+        vmName.append(SEPARATOR).append(hexId);
         return vmName.toString();
     }
     
-    public static long getVmId(String vmName) {
-        int begin = vmName.indexOf(SEPARATOR);
-        begin = vmName.indexOf(SEPARATOR, begin + SEPARATOR.length());
-        int end = vmName.indexOf(SEPARATOR, begin + SEPARATOR.length());
-        return Long.parseLong(vmName.substring(begin + 1, end));
-    }
-    
     public static long getRouterId(String routerName) {
-        int begin = routerName.indexOf(SEPARATOR);
+    	int begin = routerName.indexOf(SEPARATOR);
         int end = routerName.indexOf(SEPARATOR, begin + SEPARATOR.length());
         return Long.parseLong(routerName.substring(begin + 1, end));
     }
     
     public static long getConsoleProxyId(String vmName) {
-        int begin = vmName.indexOf(SEPARATOR);
+    	int begin = vmName.indexOf(SEPARATOR);
         int end = vmName.indexOf(SEPARATOR, begin + SEPARATOR.length());
         return Long.parseLong(vmName.substring(begin + 1, end));
     }
     
     public static long getSystemVmId(String vmName) {
-        int begin = vmName.indexOf(SEPARATOR);
+    	int begin = vmName.indexOf(SEPARATOR);
         int end = vmName.indexOf(SEPARATOR, begin + SEPARATOR.length());
         return Long.parseLong(vmName.substring(begin + 1, end));
     }
