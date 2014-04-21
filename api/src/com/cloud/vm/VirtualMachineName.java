@@ -43,8 +43,7 @@ public class VirtualMachineName {
             return false;
         }
 
-        return tokens[1].length() == 6;
-
+        return tokens[1].length() == 8;
     }
     
     public static String getVmName(long vmId, long userId, String instance) {
