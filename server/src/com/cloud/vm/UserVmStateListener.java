@@ -64,12 +64,12 @@ public class UserVmStateListener implements StateListener<State, VirtualMachine.
         if(!status){
             return false;
         }
-        
-        if(vo.getType() != VirtualMachine.Type.User){
+
+        pubishOnEventBus(event.name(), "postStateTransitionEvent", vo, oldState, newState);
+
+        if (vo.getType() != VirtualMachine.Type.User) {
             return true;
         }
-        
-        pubishOnEventBus(event.name(), "postStateTransitionEvent", vo, oldState, newState);
 
         if (VirtualMachine.State.isVmCreated(oldState, event, newState)) {
             UsageEventUtils.publishUsageEvent(EventTypes.EVENT_VM_CREATE, vo.getAccountId(), vo.getDataCenterId(), vo.getId(),
@@ -116,6 +116,8 @@ public class UserVmStateListener implements StateListener<State, VirtualMachine.
         eventDescription.put("id", vo.getUuid());
         eventDescription.put("old-state", oldState.name());
         eventDescription.put("new-state", newState.name());
+        eventDescription.put("status", status);
+
         eventMsg.setDescription(eventDescription);
         try {
             _eventBus.publish(eventMsg);
