@@ -2755,9 +2755,9 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
         }
 
         long id = _vmDao.getNextInSequence(Long.class, "id");
-        String uuidName = UUID.randomUUID().toString();
         String instanceName = null;
         instanceName = VirtualMachineName.getVmName(id, owner.getId(), _instance);
+        String uuidName = instanceName;
         if(displayName == null || displayName.isEmpty()) {
             displayName = instanceName;
         }
@@ -2779,7 +2779,6 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
             if (hostName == null) {
                 hostName = uuidName;
             }
- 	        hostName = displayName;
         }
 
         // Check if VM with instanceName already exists.
