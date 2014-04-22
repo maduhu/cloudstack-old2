@@ -41,9 +41,9 @@ fi
 
 
 VERSION=`(cd ../../; mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version) | grep '^[0-9]\.'`
-VERSION=$VERSION-`date +%Y%m%d%H%M`
-TMP=`git rev-parse origin/4.2`
-TMP2=${TMP:1:6}
+TMP=`date +%Y%m%d%H%M`
+TMP2=`git rev-parse origin/4.2`
+GQREL=$TMP.${TMP2:1:8}
 if echo $VERSION | grep SNAPSHOT ; then
   REALVER=`echo $VERSION | cut -d '-' -f 1`
   DEFVER="-D_ver $REALVER"
@@ -52,7 +52,7 @@ if echo $VERSION | grep SNAPSHOT ; then
 else
   REALVER=`echo $VERSION`
   DEFVER="-D_ver $REALVER"
-  DEFREL="-D_rel $TMP2"
+  DEFREL="-D_rel $GQREL"
 fi
 
 mkdir -p $RPMDIR/SPECS
