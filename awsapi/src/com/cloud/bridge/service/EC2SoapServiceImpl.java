@@ -2036,7 +2036,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 
 		param1.setSnapshotId( engineResponse.getId().toString());
 		param1.setVolumeId( engineResponse.getVolumeId().toString());
-		param1.setStatus( "completed" );
+		param1.setStatus( "pending" );
 		
        	// -> CloudStack seems to have issues with timestamp formats so just in case
         Calendar cal = engineResponse.getCreated();
@@ -2046,7 +2046,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
         }
 		param1.setStartTime( cal );
 		
-		param1.setProgress( "100" );
+		param1.setProgress( "0" );
 		param1.setOwnerId(ownerId);
         Long volSize = new Long( engineResponse.getVolumeSize());
         param1.setVolumeSize( volSize.toString());
