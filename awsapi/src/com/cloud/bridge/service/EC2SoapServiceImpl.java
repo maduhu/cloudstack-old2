@@ -1499,15 +1499,20 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 //            param7.setPrivateIpAddress((null != ipAddr ? ipAddr : ""));
             param7.setPrivateIpAddress(inst.getPrivateIpAddress());
 	        param7.setIpAddress( inst.getIpAddress());
-	        
+
 	        StateReasonType param13 = new StateReasonType();
 	        param13.setCode( "" );
 	        param13.setMessage( "" );
             param7.setStateReason( param13 );
             param7.setArchitecture( "" );
             param7.setRootDeviceType( "" );
-        	String devicePath = engine.cloudDeviceIdToDevicePath( inst.getHypervisor(), inst.getRootDeviceId());
-            param7.setRootDeviceName( devicePath );
+
+	        if (inst.getRootDeviceId() != null) {
+	            String devicePath = engine.cloudDeviceIdToDevicePath( inst.getHypervisor(), inst.getRootDeviceId() );
+	            param7.setRootDeviceName( devicePath );
+	        } else {
+	            param7.setRootDeviceName( "" );
+	        }
 
             GroupSetType param14 = new GroupSetType();
             GroupItemType param15 = new GroupItemType(); // VPC security group
