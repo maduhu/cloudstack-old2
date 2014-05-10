@@ -1126,8 +1126,8 @@ public class DeploymentPlanningManagerImpl extends ManagerBase implements Deploy
         Map<Volume, List<StoragePool>> suitableVolumeStoragePools = new HashMap<Volume, List<StoragePool>>();
         List<Volume> readyAndReusedVolumes = new ArrayList<Volume>();
 
-        // There should be atleast the ROOT volume of the VM in usable state
-        if (volumesTobeCreated.isEmpty()) {
+        // There should be at least the ROOT volume of the VM in usable state unless we're dealing with bare metal.
+        if (volumesTobeCreated.isEmpty() && vmProfile.getHypervisorType() != HypervisorType.BareMetal) {
             throw new CloudRuntimeException("Unable to create deployment, no usable volumes found for the VM");
         }
 
