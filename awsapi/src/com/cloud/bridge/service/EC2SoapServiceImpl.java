@@ -1444,7 +1444,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
                 for (EC2SecurityGroup group : groups) {
                     GroupItemType param5 = new GroupItemType();
                     param5.setGroupId(group.getId());
-                    param5.setGroupName("");
+                    param5.setGroupName(group.getName() == null ? "" : group.getName());
                     param4.addItem( param5 );
                 }
             }
@@ -1771,6 +1771,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
                 for (EC2SecurityGroup group : groups) {
                     GroupItemType param3 = new GroupItemType();
                     param3.setGroupId(group.getId());
+                    param3.setGroupName(group.getName() == null ? "" : group.getName());
                     param2.addItem( param3 );   
                 }
             }
