@@ -27,6 +27,8 @@ import com.cloud.storage.Volume;
 import com.cloud.template.VirtualMachineTemplate;
 import com.cloud.user.Account;
 import com.cloud.user.UserContext;
+import com.cloud.vm.VirtualMachine;
+
 import org.apache.cloudstack.api.APICommand;
 import org.apache.cloudstack.api.ApiConstants;
 import org.apache.cloudstack.api.ApiErrorCode;
@@ -192,20 +194,26 @@ import java.util.Map;
         Long volumeId = getVolumeId();
         Long snapshotId = getSnapshotId();
         Long accountId = null;
-        if (volumeId != null) {
-            Volume volume = _entityMgr.findById(Volume.class, volumeId);
-            if (volume != null) {
-                accountId = volume.getAccountId();
-            } else {
-                throw new InvalidParameterValueException("Unable to find volume by id=" + volumeId);
-            }
-        } else {
-            Snapshot snapshot = _entityMgr.findById(Snapshot.class, snapshotId);
-            if (snapshot != null) {
-                accountId = snapshot.getAccountId();
-            } else {
-                throw new InvalidParameterValueException("Unable to find snapshot by id=" + snapshotId);
-            }
+        if(isBareMetal()){
+        	VirtualMachine vm = _entityMgr.findById(VirtualMachine.class, getVmId());
+        	accountId = vm.getAccountId();
+        }
+        else{
+	        if (volumeId != null) {
+	            Volume volume = _entityMgr.findById(Volume.class, volumeId);
+	            if (volume != null) {
+	                accountId = volume.getAccountId();
+	            } else {
+	                throw new InvalidParameterValueException("Unable to find volume by id=" + volumeId);
+	            }
+	        } else {
+	            Snapshot snapshot = _entityMgr.findById(Snapshot.class, snapshotId);
+	            if (snapshot != null) {
+	                accountId = snapshot.getAccountId();
+	            } else {
+	                throw new InvalidParameterValueException("Unable to find snapshot by id=" + snapshotId);
+	            }
+	        }
         }
 
         Account account = _accountService.getAccount(accountId);
