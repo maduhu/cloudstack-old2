@@ -26,21 +26,18 @@ from os.path import exists, join
 restore_template = '''DEFAULT default
 PROMPT 1
 TIMEOUT 26
-DISPLAY boot.msg
 LABEL default
-KERNEL kernel
-APPEND vga=normal devfs=nomount pxe ramdisk_size=66000 load_ramdisk=1 init=/linuxrc prompt_ramdisk=0 initrd=initrd.gz root=/dev/ram0 rw noapic nolapic lba combined_mode=libata ide0=noprobe nomce pci=nomsi irqpoll quiet Server="%s" Share="%s" Directory="%s" Image_To_Restore="%s" After_Completion="Reboot" CIFS_Preferred="Y" Zsplit_Preferred="Y" AUTO="Y" User="%s" Passwd="%s" Extend_Parts_Whenever_Possible="N" Replace_BIOS="N" IP="%s" Netmask="%s" Gateway="%s"
-'''
+MENU default
+KERNEL images/clonezilla/live/vmlinuz
+APPEND initrd=images/clonezilla/live/initrd.img boot=live config noswap nolocales edd=on nomodeset ocs_live_run="/usr/sbin/ocs-sr -g auto -p reboot restoreparts %s all" ocs_live_extra_param="" ocs_live_keymap="NONE" ocs_live_batch="yes" ocs_lang="en_US.UTF-8" vga=788 nosplash noprompt ocs_prerun1="mdadm --zero-superblock --force /dev/sda1 && mdadm --zero-superblock --force /dev/sdb1" ocs_prerun2="mount -t nfs %s:%s /home/partimag" fetch=tftp://%s/images/clonezilla/live/filesystem.squashfs'''
 
 backup_template = '''DEFAULT default
 PROMPT 1
 TIMEOUT 26
-DISPLAY boot.msg
 LABEL default
-KERNEL kernel
-APPEND vga=normal devfs=nomount pxe ramdisk_size=66000 load_ramdisk=1 init=/linuxrc prompt_ramdisk=0 initrd=initrd.gz root=/dev/ram0 rw noapic nolapic lba combined_mode=libata ide0=noprobe nomce pci=nomsi irqpoll quiet Server="%s" Share="%s" Directory="%s" Image_To_Restore="Create_New_Image" New_Image_Name="%s" Already_Existing_Image="Replace" Store_MD5="N" Compression_Type="gzip" After_Completion="Reboot" Minimize_Before_Storing="N" Repart="N" CIFS_Preferred="Y" AUTO="Y" User="%s" Passwd="%s" Extend_Parts_Whenever_Possible="N" Replace_BIOS="N" IP="%s" Netmask="%s" Gateway="%s"
-'''
-
+MENU default
+KERNEL images/clonezilla/live/vmlinuz
+APPEND initrd=images/clonezilla/live/initrd.img boot=live config noswap nolocales edd=on nomodeset ocs_live_run="/usr/sbin/ocs-sr -q2 -j2 -z1p -i 2000 -fsck-src-part -p reboot saveparts %s all" ocs_live_extra_param="" ocs_live_keymap="NONE" ocs_live_batch="yes" ocs_lang="en_US.UTF-8" vga=788 nosplash noprompt ocs_prerun1="mdadm --zero-superblock --force /dev/sda1 && mdadm --zero-superblock --force /dev/sdb1" ocs_prerun2="mount -t nfs %s:%s /home/partimag" fetch=tftp://%s/images/clonezilla/live/filesystem.squashfs'''
 
 cmd = ''
 tftp_dir = ''
@@ -68,7 +65,10 @@ def prepare(is_restore):
             fmt = restore_template
         else:
             fmt = backup_template
-        stuff = fmt % (cifs_server, share, directory, template_dir, cifs_username, cifs_password, ip, netmask, gateway)
+        nfs_server=cifs_server
+        tftp_server=cifs_server
+        nfs_export="/home/shares/"+share+"/"+directory
+        stuff = fmt % (template_dir, nfs_server, nfs_export, tftp_server)
         f.write(stuff)
         f.close()
         return 0
