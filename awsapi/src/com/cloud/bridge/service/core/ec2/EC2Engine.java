@@ -39,9 +39,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 import org.xml.sax.SAXException;
 
-import com.cloud.bridge.model.CloudStackServiceOfferingVO;
 import com.cloud.bridge.persist.dao.CloudStackAccountDao;
-import com.cloud.bridge.persist.dao.CloudStackSvcOfferingDao;
 import com.cloud.bridge.persist.dao.OfferingDao;
 import com.cloud.bridge.service.UserContext;
 import com.cloud.bridge.service.core.ec2.EC2ImageAttributes.ImageAttribute;
@@ -65,6 +63,7 @@ import com.cloud.stack.models.CloudStackPasswordData;
 import com.cloud.stack.models.CloudStackResourceLimit;
 import com.cloud.stack.models.CloudStackResourceTag;
 import com.cloud.stack.models.CloudStackSecurityGroup;
+import com.cloud.stack.models.CloudStackServiceOffering;
 import com.cloud.stack.models.CloudStackSnapshot;
 import com.cloud.stack.models.CloudStackTemplate;
 import com.cloud.stack.models.CloudStackTemplatePermission;
@@ -84,7 +83,6 @@ public class EC2Engine extends ManagerBase {
     String managementServer = null;
     String cloudAPIPort = null;
 
-    @Inject CloudStackSvcOfferingDao scvoDao;
     @Inject OfferingDao ofDao;
     @Inject CloudStackAccountDao accDao;
     
@@ -1383,7 +1381,7 @@ public class EC2Engine extends ManagerBase {
             if(request.getInstanceType() != null){
                 instanceType = request.getInstanceType();
             }
-            CloudStackServiceOfferingVO svcOffering = getCSServiceOfferingId(instanceType);
+            CloudStackServiceOffering svcOffering = getCSServiceOfferingId(instanceType);
             if(svcOffering == null){
                 logger.info("No ServiceOffering found to be defined by name, please contact the administrator "+instanceType );
                 throw new Exception("instanceType not found");
@@ -1580,7 +1578,7 @@ public class EC2Engine extends ManagerBase {
 
             if (request.getInstanceType() != null) {
                 String instanceType = request.getInstanceType();
-                CloudStackServiceOfferingVO svcOffering = getCSServiceOfferingId(instanceType);
+                CloudStackServiceOffering svcOffering = getCSServiceOfferingId(instanceType);
                 if (svcOffering == null)
                     throw new Exception("instanceType not found");
                 CloudStackUserVm userVm = getApi().changeServiceForVirtualMachine(instanceId, svcOffering.getId());
@@ -1756,12 +1754,23 @@ public class EC2Engine extends ManagerBase {
      * 
      */
 
-    private CloudStackServiceOfferingVO getCSServiceOfferingId(String instanceType) throws Exception {
+    private CloudStackServiceOffering getCSServiceOfferingId(String instanceType) throws Exception {
         try {
             if (instanceType == null)
                 instanceType = "m1.small"; // default value
-            return scvoDao.getSvcOfferingByName(instanceType);
-        } catch(Exception e) {
+
+            List<CloudStackServiceOffering> offerings = getApi().listServiceOfferings(null, null, false, null, instanceType, null, null);
+            if (offerings.isEmpty()) {
+                throw new EC2ServiceException(ClientError.InvalidParameterValue, "Invalid instance type " + instanceType);
+            } else if (offerings.size() > 1) {
+                throw new EC2ServiceException(ServerError.InternalError, "Unable to determine instance type");
+            }
+
+            return offerings.get(0);
+
+        } catch (EC2ServiceException e) {
+            throw e;
+        } catch (Exception e) {
             logger.error( "Error while retrieving ServiceOffering information by name - ", e);
             throw new Exception("No ServiceOffering found to be defined by name");
         }
@@ -1777,13 +1786,13 @@ public class EC2Engine extends ManagerBase {
      */
     private String serviceOfferingIdToInstanceType( String serviceOfferingId ) throws Exception {
         try{
-
-            CloudStackServiceOfferingVO offering =  scvoDao.getSvcOfferingById(serviceOfferingId);
-            if(offering == null){
+            List<CloudStackServiceOffering> offerings = getApi().listServiceOfferings(null, serviceOfferingId, false, null, null, null, null);
+            if (offerings.size() != 1) {
                 logger.warn( "No instanceType match for serviceOfferingId: [" + serviceOfferingId + "]" );
                 return "m1.small";
             }
-            return offering.getName();
+
+            return offerings.get(0).getName();
         }
         catch(Exception e) {
             logger.error( "Error while retrieving ServiceOffering information by id - ", e);
