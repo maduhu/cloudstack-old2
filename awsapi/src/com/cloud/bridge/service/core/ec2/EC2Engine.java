@@ -55,8 +55,6 @@ import com.cloud.stack.models.CloudStackIngressRule;
 import com.cloud.stack.models.CloudStackIpAddress;
 import com.cloud.stack.models.CloudStackKeyPair;
 import com.cloud.stack.models.CloudStackKeyValue;
-import com.cloud.stack.models.CloudStackNetwork;
-import com.cloud.stack.models.CloudStackNetworkOffering;
 import com.cloud.stack.models.CloudStackNic;
 import com.cloud.stack.models.CloudStackOsType;
 import com.cloud.stack.models.CloudStackPasswordData;
@@ -1390,17 +1388,6 @@ public class EC2Engine extends ManagerBase {
             // zone stuff
             String zoneId = toZoneId(request.getZoneName(), null);
 
-            List<CloudStackZone> zones = getApi().listZones(null, null, zoneId, null);
-            if (zones == null || zones.size() == 0) {
-                logger.info("EC2 RunInstances - zone [" + request.getZoneName() + "] not found!");
-                throw new Exception("zone not found");
-            }
-            // we choose first zone?
-            CloudStackZone zone = zones.get(0);
-
-            // network
-            //CloudStackNetwork network = findNetwork(zone);
-
             // for EC2 security groups either a group ID or a group name is accepted
             String[] sgIdList = request.getSecurityGroupIdSet();
             String[] sgNameList = request.getSecurityGroupNameSet();
@@ -2250,112 +2237,6 @@ public class EC2Engine extends ManagerBase {
         }
         // if we get here, there is something wrong...
         return null;
-    }
-
-    /**
-     * List networkOfferings by zone with securityGroup enabled
-     * 
-     * @param zoneId
-     * @return
-     * @throws Exception
-     */
-    private CloudStackNetwork getNetworksWithSecurityGroupEnabled(String zoneId) throws Exception {
-        List<CloudStackNetwork> networks = getApi().listNetworks(null, null, null, null, null, null, null, null, null, zoneId);
-        List<CloudStackNetwork> netWithSecGroup = new ArrayList<CloudStackNetwork>();
-        for (CloudStackNetwork network : networks ) {
-            if (!network.getNetworkOfferingAvailability().equalsIgnoreCase("unavailable") && network.getSecurityGroupEnabled())
-                netWithSecGroup.add(network);
-        }
-        // we'll take the first one
-        return netWithSecGroup.get(0);
-    }
-
-    /**
-     * Create a network
-     * 
-     * @param zoneId
-     * @param offering
-     * @param owner
-     * @return
-     * @throws Exception
-     */
-    private CloudStackNetwork createDefaultGuestNetwork(String zoneId, CloudStackNetworkOffering offering, CloudStackAccount owner) throws Exception {
-        return getApi().createNetwork(owner.getName() + "-network", owner.getName() + "-network",  offering.getId(), zoneId, owner.getName(),
-                owner.getDomainId(), true, null, null, null, null, null, null, null, null);
-    }
-
-    /**
-     * List of networks without securityGroup enabled by zone
-     * 
-     * @param zoneId
-     * @return
-     * @throws Exception
-     */
-    private CloudStackNetwork getNetworksWithoutSecurityGroupEnabled(String zoneId) throws Exception {
-        // grab current account
-        CloudStackAccount caller = getCurrentAccount();
-
-        //check if account has any networks in the system
-        List<CloudStackNetwork> networks = getApi().listNetworks(caller.getName(), caller.getDomainId(), null, true, null, null, null, null, null, zoneId);
-
-        //listRequired offerings in the system - the network created from this offering has to be specified in deployVm command
-        List<CloudStackNetworkOffering> reuquiredOfferings = getApi().listNetworkOfferings("Required", null, null, null, true,  null, null, null, null, null, zoneId);
-        if (reuquiredOfferings != null && !reuquiredOfferings.isEmpty()) {
-            if (networks != null && !networks.isEmpty()) {
-                //pick up the first required network from the network list
-                for (CloudStackNetwork network : networks)  {
-                    for (CloudStackNetworkOffering requiredOffering : reuquiredOfferings) {
-                        logger.debug("[reqd/virtual} offering: " + requiredOffering.getId() + " network " + network.getNetworkOfferingId());
-                        if (network.getNetworkOfferingId().equals(requiredOffering.getId())) {
-                            return network;
-                        }
-                    }
-                }
-            } else {
-                //create new network and return it
-                return createDefaultGuestNetwork(zoneId, reuquiredOfferings.get(0), caller);
-            }
-        } else {
-            //find all optional network offerings in the system
-            List<CloudStackNetworkOffering> optionalOfferings = getApi().listNetworkOfferings("Optional", null, null, null, true, null, null, null, null, null, zoneId);
-            if (optionalOfferings != null && !optionalOfferings.isEmpty()) {
-                if (networks != null && !networks.isEmpty()) {
-                    for (CloudStackNetwork network : networks) {
-                        for (CloudStackNetworkOffering optionalOffering : optionalOfferings) {
-                            logger.debug("[optional] offering: " + optionalOffering.getId() + " network " + network.getNetworkOfferingId());
-                            if (network.getNetworkOfferingId().equals(optionalOffering.getId())) {
-                                return network;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // if we get this far and haven't returned already return an error
-        throw new Exception("Unable to find an appropriate network for account ");
-    }
-
-    /**
-     * Find a suitable network to use for deployVM
-     * 
-     * @param zone
-     * @return
-     * @throws Exception
-     */
-    private CloudStackNetwork findNetwork(CloudStackZone zone) throws Exception {
-        if (zone == null) return null;
-
-        // for basic networking, we don't specify a networkid for deployvm
-        if (zone.getNetworkType().equalsIgnoreCase("basic")) return null;
-
-        if (zone.getSecurityGroupsEnabled()) {
-            // find system security group enabled network
-            return getNetworksWithSecurityGroupEnabled(zone.getId());
-
-        } else {
-            return getNetworksWithoutSecurityGroupEnabled(zone.getId());
-        }
     }
 
     private CloudStackZone findZone() throws Exception {
