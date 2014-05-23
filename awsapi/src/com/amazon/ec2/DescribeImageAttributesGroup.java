@@ -1,19 +1,3 @@
-// Licensed to the Apache Software Foundation (ASF) under one
-// or more contributor license agreements.  See the NOTICE file
-// distributed with this work for additional information
-// regarding copyright ownership.  The ASF licenses this file
-// to you under the Apache License, Version 2.0 (the
-// "License"); you may not use this file except in compliance
-// with the License.  You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
 
 /**
  * DescribeImageAttributesGroup.java
@@ -33,13 +17,13 @@
         implements org.apache.axis2.databinding.ADBBean{
         /* This type was generated from the piece of schema that had
                 name = DescribeImageAttributesGroup
-                Namespace URI = http://ec2.amazonaws.com/doc/2012-08-15/
+                Namespace URI = http://ec2.amazonaws.com/doc/2014-02-01/
                 Namespace Prefix = ns1
                 */
             
 
         private static java.lang.String generatePrefix(java.lang.String namespace) {
-            if(namespace.equals("http://ec2.amazonaws.com/doc/2012-08-15/")){
+            if(namespace.equals("http://ec2.amazonaws.com/doc/2014-02-01/")){
                 return "ns1";
             }
             return org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
@@ -58,6 +42,8 @@
                    localKernelTracker = false;
                 
                    localRamdiskTracker = false;
+                
+                   localSriovNetSupportTracker = false;
                 
                    localBlockDeviceMappingTracker = false;
                 
@@ -247,6 +233,52 @@
                                        }
                                    
                                             this.localRamdisk=param;
+                                    
+
+                               }
+                            
+
+                        /**
+                        * field for SriovNetSupport
+                        */
+
+                        
+                                    protected com.amazon.ec2.EmptyElementType localSriovNetSupport ;
+                                
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localSriovNetSupportTracker = false ;
+                           
+
+                           /**
+                           * Auto generated getter method
+                           * @return com.amazon.ec2.EmptyElementType
+                           */
+                           public  com.amazon.ec2.EmptyElementType getSriovNetSupport(){
+                               return localSriovNetSupport;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param SriovNetSupport
+                               */
+                               public void setSriovNetSupport(com.amazon.ec2.EmptyElementType param){
+                            
+                                clearAllSettingTrackers();
+                            
+                                       if (param != null){
+                                          //update the setting tracker
+                                          localSriovNetSupportTracker = true;
+                                       } else {
+                                          localSriovNetSupportTracker = false;
+                                              
+                                       }
+                                   
+                                            this.localSriovNetSupport=param;
                                     
 
                                }
@@ -452,7 +484,7 @@
                   if (serializeType){
                
 
-                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"http://ec2.amazonaws.com/doc/2012-08-15/");
+                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"http://ec2.amazonaws.com/doc/2014-02-01/");
                    if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)){
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
                            namespacePrefix+":DescribeImageAttributesGroup",
@@ -469,43 +501,49 @@
                                             if (localLaunchPermission==null){
                                                  throw new org.apache.axis2.databinding.ADBException("launchPermission cannot be null!!");
                                             }
-                                           localLaunchPermission.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","launchPermission"),
+                                           localLaunchPermission.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","launchPermission"),
                                                factory,xmlWriter);
                                         } if (localProductCodesTracker){
                                             if (localProductCodes==null){
                                                  throw new org.apache.axis2.databinding.ADBException("productCodes cannot be null!!");
                                             }
-                                           localProductCodes.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","productCodes"),
+                                           localProductCodes.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","productCodes"),
                                                factory,xmlWriter);
                                         } if (localKernelTracker){
                                             if (localKernel==null){
                                                  throw new org.apache.axis2.databinding.ADBException("kernel cannot be null!!");
                                             }
-                                           localKernel.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","kernel"),
+                                           localKernel.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","kernel"),
                                                factory,xmlWriter);
                                         } if (localRamdiskTracker){
                                             if (localRamdisk==null){
                                                  throw new org.apache.axis2.databinding.ADBException("ramdisk cannot be null!!");
                                             }
-                                           localRamdisk.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","ramdisk"),
+                                           localRamdisk.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","ramdisk"),
+                                               factory,xmlWriter);
+                                        } if (localSriovNetSupportTracker){
+                                            if (localSriovNetSupport==null){
+                                                 throw new org.apache.axis2.databinding.ADBException("sriovNetSupport cannot be null!!");
+                                            }
+                                           localSriovNetSupport.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","sriovNetSupport"),
                                                factory,xmlWriter);
                                         } if (localBlockDeviceMappingTracker){
                                             if (localBlockDeviceMapping==null){
                                                  throw new org.apache.axis2.databinding.ADBException("blockDeviceMapping cannot be null!!");
                                             }
-                                           localBlockDeviceMapping.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","blockDeviceMapping"),
+                                           localBlockDeviceMapping.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","blockDeviceMapping"),
                                                factory,xmlWriter);
                                         } if (localDescriptionTracker){
                                             if (localDescription==null){
                                                  throw new org.apache.axis2.databinding.ADBException("description cannot be null!!");
                                             }
-                                           localDescription.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","description"),
+                                           localDescription.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","description"),
                                                factory,xmlWriter);
                                         } if (localInstanceTypeCategoryTracker){
                                             if (localInstanceTypeCategory==null){
                                                  throw new org.apache.axis2.databinding.ADBException("instanceTypeCategory cannot be null!!");
                                             }
-                                           localInstanceTypeCategory.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","instanceTypeCategory"),
+                                           localInstanceTypeCategory.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","instanceTypeCategory"),
                                                factory,xmlWriter);
                                         }
 
@@ -668,7 +706,7 @@
                  java.util.ArrayList attribList = new java.util.ArrayList();
 
                  if (localLaunchPermissionTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/",
                                                                       "launchPermission"));
                             
                             
@@ -677,7 +715,7 @@
                                     }
                                     elementList.add(localLaunchPermission);
                                 } if (localProductCodesTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/",
                                                                       "productCodes"));
                             
                             
@@ -686,7 +724,7 @@
                                     }
                                     elementList.add(localProductCodes);
                                 } if (localKernelTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/",
                                                                       "kernel"));
                             
                             
@@ -695,7 +733,7 @@
                                     }
                                     elementList.add(localKernel);
                                 } if (localRamdiskTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/",
                                                                       "ramdisk"));
                             
                             
@@ -703,8 +741,17 @@
                                          throw new org.apache.axis2.databinding.ADBException("ramdisk cannot be null!!");
                                     }
                                     elementList.add(localRamdisk);
+                                } if (localSriovNetSupportTracker){
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/",
+                                                                      "sriovNetSupport"));
+                            
+                            
+                                    if (localSriovNetSupport==null){
+                                         throw new org.apache.axis2.databinding.ADBException("sriovNetSupport cannot be null!!");
+                                    }
+                                    elementList.add(localSriovNetSupport);
                                 } if (localBlockDeviceMappingTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/",
                                                                       "blockDeviceMapping"));
                             
                             
@@ -713,7 +760,7 @@
                                     }
                                     elementList.add(localBlockDeviceMapping);
                                 } if (localDescriptionTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/",
                                                                       "description"));
                             
                             
@@ -722,7 +769,7 @@
                                     }
                                     elementList.add(localDescription);
                                 } if (localInstanceTypeCategoryTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/",
                                                                       "instanceTypeCategory"));
                             
                             
@@ -777,7 +824,7 @@
                 
 
                  
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","launchPermission").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","launchPermission").equals(reader.getName())){
                                 
                                                 object.setLaunchPermission(com.amazon.ec2.EmptyElementType.Factory.parse(reader));
                                               
@@ -787,7 +834,7 @@
                                 
                                         else
                                     
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","productCodes").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","productCodes").equals(reader.getName())){
                                 
                                                 object.setProductCodes(com.amazon.ec2.EmptyElementType.Factory.parse(reader));
                                               
@@ -797,7 +844,7 @@
                                 
                                         else
                                     
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","kernel").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","kernel").equals(reader.getName())){
                                 
                                                 object.setKernel(com.amazon.ec2.EmptyElementType.Factory.parse(reader));
                                               
@@ -807,7 +854,7 @@
                                 
                                         else
                                     
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","ramdisk").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","ramdisk").equals(reader.getName())){
                                 
                                                 object.setRamdisk(com.amazon.ec2.EmptyElementType.Factory.parse(reader));
                                               
@@ -817,7 +864,17 @@
                                 
                                         else
                                     
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","blockDeviceMapping").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","sriovNetSupport").equals(reader.getName())){
+                                
+                                                object.setSriovNetSupport(com.amazon.ec2.EmptyElementType.Factory.parse(reader));
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                        else
+                                    
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","blockDeviceMapping").equals(reader.getName())){
                                 
                                                 object.setBlockDeviceMapping(com.amazon.ec2.EmptyElementType.Factory.parse(reader));
                                               
@@ -827,7 +884,7 @@
                                 
                                         else
                                     
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","description").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","description").equals(reader.getName())){
                                 
                                                 object.setDescription(com.amazon.ec2.EmptyElementType.Factory.parse(reader));
                                               
@@ -837,7 +894,7 @@
                                 
                                         else
                                     
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","instanceTypeCategory").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","instanceTypeCategory").equals(reader.getName())){
                                 
                                                 object.setInstanceTypeCategory(com.amazon.ec2.EmptyElementType.Factory.parse(reader));
                                               

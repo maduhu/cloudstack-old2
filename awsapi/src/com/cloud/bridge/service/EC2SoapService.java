@@ -908,6 +908,87 @@ public class EC2SoapService implements AmazonEC2SkeletonInterface {
 		public ReplaceRouteResponse replaceRoute(ReplaceRoute replaceRoute) {
 			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
 			return ec2Service.replaceRoute(replaceRoute);
-	
+		}
+
+		@Override
+		public CreateVpcPeeringConnectionResponse createVpcPeeringConnection(
+				CreateVpcPeeringConnection createVpcPeeringConnection) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.createVpcPeeringConnection(createVpcPeeringConnection);
+		}
+
+		@Override
+		public DeleteVpcPeeringConnectionResponse deleteVpcPeeringConnection(
+				DeleteVpcPeeringConnection deleteVpcPeeringConnection) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.deleteVpcPeeringConnection(deleteVpcPeeringConnection);
+		}
+
+		@Override
+		public CopySnapshotResponse copySnapshot(CopySnapshot copySnapshot) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.copySnapshot(copySnapshot);
+		}
+
+		@Override
+		public CopyImageResponse copyImage(CopyImage copyImage) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.copyImage(copyImage);
+		}
+
+		@Override
+		public DescribeVpcPeeringConnectionsResponse describeVpcPeeringConnections(
+				DescribeVpcPeeringConnections describeVpcPeeringConnections) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.describeVpcPeeringConnections(describeVpcPeeringConnections);
+		}
+
+		@Override
+		public ModifyVpcAttributeResponse modifyVpcAttribute(
+				ModifyVpcAttribute modifyVpcAttribute) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.modifyVpcAttribute(modifyVpcAttribute);
+		}
+
+		@Override
+		public AcceptVpcPeeringConnectionResponse acceptVpcPeeringConnection(
+				AcceptVpcPeeringConnection acceptVpcPeeringConnection) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.acceptVpcPeeringConnection(acceptVpcPeeringConnection);
+		}
+
+		@Override
+		public DescribeVpcAttributeResponse describeVpcAttribute(
+				DescribeVpcAttribute describeVpcAttribute) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.describeVpcAttribute(describeVpcAttribute);
+		}
+
+		@Override
+		public RejectVpcPeeringConnectionResponse rejectVpcPeeringConnection(
+				RejectVpcPeeringConnection rejectVpcPeeringConnection) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.rejectVpcPeeringConnection(rejectVpcPeeringConnection);
+		}
+
+		@Override
+		public ModifyReservedInstancesResponse modifyReservedInstances(
+				ModifyReservedInstances modifyReservedInstances) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.modifyReservedInstances(modifyReservedInstances);
+		}
+
+		@Override
+		public DescribeAccountAttributesResponse describeAccountAttributes(
+				DescribeAccountAttributes describeAccountAttributes) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.describeAccountAttributes(describeAccountAttributes);
+		}
+
+		@Override
+		public DescribeReservedInstancesModificationsResponse describeReservedInstancesModifications(
+				DescribeReservedInstancesModifications describeReservedInstancesModifications) {
+			AmazonEC2SkeletonInterface ec2Service = ServiceProvider.getInstance().getServiceImpl(AmazonEC2SkeletonInterface.class);
+			return ec2Service.describeReservedInstancesModifications(describeReservedInstancesModifications);
 		}
 }

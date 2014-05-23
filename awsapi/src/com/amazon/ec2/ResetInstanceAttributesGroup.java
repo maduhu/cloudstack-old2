@@ -1,19 +1,3 @@
-// Licensed to the Apache Software Foundation (ASF) under one
-// or more contributor license agreements.  See the NOTICE file
-// distributed with this work for additional information
-// regarding copyright ownership.  The ASF licenses this file
-// to you under the Apache License, Version 2.0 (the
-// "License"); you may not use this file except in compliance
-// with the License.  You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
 
 /**
  * ResetInstanceAttributesGroup.java
@@ -33,13 +17,13 @@
         implements org.apache.axis2.databinding.ADBBean{
         /* This type was generated from the piece of schema that had
                 name = ResetInstanceAttributesGroup
-                Namespace URI = http://ec2.amazonaws.com/doc/2012-08-15/
+                Namespace URI = http://ec2.amazonaws.com/doc/2014-02-01/
                 Namespace Prefix = ns1
                 */
             
 
         private static java.lang.String generatePrefix(java.lang.String namespace) {
-            if(namespace.equals("http://ec2.amazonaws.com/doc/2012-08-15/")){
+            if(namespace.equals("http://ec2.amazonaws.com/doc/2014-02-01/")){
                 return "ns1";
             }
             return org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
@@ -260,7 +244,7 @@
                   if (serializeType){
                
 
-                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"http://ec2.amazonaws.com/doc/2012-08-15/");
+                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"http://ec2.amazonaws.com/doc/2014-02-01/");
                    if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)){
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
                            namespacePrefix+":ResetInstanceAttributesGroup",
@@ -277,19 +261,19 @@
                                             if (localKernel==null){
                                                  throw new org.apache.axis2.databinding.ADBException("kernel cannot be null!!");
                                             }
-                                           localKernel.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","kernel"),
+                                           localKernel.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","kernel"),
                                                factory,xmlWriter);
                                         } if (localRamdiskTracker){
                                             if (localRamdisk==null){
                                                  throw new org.apache.axis2.databinding.ADBException("ramdisk cannot be null!!");
                                             }
-                                           localRamdisk.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","ramdisk"),
+                                           localRamdisk.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","ramdisk"),
                                                factory,xmlWriter);
                                         } if (localSourceDestCheckTracker){
                                             if (localSourceDestCheck==null){
                                                  throw new org.apache.axis2.databinding.ADBException("sourceDestCheck cannot be null!!");
                                             }
-                                           localSourceDestCheck.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","sourceDestCheck"),
+                                           localSourceDestCheck.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","sourceDestCheck"),
                                                factory,xmlWriter);
                                         }
 
@@ -452,7 +436,7 @@
                  java.util.ArrayList attribList = new java.util.ArrayList();
 
                  if (localKernelTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/",
                                                                       "kernel"));
                             
                             
@@ -461,7 +445,7 @@
                                     }
                                     elementList.add(localKernel);
                                 } if (localRamdiskTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/",
                                                                       "ramdisk"));
                             
                             
@@ -470,7 +454,7 @@
                                     }
                                     elementList.add(localRamdisk);
                                 } if (localSourceDestCheckTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/",
                                                                       "sourceDestCheck"));
                             
                             
@@ -525,7 +509,7 @@
                 
 
                  
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","kernel").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","kernel").equals(reader.getName())){
                                 
                                                 object.setKernel(com.amazon.ec2.EmptyElementType.Factory.parse(reader));
                                               
@@ -535,7 +519,7 @@
                                 
                                         else
                                     
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","ramdisk").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","ramdisk").equals(reader.getName())){
                                 
                                                 object.setRamdisk(com.amazon.ec2.EmptyElementType.Factory.parse(reader));
                                               
@@ -545,7 +529,7 @@
                                 
                                         else
                                     
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","sourceDestCheck").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-02-01/","sourceDestCheck").equals(reader.getName())){
                                 
                                                 object.setSourceDestCheck(com.amazon.ec2.EmptyElementType.Factory.parse(reader));
                                               

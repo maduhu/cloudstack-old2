@@ -43,7 +43,6 @@ import com.cloud.bridge.service.core.ec2.EC2DescribeAddressesResponse;
 import com.cloud.bridge.service.core.ec2.EC2DescribeAvailabilityZones;
 import com.cloud.bridge.service.core.ec2.EC2DescribeAvailabilityZonesResponse;
 import com.cloud.bridge.service.core.ec2.EC2DescribeImageAttribute;
-
 import com.cloud.bridge.service.core.ec2.EC2AvailabilityZone;
 import com.cloud.bridge.service.core.ec2.EC2DescribeImages;
 import com.cloud.bridge.service.core.ec2.EC2DescribeImagesResponse;
@@ -2878,5 +2877,75 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 	public ReplaceRouteResponse replaceRoute(ReplaceRoute replaceRoute) {
 		throw new EC2ServiceException(ClientError.Unsupported,
 				"This operation is not available");
+	}
+
+	@Override
+	public CreateVpcPeeringConnectionResponse createVpcPeeringConnection(
+			CreateVpcPeeringConnection createVpcPeeringConnection) {
+		throw new EC2ServiceException(ClientError.Unsupported,
+				"This operation is not available");	}
+
+	@Override
+	public DeleteVpcPeeringConnectionResponse deleteVpcPeeringConnection(
+			DeleteVpcPeeringConnection deleteVpcPeeringConnection) {
+		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
+	}
+
+	@Override
+	public CopySnapshotResponse copySnapshot(CopySnapshot copySnapshot) {
+		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
+	}
+
+	@Override
+	public CopyImageResponse copyImage(CopyImage copyImage) {
+		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
+	}
+
+	@Override
+	public DescribeVpcPeeringConnectionsResponse describeVpcPeeringConnections(
+			DescribeVpcPeeringConnections describeVpcPeeringConnections) {
+		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
+	}
+
+	@Override
+	public ModifyVpcAttributeResponse modifyVpcAttribute(
+			ModifyVpcAttribute modifyVpcAttribute) {
+		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
+	}
+
+	@Override
+	public AcceptVpcPeeringConnectionResponse acceptVpcPeeringConnection(
+			AcceptVpcPeeringConnection acceptVpcPeeringConnection) {
+		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
+	}
+
+	@Override
+	public DescribeVpcAttributeResponse describeVpcAttribute(
+			DescribeVpcAttribute describeVpcAttribute) {
+		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
+	}
+
+	@Override
+	public RejectVpcPeeringConnectionResponse rejectVpcPeeringConnection(
+			RejectVpcPeeringConnection rejectVpcPeeringConnection) {
+		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
+	}
+
+	@Override
+	public ModifyReservedInstancesResponse modifyReservedInstances(
+			ModifyReservedInstances modifyReservedInstances) {
+		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
+	}
+
+	@Override
+	public DescribeAccountAttributesResponse describeAccountAttributes(
+			DescribeAccountAttributes describeAccountAttributes) {
+		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
+	}
+
+	@Override
+	public DescribeReservedInstancesModificationsResponse describeReservedInstancesModifications(
+			DescribeReservedInstancesModifications describeReservedInstancesModifications) {
+		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
 	}
 }
