@@ -112,7 +112,7 @@ public class EC2Engine extends ManagerBase {
      * 
      * @throws IOException
      */
-    private void loadConfigValues() throws IOException {
+	protected void loadConfigValues() throws IOException {
         File propertiesFile = ConfigurationHelper.findConfigurationFile("ec2-service.properties");
         if (null != propertiesFile) {
             logger.info("Use EC2 properties file: " + propertiesFile.getAbsolutePath());
@@ -167,7 +167,7 @@ public class EC2Engine extends ManagerBase {
      * 
      * @return
      */
-    private CloudStackApi getApi() {
+	protected CloudStackApi getApi() {
         if (_eng == null) {
             _eng = new CloudStackApi(managementServer, cloudAPIPort, false);
         }
@@ -380,7 +380,7 @@ public class EC2Engine extends ManagerBase {
      * @param permRight
      * @return ruleId of the cloudstack rule
      */
-    private String doesRuleMatch(EC2IpPermission permLeft, EC2IpPermission permRight)
+    protected String doesRuleMatch(EC2IpPermission permLeft, EC2IpPermission permRight)
     {
         int matches = 0;
 
@@ -1591,7 +1591,7 @@ public class EC2Engine extends ManagerBase {
      * @return -1 means no limit exists, other positive numbers give max number left that
      *         the user can create.
      */
-    private int calculateAllowedInstances() throws Exception {
+    protected int calculateAllowedInstances() throws Exception {
         int maxAllowed = -1;
 
         CloudStackAccount ourAccount = getCurrentAccount();
@@ -1628,7 +1628,7 @@ public class EC2Engine extends ManagerBase {
      * @param virtualMachineIds - an array of instances we are interested in getting information on
      * @param ifs - filter out unwanted instances
      */
-    private EC2DescribeInstancesResponse listVirtualMachines( String[] virtualMachineIds, EC2InstanceFilterSet ifs,
+    protected EC2DescribeInstancesResponse listVirtualMachines( String[] virtualMachineIds, EC2InstanceFilterSet ifs,
             List<CloudStackKeyValue> resourceTags ) throws Exception
             {
         EC2DescribeInstancesResponse instances = new EC2DescribeInstancesResponse();
@@ -1652,7 +1652,7 @@ public class EC2Engine extends ManagerBase {
      * @param volumeId   - if interested in one specific volume, null if want to list all volumes
      * @param instanceId - if interested in volumes for a specific instance, null if instance is not important
      */
-    private EC2DescribeVolumesResponse listVolumes(String volumeId, String instanceId, EC2DescribeVolumesResponse volumes,
+    protected EC2DescribeVolumesResponse listVolumes(String volumeId, String instanceId, EC2DescribeVolumesResponse volumes,
             List<CloudStackKeyValue> resourceTagSet)throws Exception {
 
         List<CloudStackVolume> vols = getApi().listVolumes(null, null, null, volumeId, null, null, null, null, null,
@@ -1712,7 +1712,7 @@ public class EC2Engine extends ManagerBase {
      * 
      * @return the zoneId that matches the given zone name
      */
-    private String toZoneId(String zoneName, String domainId) throws Exception	{
+    protected String toZoneId(String zoneName, String domainId) throws Exception	{
         EC2DescribeAvailabilityZonesResponse zones = null;
         String[] interestedZones = null;
 
@@ -1741,7 +1741,7 @@ public class EC2Engine extends ManagerBase {
      * 
      */
 
-    private CloudStackServiceOffering getCSServiceOfferingId(String instanceType) throws Exception {
+    protected CloudStackServiceOffering getCSServiceOfferingId(String instanceType) throws Exception {
         try {
             if (instanceType == null)
                 instanceType = "m1.small"; // default value
@@ -1771,7 +1771,7 @@ public class EC2Engine extends ManagerBase {
      * @return A valid value for the Amazon defined instanceType
      * @throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException
      */
-    private String serviceOfferingIdToInstanceType( String serviceOfferingId ) throws Exception {
+    protected String serviceOfferingIdToInstanceType( String serviceOfferingId ) throws Exception {
         try{
             List<CloudStackServiceOffering> offerings = getApi().listServiceOfferings(null, serviceOfferingId, false, null, null, null, null);
             if (offerings.size() != 1) {
@@ -1794,7 +1794,7 @@ public class EC2Engine extends ManagerBase {
      * @param osTypeName
      * @return the Cloud.com API osTypeId
      */
-    private String toOSTypeId( String osTypeName ) throws Exception {
+    protected String toOSTypeId( String osTypeName ) throws Exception {
         try {
             List<CloudStackOsType> osTypes = getApi().listOsTypes(null, null, null);
             for (CloudStackOsType osType : osTypes) {
@@ -1817,7 +1817,7 @@ public class EC2Engine extends ManagerBase {
      * 
      * @return EC2DescribeAvailabilityZonesResponse
      */
-    private EC2DescribeAvailabilityZonesResponse listZones(String[] interestedZones, String domainId)
+    protected EC2DescribeAvailabilityZonesResponse listZones(String[] interestedZones, String domainId)
             throws Exception  {
         EC2DescribeAvailabilityZonesResponse zones = new EC2DescribeAvailabilityZonesResponse();
 
@@ -1858,7 +1858,7 @@ public class EC2Engine extends ManagerBase {
      * @return the same object passed in as the "instances" parameter modified with one or more
      *         EC2Instance objects loaded.
      */
-    private EC2DescribeInstancesResponse lookupInstances( String instanceId, EC2DescribeInstancesResponse instances,
+    protected EC2DescribeInstancesResponse lookupInstances( String instanceId, EC2DescribeInstancesResponse instances,
             List<CloudStackKeyValue> resourceTagSet )
                     throws Exception {
 
@@ -1935,7 +1935,7 @@ public class EC2Engine extends ManagerBase {
      * @return the same object passed in as the "images" parameter modified with one or more
      *         EC2Image objects loaded.
      */
-    private EC2DescribeImagesResponse listTemplates( String templateId, EC2DescribeImagesResponse images ) throws Exception {
+    protected EC2DescribeImagesResponse listTemplates( String templateId, EC2DescribeImagesResponse images ) throws Exception {
         try {
             List<CloudStackTemplate> result = new ArrayList<CloudStackTemplate>();
 
@@ -2017,7 +2017,7 @@ public class EC2Engine extends ManagerBase {
      * @throws ParserConfigurationException
      * @throws ParseException
      */
-    private EC2DescribeSecurityGroupsResponse listSecurityGroups( String[] interestedGroups ) throws Exception {
+    protected EC2DescribeSecurityGroupsResponse listSecurityGroups( String[] interestedGroups ) throws Exception {
         try {
             EC2DescribeSecurityGroupsResponse groupSet = new EC2DescribeSecurityGroupsResponse();
 
@@ -2062,7 +2062,7 @@ public class EC2Engine extends ManagerBase {
         }
     }
 
-    private EC2DescribeKeyPairsResponse listKeyPairs( String[] keyNames ) throws Exception {
+    protected EC2DescribeKeyPairsResponse listKeyPairs( String[] keyNames ) throws Exception {
         try {
             EC2DescribeKeyPairsResponse keyPairSet = new EC2DescribeKeyPairsResponse();
 
@@ -2094,7 +2094,7 @@ public class EC2Engine extends ManagerBase {
         }
     }
 
-    private EC2DescribeAddressesResponse listAddresses(String[] addressNames) throws Exception {
+    protected EC2DescribeAddressesResponse listAddresses(String[] addressNames) throws Exception {
         try {
             EC2DescribeAddressesResponse addressSet = new EC2DescribeAddressesResponse();
 
@@ -2127,7 +2127,7 @@ public class EC2Engine extends ManagerBase {
         }
     }
 
-    private EC2DescribeSnapshotsResponse listSnapshots( String[] snapshotIds, List<CloudStackKeyValue> resourceTagSet) throws Exception {
+    protected EC2DescribeSnapshotsResponse listSnapshots( String[] snapshotIds, List<CloudStackKeyValue> resourceTagSet) throws Exception {
         try {
             EC2DescribeSnapshotsResponse snapshotSet = new EC2DescribeSnapshotsResponse();
 
@@ -2181,7 +2181,7 @@ public class EC2Engine extends ManagerBase {
      * @param group
      * @return
      */
-    private boolean toPermission(EC2SecurityGroup response, CloudStackSecurityGroup group ) {
+    protected boolean toPermission(EC2SecurityGroup response, CloudStackSecurityGroup group ) {
         List<CloudStackIngressRule> rules = group.getIngressRules();
 
         if (rules == null || rules.isEmpty()) return false;
@@ -2239,7 +2239,7 @@ public class EC2Engine extends ManagerBase {
         return null;
     }
 
-    private CloudStackZone findZone() throws Exception {
+    protected CloudStackZone findZone() throws Exception {
         CloudStackAccount caller = getCurrentAccount();
         List<CloudStackZone> cloudZones;
 
@@ -2260,7 +2260,7 @@ public class EC2Engine extends ManagerBase {
     /**
      * Finds the defaultZone marked for the account
      */
-    private String getDefaultZoneId(String accountId) throws Exception {
+    protected String getDefaultZoneId(String accountId) throws Exception {
         try {
             return accDao.getDefaultZoneId(accountId);
         } catch(Exception e) {
@@ -2316,7 +2316,7 @@ public class EC2Engine extends ManagerBase {
      * @param device string
      * @return deviceId value
      */
-    private String mapDeviceToCloudDeviceId( String device ) throws Exception
+    protected String mapDeviceToCloudDeviceId( String device ) throws Exception
     {
         if (device.equalsIgnoreCase( "/dev/sdb"  )) return "1";
         else if (device.equalsIgnoreCase( "/dev/sdc"  )) return "2";
@@ -2354,7 +2354,7 @@ public class EC2Engine extends ManagerBase {
      * @param state
      * @return
      */
-    private String mapToAmazonVolState( String state )
+    protected String mapToAmazonVolState( String state )
     {
         if (state.equalsIgnoreCase( "Allocated" ) ||
                 state.equalsIgnoreCase( "Creating"  ) ||
@@ -2371,7 +2371,7 @@ public class EC2Engine extends ManagerBase {
      * @param CloudStack VM state
      * @return Amazon Volume attachment state
      */
-    private String mapToAmazonVolumeAttachmentState (String vmState) {
+    protected String mapToAmazonVolumeAttachmentState (String vmState) {
         if ( vmState.equalsIgnoreCase("Running") || vmState.equalsIgnoreCase("Stopping") ||
                 vmState.equalsIgnoreCase("Stopped") ) {
             return "attached";
@@ -2390,7 +2390,7 @@ public class EC2Engine extends ManagerBase {
      * @param Amazon resourceType
      * @return CloudStack resourceType
      */
-    private String mapToCloudStackResourceType( String resourceType) {
+    protected String mapToCloudStackResourceType( String resourceType) {
         if (resourceType.equalsIgnoreCase("image"))
             return("template");
         else if(resourceType.equalsIgnoreCase("instance"))
@@ -2407,7 +2407,7 @@ public class EC2Engine extends ManagerBase {
      * @param CloudStack resourceType
      * @return Amazon resourceType
      */
-    private String mapToAmazonResourceType( String resourceType) {
+    protected String mapToAmazonResourceType( String resourceType) {
         if (resourceType.equalsIgnoreCase("template"))
             return("image");
         else if(resourceType.equalsIgnoreCase("userVm"))
@@ -2424,7 +2424,7 @@ public class EC2Engine extends ManagerBase {
      * @param CloudStack hypervisor
      * @return Amazon hypervisor
      */
-    private String mapToAmazonHypervisorType( String hypervisor) {
+    protected String mapToAmazonHypervisorType( String hypervisor) {
         if (hypervisor.equalsIgnoreCase("Xenserver"))
             return("xen");
         else if(hypervisor.equalsIgnoreCase("Ovm"))
@@ -2445,7 +2445,7 @@ public class EC2Engine extends ManagerBase {
      * @return
      * @throws Exception
      */
-    private boolean stopVirtualMachine( String instanceId) throws Exception {
+    protected boolean stopVirtualMachine( String instanceId) throws Exception {
         try {
             CloudStackUserVm resp = getApi().stopVirtualMachine(instanceId, false);
             if (logger.isDebugEnabled())
@@ -2464,7 +2464,7 @@ public class EC2Engine extends ManagerBase {
      * @return
      * @throws Exception
      */
-    private boolean startVirtualMachine( String instanceId ) throws Exception {
+    protected boolean startVirtualMachine( String instanceId ) throws Exception {
         try {
             CloudStackUserVm resp = getApi().startVirtualMachine(instanceId);
             if (logger.isDebugEnabled())
@@ -2481,7 +2481,7 @@ public class EC2Engine extends ManagerBase {
      * 
      * @throws UnsupportedEncodingException
      */
-    private String constructList( String[] elements ) throws UnsupportedEncodingException {
+    protected String constructList( String[] elements ) throws UnsupportedEncodingException {
         if (null == elements || 0 == elements.length) return null;
         StringBuffer elementList = new StringBuffer();
 
@@ -2492,7 +2492,7 @@ public class EC2Engine extends ManagerBase {
         return elementList.toString();
     }
 
-    private List<CloudStackKeyValue> getResourceTags(EC2TagKeyValue[] tagKeyValueSet) {
+    protected List<CloudStackKeyValue> getResourceTags(EC2TagKeyValue[] tagKeyValueSet) {
         List<CloudStackKeyValue> resourceTags = new ArrayList<CloudStackKeyValue>();
         for (EC2TagKeyValue tagKeyValue : tagKeyValueSet) {
             CloudStackKeyValue resourceTag = new CloudStackKeyValue();
@@ -2502,7 +2502,7 @@ public class EC2Engine extends ManagerBase {
         return resourceTags;
     }
 
-    private void handleException( Exception e) {
+    protected void handleException( Exception e) {
         String[] error = e.getMessage().split("Error Code - ");
         String errorMessage = error[0];
         if (error.length == 2) { // error code has been supplied
