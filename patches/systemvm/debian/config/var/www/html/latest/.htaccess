@@ -1,5 +1,5 @@
 Options +FollowSymLinks  
 RewriteEngine On
-#RewriteBase /
 
+RewriteRule ^$ supported-paths [L,NC,QSA]
 RewriteRule ^user-data$  ../userdata/%{REMOTE_ADDR}/user-data [L,NC,QSA]
