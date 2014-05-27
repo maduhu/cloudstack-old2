@@ -473,7 +473,11 @@
               </handler>
         </phase>   
         <phase name="Security"/>
-        <phase name="PreDispatch"/>
+        <phase name="PreDispatch" />
+        <phase name="EC2NamespaceCheck">
+            <handler name="EC2NamespaceHandler"
+                class="com.cloud.bridge.axis.namespace.EC2NamespaceInHandler" />
+        </phase>
         <phase name="Dispatch" class="org.apache.axis2.engine.DispatchPhase">
             <handler name="RequestURIBasedDispatcher"
                      class="org.apache.axis2.dispatchers.RequestURIBasedDispatcher"/>
@@ -510,6 +514,10 @@
     <phaseOrder type="OutFlow">
         <!--      user can add his own phases to this area  -->
         <phase name="soapmonitorPhase"/>
+        <phase name="EC2NamespaceCheck">
+            <handler name="EC2NamespaceHandler"
+                class="com.cloud.bridge.axis.namespace.EC2NamespaceOutHandler" />
+        </phase>
         <phase name="OperationOutPhase"/>
         <!--system predefined phase-->
         <!--these phase will run irrespective of the service-->
