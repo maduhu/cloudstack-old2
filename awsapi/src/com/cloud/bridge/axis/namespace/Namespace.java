@@ -1,5 +1,8 @@
 package com.cloud.bridge.axis.namespace;
 
+/**
+ * Supported namespace versions of the Amazon EC2 WSDL.
+ */
 public enum Namespace {
 
     // Supported namespaces, in descending order of age.

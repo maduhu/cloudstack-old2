@@ -16,6 +16,10 @@ import org.apache.axis2.description.Parameter;
 import org.apache.axis2.engine.Handler;
 import org.apache.log4j.Logger;
 
+/**
+ * A general Axis2 engine handler that provides a namespace substitution method
+ * for InFlow and OutFlow phases.
+ */
 public abstract class EC2NamespaceHandler implements Handler {
     protected final static Logger logger = Logger.getLogger(EC2NamespaceHandler.class);
 
@@ -51,6 +55,10 @@ public abstract class EC2NamespaceHandler implements Handler {
     @Override
     public void flowComplete(MessageContext msgContext) {}
 
+    /**
+     * Substitutes the namespace in the envelope of @param msgContext from @param oldNamespace
+     * to @param newNamespace.
+     */
     @SuppressWarnings("unchecked")
     protected void substituteNamespace(MessageContext msgContext, Namespace oldNamespace, Namespace newNamespace) {
         try {
@@ -63,9 +71,6 @@ public abstract class EC2NamespaceHandler implements Handler {
                 envelope.getBody().addChild(AXIOMUtil.stringToOM(xml));
             }
 
-            logger.trace("Original SOAP Envelope: " + serializeOMNode(msgContext.getEnvelope()));
-            logger.trace("New SOAP Envelope: " + serializeOMNode(envelope));
-
             msgContext.setEnvelope(envelope);
 
         } catch (Exception e) {
@@ -73,6 +78,10 @@ public abstract class EC2NamespaceHandler implements Handler {
         }
     }
 
+    /**
+     * Saves the namespace of @param msgContext into the RequestContext.
+     * @return the namespace of the @param msgContext
+     */
     @SuppressWarnings("unchecked")
     protected Namespace registerNamespace(MessageContext msgContext) {
         for (Namespace n : Namespace.values()) {
