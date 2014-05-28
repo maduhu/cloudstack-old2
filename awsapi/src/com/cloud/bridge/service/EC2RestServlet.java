@@ -17,6 +17,7 @@
 package com.cloud.bridge.service;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -103,6 +104,8 @@ import com.amazon.ec2.RunInstancesResponse;
 import com.amazon.ec2.StartInstancesResponse;
 import com.amazon.ec2.StopInstancesResponse;
 import com.amazon.ec2.TerminateInstancesResponse;
+import com.cloud.bridge.axis.namespace.Namespace;
+import com.cloud.bridge.axis.namespace.RequestContext;
 import com.cloud.bridge.model.UserCredentialsVO;
 import com.cloud.bridge.persist.dao.CloudStackUserDaoImpl;
 import com.cloud.bridge.persist.dao.OfferingDaoImpl;
@@ -177,7 +180,6 @@ public class EC2RestServlet extends HttpServlet {
 
     private String pathToKeystore   = null;
     private String keystorePassword = null;
-    private String wsdlVersion      = null;
     private String version          = null;
 
     boolean debug=true;
@@ -208,7 +210,6 @@ public class EC2RestServlet extends HttpServlet {
             }
             String keystore  = EC2Prop.getProperty( "keystore" );
             keystorePassword = EC2Prop.getProperty( "keystorePass" );
-            wsdlVersion      = EC2Prop.getProperty( "WSDLVersion", "2012-08-15" );
             version = EC2Prop.getProperty( "cloudbridgeVersion", "UNKNOWN VERSION" );
 
             String installedPath = System.getenv("CATALINA_HOME");
@@ -2037,15 +2038,23 @@ public class EC2RestServlet extends HttpServlet {
             throw new EC2ServiceException( ClientError.MissingParamter, "Missing required parameter - SignatureMethod");
         }
 
-        String[] version = request.getParameterValues( "Version" );
-        if ( null != version && 0 < version.length ) 
-        {
-            if (!version[0].equals( wsdlVersion )) {
-                throw new EC2ServiceException( ClientError.InvalidParameterValue,
-                        "Unsupported Version value: " + version[0] + " expecting: " + wsdlVersion);
+        // Check if the version specified is one we can handle and save it for response generation
+        String version = request.getParameter("Version");
+        if (version != null) {
+            for (Namespace n : Namespace.values()) {
+                if (version.equals(n.getVersion())) {
+                    RequestContext.current().setNamespace(n);
+                    break;
+                }
+            }
+
+            if (RequestContext.current().getNamespace() == null) {
+                logger.debug("Unsupported Version");
+                throw new EC2ServiceException(ClientError.Unsupported, "Unsupported version");
             }
         } else {
-            throw new EC2ServiceException( ClientError.MissingParamter, "Missing required parameter - Version");
+            logger.debug("Missing Parameter Version");
+            throw new EC2ServiceException(ClientError.MissingParamter, "Version");
         }
 
         String[] sigVersion = request.getParameterValues( "SignatureVersion" );
@@ -2220,16 +2229,31 @@ public class EC2RestServlet extends HttpServlet {
      */
     private void serializeResponse(HttpServletResponse response, ADBBean EC2Response) 
             throws ADBException, XMLStreamException, IOException {
-        OutputStream os = response.getOutputStream();
-        response.setStatus(200);	
-        response.setContentType("text/xml");
-        XMLStreamWriter xmlWriter = xmlOutFactory.createXMLStreamWriter( os );
-        xmlWriter.writeStartDocument("UTF-8","1.0");
-        MTOMAwareXMLSerializer MTOMWriter = new MTOMAwareXMLSerializer( xmlWriter );
-        MTOMWriter.setDefaultNamespace("http://ec2.amazonaws.com/doc/" + wsdlVersion + "/");
-        EC2Response.serialize( null, factory, MTOMWriter );
+        // Serialize to a ByteArrayStream to allow us to manipulate the output
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        XMLStreamWriter xmlWriter = xmlOutFactory.createXMLStreamWriter(out);
+        MTOMAwareXMLSerializer mtomWriter = new MTOMAwareXMLSerializer(xmlWriter);
+        mtomWriter.setDefaultNamespace(RequestContext.current().getNamespace().getUrl());
+        EC2Response.serialize(null, factory, mtomWriter);
         xmlWriter.flush();
+
+        // Setting the default namespace is not enough; go through the response and replace
+        // with the namespace URL specified in the request to ensure a valid response.
+        String xmlResponse = out.toString().replace(
+                Namespace.getCurrent().getUrl(),
+                RequestContext.current().getNamespace().getUrl());
         xmlWriter.close();
-        os.close();
+
+        // For boto's benefit. Boto cannot handle namespaces unless they are set as default.
+        xmlResponse = xmlResponse.replace(" xmlns:ns1=", " xmlns=").replaceAll("<ns1:", "<").replaceAll("</ns1:", "</");
+
+        // Write the response
+        response.setContentType("text/xml; charset=UTF-8");
+        xmlResponse = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+xmlResponse;
+        int contentLength = xmlResponse.length();
+        response.setContentLength(contentLength);
+        response.getWriter().write(xmlResponse);
+        response.getWriter().flush();
+        response.getWriter().close();
     }
 }
