@@ -247,7 +247,7 @@ import java.util.Map;
     }
 
     private boolean isBareMetal() {
-        return (this.getVmId() != null && this.getUrl() != null);
+        return (this.getVmId() != null);
     }
 
     @Override

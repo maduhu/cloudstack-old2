@@ -37,7 +37,7 @@ TIMEOUT 26
 LABEL default
 MENU default
 KERNEL images/clonezilla/live/vmlinuz
-APPEND initrd=images/clonezilla/live/initrd.img boot=live config noswap nolocales edd=on nomodeset ocs_live_run="/usr/sbin/ocs-sr -q2 -j2 -z1p -i 2000 -fsck-src-part -p reboot saveparts %s all" ocs_live_extra_param="" ocs_live_keymap="NONE" ocs_live_batch="yes" ocs_lang="en_US.UTF-8" vga=788 nosplash noprompt ocs_prerun1="mdadm --zero-superblock --force /dev/sda1 && mdadm --zero-superblock --force /dev/sdb1" ocs_prerun2="mount -t nfs %s:%s /home/partimag" fetch=tftp://%s/images/clonezilla/live/filesystem.squashfs'''
+APPEND initrd=images/clonezilla/live/initrd.img boot=live config noswap nolocales edd=on nomodeset ocs_live_run="/usr/sbin/ocs-sr -q2 -j2 -z1p -i 2000 -fsck-src-part-y -p reboot saveparts %s all" ocs_live_extra_param="" ocs_live_keymap="NONE" ocs_live_batch="yes" ocs_lang="en_US.UTF-8" vga=788 nosplash noprompt ocs_prerun1="mdadm --zero-superblock --force /dev/sda1 && mdadm --zero-superblock --force /dev/sdb1" ocs_prerun2="mount -t nfs %s:%s /home/partimag" fetch=tftp://%s/images/clonezilla/live/filesystem.squashfs'''
 
 cmd = ''
 tftp_dir = ''
