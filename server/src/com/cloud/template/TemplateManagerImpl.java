@@ -1426,10 +1426,12 @@ public class TemplateManagerImpl extends ManagerBase implements TemplateManager,
                         _tmpltDao.update(privateTemplate.getId(), privateTemplate);
                     }
                 }
-                TemplateDataStoreVO srcTmpltStore = this._tmplStoreDao.findByStoreTemplate(store.getId(), templateId);
-                UsageEventVO usageEvent = new UsageEventVO(EventTypes.EVENT_TEMPLATE_CREATE, privateTemplate.getAccountId(), zoneId,
-                        privateTemplate.getId(), privateTemplate.getName(), null, privateTemplate.getSourceTemplateId(), srcTmpltStore.getPhysicalSize(), privateTemplate.getSize());
-                _usageEventDao.persist(usageEvent);
+                TemplateDataStoreVO srcTmpltStore = this._tmplStoreDao.findByStoreTemplate(store.getId(), templateId);              
+                UsageEventUtils.publishUsageEvent(EventTypes.EVENT_TEMPLATE_CREATE, privateTemplate.getAccountId(), zoneId, 
+                                                    privateTemplate.getId(), privateTemplate.getName(), null, 
+                                                    privateTemplate.getSourceTemplateId(), srcTmpltStore.getPhysicalSize(), 
+                                                    privateTemplate.getSize(), privateTemplate.getClass().getName(), 
+                                                    privateTemplate.getUuid());
             } catch (InterruptedException e) {
                 s_logger.debug("Failed to create template", e);
                 throw new CloudRuntimeException("Failed to create template", e);
