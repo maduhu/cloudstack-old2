@@ -1668,6 +1668,21 @@ TemplateManager, TemplateApiService {
 			if (!ans.getResult()) {
 				throw new Exception("Boot/Reboot host " + hostId + " failed");
 			}
+			
+			Long zoneId = vm.getDataCenterId();
+			
+			DataStore store = this._dataStoreMgr.getImageStore(zoneId);
+			if (store == null) {
+				throw new CloudRuntimeException(
+						"cannot find an image store for zone " + zoneId);
+			}
+			
+            TemplateDataStoreVO srcTmpltStore = this._tmplStoreDao.findByStoreTemplate(store.getId(), templateId);              
+            UsageEventUtils.publishUsageEvent(EventTypes.EVENT_TEMPLATE_CREATE, privateTemplate.getAccountId(), zoneId, 
+                                                privateTemplate.getId(), privateTemplate.getName(), null, 
+                                                privateTemplate.getSourceTemplateId(), srcTmpltStore.getPhysicalSize(), 
+                                                privateTemplate.getSize(), privateTemplate.getClass().getName(), 
+                                                privateTemplate.getUuid());
 		} catch (Exception e) {
 			s_logger.debug("Create baremetal tempalte for host " + hostId
 					+ " failed", e);
