@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import com.cloud.configuration.Resource.ResourceType;
 import com.cloud.dc.DataCenterVO;
 import com.cloud.event.EventTypes;
+import com.cloud.event.UsageEventUtils;
 import com.cloud.event.UsageEventVO;
 import com.cloud.exception.ResourceAllocationException;
 import com.cloud.host.Host;
@@ -168,14 +169,19 @@ public class BareMetalTemplateAdapter extends TemplateAdapterBase implements Tem
 		}
 
 		if ( profile.getZoneId() != null ){
-            UsageEventVO usageEvent = new UsageEventVO(eventType, account.getId(), profile.getZoneId(), templateId, null);
-            _usageEventDao.persist(usageEvent);
+            //UsageEventVO usageEvent = new UsageEventVO(eventType, account.getId(), profile.getZoneId(), templateId, null);
+            //_usageEventDao.persist(usageEvent);
+            
+            UsageEventUtils.publishUsageEvent(eventType, template.getAccountId(), profile.getZoneId(), template.getId(),
+                    template.getName(), template.getClass().getName(), template.getUuid());
 		}
 		else{
             List<DataCenterVO> dcs = _dcDao.listAllIncludingRemoved();
             for ( DataCenterVO dc : dcs){
-                UsageEventVO usageEvent = new UsageEventVO(eventType, account.getId(), dc.getId(), templateId, null);
-                _usageEventDao.persist(usageEvent);
+                //UsageEventVO usageEvent = new UsageEventVO(eventType, account.getId(), dc.getId(), templateId, null);
+                //_usageEventDao.persist(usageEvent);
+                UsageEventUtils.publishUsageEvent(eventType, template.getAccountId(), dc.getId(), template.getId(),
+                        template.getName(), template.getClass().getName(), template.getUuid());
             }
 		}
 
