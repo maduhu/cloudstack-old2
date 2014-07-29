@@ -128,6 +128,8 @@ public class KVMGuestOsMapper {
         s_mapper.put("SUSE Linux Enterprise Server 10 SP4 (32-bit)", "SUSE Linux Enterprise Server 10");
         s_mapper.put("SUSE Linux Enterprise Server 10 SP4 (64-bit)", "SUSE Linux Enterprise Server 10");
         s_mapper.put("SUSE Linux Enterprise Server 11 SP1 (32-bit)", "SUSE Linux Enterprise Server 11");
+        s_mapper.put("SUSE Linux Enterprise Server 11 (32-bit)", "SUSE Linux Enterprise Server 11");
+        s_mapper.put("SUSE Linux Enterprise Server 11 (64-bit)", "SUSE Linux Enterprise Server 11");
         s_mapper.put("SUSE Linux Enterprise Server 11 SP1 (64-bit)", "SUSE Linux Enterprise Server 11");
         s_mapper.put("SUSE Linux Enterprise Server 11 SP2 (32-bit)", "SUSE Linux Enterprise Server 11");
         s_mapper.put("SUSE Linux Enterprise Server 11 SP2 (64-bit)", "SUSE Linux Enterprise Server 11");
