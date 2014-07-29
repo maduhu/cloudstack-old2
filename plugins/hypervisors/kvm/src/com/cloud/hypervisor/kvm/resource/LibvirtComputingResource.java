@@ -4630,7 +4630,10 @@ ServerResource {
                 || guestOSName.startsWith("Red Hat Enterprise Linux 5.4")
                 || guestOSName.startsWith("Red Hat Enterprise Linux 5.5")
                 || guestOSName.startsWith("Red Hat Enterprise Linux 6")
+                || guestOSName.startsWith("Red Hat Enterprise Linux 7")
                 || guestOS.startsWith("Debian GNU/Linux")
+                || guestOSName.startsWith("SUSE")
+                || guestOSName.startsWith("Windows")
                 || guestOSName.startsWith("Other PV")) {
             return true;
         } else {
