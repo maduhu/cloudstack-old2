@@ -1159,7 +1159,6 @@ public class EC2Engine extends ManagerBase {
                 resp.setState(vol.getState());
                 resp.setType(vol.getVolumeType());
                 resp.setVMState(vol.getVirtualMachineState());
-                resp.setAttachmentState(mapToAmazonVolumeAttachmentState(vol.getVirtualMachineState()));
                 resp.setZoneName(vol.getZoneName());
             }
         } catch( Exception e ) {
