@@ -1,19 +1,3 @@
-// Licensed to the Apache Software Foundation (ASF) under one
-// or more contributor license agreements.  See the NOTICE file
-// distributed with this work for additional information
-// regarding copyright ownership.  The ASF licenses this file
-// to you under the Apache License, Version 2.0 (the
-// "License"); you may not use this file except in compliance
-// with the License.  You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
 
 /**
  * RouteType.java
@@ -33,13 +17,13 @@
         implements org.apache.axis2.databinding.ADBBean{
         /* This type was generated from the piece of schema that had
                 name = RouteType
-                Namespace URI = http://ec2.amazonaws.com/doc/2012-08-15/
+                Namespace URI = http://ec2.amazonaws.com/doc/2014-06-15/
                 Namespace Prefix = ns1
                 */
             
 
         private static java.lang.String generatePrefix(java.lang.String namespace) {
-            if(namespace.equals("http://ec2.amazonaws.com/doc/2012-08-15/")){
+            if(namespace.equals("http://ec2.amazonaws.com/doc/2014-06-15/")){
                 return "ns1";
             }
             return org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
@@ -254,6 +238,50 @@
                             
 
                         /**
+                        * field for VpcPeeringConnectionId
+                        */
+
+                        
+                                    protected java.lang.String localVpcPeeringConnectionId ;
+                                
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localVpcPeeringConnectionIdTracker = false ;
+                           
+
+                           /**
+                           * Auto generated getter method
+                           * @return java.lang.String
+                           */
+                           public  java.lang.String getVpcPeeringConnectionId(){
+                               return localVpcPeeringConnectionId;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param VpcPeeringConnectionId
+                               */
+                               public void setVpcPeeringConnectionId(java.lang.String param){
+                            
+                                       if (param != null){
+                                          //update the setting tracker
+                                          localVpcPeeringConnectionIdTracker = true;
+                                       } else {
+                                          localVpcPeeringConnectionIdTracker = false;
+                                              
+                                       }
+                                   
+                                            this.localVpcPeeringConnectionId=param;
+                                    
+
+                               }
+                            
+
+                        /**
                         * field for State
                         */
 
@@ -396,7 +424,7 @@
                   if (serializeType){
                
 
-                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"http://ec2.amazonaws.com/doc/2012-08-15/");
+                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"http://ec2.amazonaws.com/doc/2014-06-15/");
                    if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)){
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
                            namespacePrefix+":RouteType",
@@ -410,7 +438,7 @@
                
                    }
                
-                                    namespace = "http://ec2.amazonaws.com/doc/2012-08-15/";
+                                    namespace = "http://ec2.amazonaws.com/doc/2014-06-15/";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
 
@@ -444,7 +472,7 @@
                                     
                                    xmlWriter.writeEndElement();
                               if (localGatewayIdTracker){
-                                    namespace = "http://ec2.amazonaws.com/doc/2012-08-15/";
+                                    namespace = "http://ec2.amazonaws.com/doc/2014-06-15/";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
 
@@ -478,7 +506,7 @@
                                     
                                    xmlWriter.writeEndElement();
                              } if (localInstanceIdTracker){
-                                    namespace = "http://ec2.amazonaws.com/doc/2012-08-15/";
+                                    namespace = "http://ec2.amazonaws.com/doc/2014-06-15/";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
 
@@ -512,7 +540,7 @@
                                     
                                    xmlWriter.writeEndElement();
                              } if (localInstanceOwnerIdTracker){
-                                    namespace = "http://ec2.amazonaws.com/doc/2012-08-15/";
+                                    namespace = "http://ec2.amazonaws.com/doc/2014-06-15/";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
 
@@ -546,7 +574,7 @@
                                     
                                    xmlWriter.writeEndElement();
                              } if (localNetworkInterfaceIdTracker){
-                                    namespace = "http://ec2.amazonaws.com/doc/2012-08-15/";
+                                    namespace = "http://ec2.amazonaws.com/doc/2014-06-15/";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
 
@@ -579,8 +607,42 @@
                                           }
                                     
                                    xmlWriter.writeEndElement();
+                             } if (localVpcPeeringConnectionIdTracker){
+                                    namespace = "http://ec2.amazonaws.com/doc/2014-06-15/";
+                                    if (! namespace.equals("")) {
+                                        prefix = xmlWriter.getPrefix(namespace);
+
+                                        if (prefix == null) {
+                                            prefix = generatePrefix(namespace);
+
+                                            xmlWriter.writeStartElement(prefix,"vpcPeeringConnectionId", namespace);
+                                            xmlWriter.writeNamespace(prefix, namespace);
+                                            xmlWriter.setPrefix(prefix, namespace);
+
+                                        } else {
+                                            xmlWriter.writeStartElement(namespace,"vpcPeeringConnectionId");
+                                        }
+
+                                    } else {
+                                        xmlWriter.writeStartElement("vpcPeeringConnectionId");
+                                    }
+                                
+
+                                          if (localVpcPeeringConnectionId==null){
+                                              // write the nil attribute
+                                              
+                                                     throw new org.apache.axis2.databinding.ADBException("vpcPeeringConnectionId cannot be null!!");
+                                                  
+                                          }else{
+
+                                        
+                                                   xmlWriter.writeCharacters(localVpcPeeringConnectionId);
+                                            
+                                          }
+                                    
+                                   xmlWriter.writeEndElement();
                              }
-                                    namespace = "http://ec2.amazonaws.com/doc/2012-08-15/";
+                                    namespace = "http://ec2.amazonaws.com/doc/2014-06-15/";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
 
@@ -614,7 +676,7 @@
                                     
                                    xmlWriter.writeEndElement();
                              
-                                    namespace = "http://ec2.amazonaws.com/doc/2012-08-15/";
+                                    namespace = "http://ec2.amazonaws.com/doc/2014-06-15/";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
 
@@ -810,7 +872,7 @@
                  java.util.ArrayList attribList = new java.util.ArrayList();
 
                 
-                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "destinationCidrBlock"));
                                  
                                         if (localDestinationCidrBlock != null){
@@ -819,7 +881,7 @@
                                            throw new org.apache.axis2.databinding.ADBException("destinationCidrBlock cannot be null!!");
                                         }
                                      if (localGatewayIdTracker){
-                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "gatewayId"));
                                  
                                         if (localGatewayId != null){
@@ -828,7 +890,7 @@
                                            throw new org.apache.axis2.databinding.ADBException("gatewayId cannot be null!!");
                                         }
                                     } if (localInstanceIdTracker){
-                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "instanceId"));
                                  
                                         if (localInstanceId != null){
@@ -837,7 +899,7 @@
                                            throw new org.apache.axis2.databinding.ADBException("instanceId cannot be null!!");
                                         }
                                     } if (localInstanceOwnerIdTracker){
-                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "instanceOwnerId"));
                                  
                                         if (localInstanceOwnerId != null){
@@ -846,7 +908,7 @@
                                            throw new org.apache.axis2.databinding.ADBException("instanceOwnerId cannot be null!!");
                                         }
                                     } if (localNetworkInterfaceIdTracker){
-                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "networkInterfaceId"));
                                  
                                         if (localNetworkInterfaceId != null){
@@ -854,8 +916,17 @@
                                         } else {
                                            throw new org.apache.axis2.databinding.ADBException("networkInterfaceId cannot be null!!");
                                         }
+                                    } if (localVpcPeeringConnectionIdTracker){
+                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
+                                                                      "vpcPeeringConnectionId"));
+                                 
+                                        if (localVpcPeeringConnectionId != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localVpcPeeringConnectionId));
+                                        } else {
+                                           throw new org.apache.axis2.databinding.ADBException("vpcPeeringConnectionId cannot be null!!");
+                                        }
                                     }
-                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "state"));
                                  
                                         if (localState != null){
@@ -864,7 +935,7 @@
                                            throw new org.apache.axis2.databinding.ADBException("state cannot be null!!");
                                         }
                                     
-                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "origin"));
                                  
                                         if (localOrigin != null){
@@ -951,7 +1022,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","destinationCidrBlock").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","destinationCidrBlock").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
@@ -970,7 +1041,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","gatewayId").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","gatewayId").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
@@ -988,7 +1059,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","instanceId").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","instanceId").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
@@ -1006,7 +1077,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","instanceOwnerId").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","instanceOwnerId").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
@@ -1024,7 +1095,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","networkInterfaceId").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","networkInterfaceId").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
@@ -1042,7 +1113,25 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","state").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","vpcPeeringConnectionId").equals(reader.getName())){
+                                
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setVpcPeeringConnectionId(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                    else {
+                                        
+                                    }
+                                
+                                    
+                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","state").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
@@ -1061,7 +1150,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","origin").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","origin").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     

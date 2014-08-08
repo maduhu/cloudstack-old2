@@ -473,12 +473,12 @@
                   <goal>run</goal>
                 </goals>
                 <configuration>
-                  <target name="download-2012-08-15.ec2-wsdl">
+                  <target name="download-2014-06-15.ec2-wsdl">
                     <!-- Create the WSDL directory structure used by codegen -->
                     <mkdir dir="wsdl" />
-                    <echo message="Downloading 2012-08-15.ec2-wsdl..." />
+                    <echo message="Downloading 2014-06-15.ec2-wsdl..." />
                      <get
-                       src="http://s3.amazonaws.com/ec2-downloads/2012-08-15.ec2.wsdl"
+                       src="http://s3.amazonaws.com/ec2-downloads/2014-06-15.ec2.wsdl"
                        dest="${basedir}/wsdl/"
                        verbose="true"
                        usetimestamp="true"
@@ -511,12 +511,12 @@
                   <goal>wsdl2code</goal>
                 </goals>
                 <configuration>
-                  <wsdlFile>${basedir}/wsdl/2012-08-15.ec2.wsdl</wsdlFile>
+                  <wsdlFile>${basedir}/wsdl/2014-06-15.ec2.wsdl</wsdlFile>
                   <packageName>com.amazon.ec2</packageName>
                   <generateServerSide>true</generateServerSide>
                   <generateServicesXml>true</generateServicesXml>
                   <generateServerSideInterface>true</generateServerSideInterface>
-                  <namespaceToPackages>http://ec2.amazonaws.com/doc/2012-08-15/=com.amazon.ec2</namespaceToPackages>
+                  <namespaceToPackages>http://ec2.amazonaws.com/doc/2014-06-15/=com.amazon.ec2</namespaceToPackages>
                   <outputDirectory>${basedir}</outputDirectory>
                 </configuration>
               </execution>
@@ -527,9 +527,9 @@
                   <goal>wsdl2code</goal>
                 </goals>
                 <configuration>
-                  <wsdlFile>${basedir}/wsdl/2012-08-15.ec2.wsdl</wsdlFile>
+                  <wsdlFile>${basedir}/wsdl/2014-06-15.ec2.wsdl</wsdlFile>
                   <packageName>com.amazon.ec2.client</packageName>
-                  <namespaceToPackages>http://ec2.amazonaws.com/doc/2012-08-15/=com.amazon.ec2.client</namespaceToPackages>
+                  <namespaceToPackages>http://ec2.amazonaws.com/doc/2014-06-15/=com.amazon.ec2.client</namespaceToPackages>
                   <outputDirectory>${basedir}</outputDirectory>
                 </configuration>
               </execution>

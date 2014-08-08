@@ -1,19 +1,3 @@
-// Licensed to the Apache Software Foundation (ASF) under one
-// or more contributor license agreements.  See the NOTICE file
-// distributed with this work for additional information
-// regarding copyright ownership.  The ASF licenses this file
-// to you under the Apache License, Version 2.0 (the
-// "License"); you may not use this file except in compliance
-// with the License.  You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
 
 /**
  * DescribeSecurityGroupsType.java
@@ -33,13 +17,13 @@
         implements org.apache.axis2.databinding.ADBBean{
         /* This type was generated from the piece of schema that had
                 name = DescribeSecurityGroupsType
-                Namespace URI = http://ec2.amazonaws.com/doc/2012-08-15/
+                Namespace URI = http://ec2.amazonaws.com/doc/2014-06-15/
                 Namespace Prefix = ns1
                 */
             
 
         private static java.lang.String generatePrefix(java.lang.String namespace) {
-            if(namespace.equals("http://ec2.amazonaws.com/doc/2012-08-15/")){
+            if(namespace.equals("http://ec2.amazonaws.com/doc/2014-06-15/")){
                 return "ns1";
             }
             return org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
@@ -248,7 +232,7 @@
                   if (serializeType){
                
 
-                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"http://ec2.amazonaws.com/doc/2012-08-15/");
+                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"http://ec2.amazonaws.com/doc/2014-06-15/");
                    if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)){
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
                            namespacePrefix+":DescribeSecurityGroupsType",
@@ -265,19 +249,19 @@
                                             if (localSecurityGroupSet==null){
                                                  throw new org.apache.axis2.databinding.ADBException("securityGroupSet cannot be null!!");
                                             }
-                                           localSecurityGroupSet.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","securityGroupSet"),
+                                           localSecurityGroupSet.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","securityGroupSet"),
                                                factory,xmlWriter);
                                          if (localSecurityGroupIdSetTracker){
                                             if (localSecurityGroupIdSet==null){
                                                  throw new org.apache.axis2.databinding.ADBException("securityGroupIdSet cannot be null!!");
                                             }
-                                           localSecurityGroupIdSet.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","securityGroupIdSet"),
+                                           localSecurityGroupIdSet.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","securityGroupIdSet"),
                                                factory,xmlWriter);
                                         } if (localFilterSetTracker){
                                             if (localFilterSet==null){
                                                  throw new org.apache.axis2.databinding.ADBException("filterSet cannot be null!!");
                                             }
-                                           localFilterSet.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","filterSet"),
+                                           localFilterSet.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","filterSet"),
                                                factory,xmlWriter);
                                         }
                     xmlWriter.writeEndElement();
@@ -442,7 +426,7 @@
                  java.util.ArrayList attribList = new java.util.ArrayList();
 
                 
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "securityGroupSet"));
                             
                             
@@ -451,7 +435,7 @@
                                     }
                                     elementList.add(localSecurityGroupSet);
                                  if (localSecurityGroupIdSetTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "securityGroupIdSet"));
                             
                             
@@ -460,7 +444,7 @@
                                     }
                                     elementList.add(localSecurityGroupIdSet);
                                 } if (localFilterSetTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "filterSet"));
                             
                             
@@ -547,7 +531,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","securityGroupSet").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","securityGroupSet").equals(reader.getName())){
                                 
                                                 object.setSecurityGroupSet(com.amazon.ec2.DescribeSecurityGroupsSetType.Factory.parse(reader));
                                               
@@ -563,7 +547,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","securityGroupIdSet").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","securityGroupIdSet").equals(reader.getName())){
                                 
                                                 object.setSecurityGroupIdSet(com.amazon.ec2.DescribeSecurityGroupsIdSetType.Factory.parse(reader));
                                               
@@ -578,7 +562,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","filterSet").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","filterSet").equals(reader.getName())){
                                 
                                                 object.setFilterSet(com.amazon.ec2.FilterSetType.Factory.parse(reader));
                                               
