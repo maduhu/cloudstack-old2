@@ -1,19 +1,3 @@
-// Licensed to the Apache Software Foundation (ASF) under one
-// or more contributor license agreements.  See the NOTICE file
-// distributed with this work for additional information
-// regarding copyright ownership.  The ASF licenses this file
-// to you under the Apache License, Version 2.0 (the
-// "License"); you may not use this file except in compliance
-// with the License.  You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
 
 /**
  * InstancePrivateIpAddressesSetItemType.java
@@ -33,13 +17,13 @@
         implements org.apache.axis2.databinding.ADBBean{
         /* This type was generated from the piece of schema that had
                 name = InstancePrivateIpAddressesSetItemType
-                Namespace URI = http://ec2.amazonaws.com/doc/2012-08-15/
+                Namespace URI = http://ec2.amazonaws.com/doc/2014-06-15/
                 Namespace Prefix = ns1
                 */
             
 
         private static java.lang.String generatePrefix(java.lang.String namespace) {
-            if(namespace.equals("http://ec2.amazonaws.com/doc/2012-08-15/")){
+            if(namespace.equals("http://ec2.amazonaws.com/doc/2014-06-15/")){
                 return "ns1";
             }
             return org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
@@ -86,6 +70,50 @@
                                        }
                                    
                                             this.localPrivateIpAddress=param;
+                                    
+
+                               }
+                            
+
+                        /**
+                        * field for PrivateDnsName
+                        */
+
+                        
+                                    protected java.lang.String localPrivateDnsName ;
+                                
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localPrivateDnsNameTracker = false ;
+                           
+
+                           /**
+                           * Auto generated getter method
+                           * @return java.lang.String
+                           */
+                           public  java.lang.String getPrivateDnsName(){
+                               return localPrivateDnsName;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param PrivateDnsName
+                               */
+                               public void setPrivateDnsName(java.lang.String param){
+                            
+                                       if (param != null){
+                                          //update the setting tracker
+                                          localPrivateDnsNameTracker = true;
+                                       } else {
+                                          localPrivateDnsNameTracker = false;
+                                              
+                                       }
+                                   
+                                            this.localPrivateDnsName=param;
                                     
 
                                }
@@ -263,7 +291,7 @@
                   if (serializeType){
                
 
-                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"http://ec2.amazonaws.com/doc/2012-08-15/");
+                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"http://ec2.amazonaws.com/doc/2014-06-15/");
                    if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)){
                        writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
                            namespacePrefix+":InstancePrivateIpAddressesSetItemType",
@@ -277,7 +305,7 @@
                
                    }
                 if (localPrivateIpAddressTracker){
-                                    namespace = "http://ec2.amazonaws.com/doc/2012-08-15/";
+                                    namespace = "http://ec2.amazonaws.com/doc/2014-06-15/";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
 
@@ -310,8 +338,42 @@
                                           }
                                     
                                    xmlWriter.writeEndElement();
+                             } if (localPrivateDnsNameTracker){
+                                    namespace = "http://ec2.amazonaws.com/doc/2014-06-15/";
+                                    if (! namespace.equals("")) {
+                                        prefix = xmlWriter.getPrefix(namespace);
+
+                                        if (prefix == null) {
+                                            prefix = generatePrefix(namespace);
+
+                                            xmlWriter.writeStartElement(prefix,"privateDnsName", namespace);
+                                            xmlWriter.writeNamespace(prefix, namespace);
+                                            xmlWriter.setPrefix(prefix, namespace);
+
+                                        } else {
+                                            xmlWriter.writeStartElement(namespace,"privateDnsName");
+                                        }
+
+                                    } else {
+                                        xmlWriter.writeStartElement("privateDnsName");
+                                    }
+                                
+
+                                          if (localPrivateDnsName==null){
+                                              // write the nil attribute
+                                              
+                                                     throw new org.apache.axis2.databinding.ADBException("privateDnsName cannot be null!!");
+                                                  
+                                          }else{
+
+                                        
+                                                   xmlWriter.writeCharacters(localPrivateDnsName);
+                                            
+                                          }
+                                    
+                                   xmlWriter.writeEndElement();
                              } if (localPrimaryTracker){
-                                    namespace = "http://ec2.amazonaws.com/doc/2012-08-15/";
+                                    namespace = "http://ec2.amazonaws.com/doc/2014-06-15/";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
 
@@ -343,7 +405,7 @@
                                             if (localAssociation==null){
                                                  throw new org.apache.axis2.databinding.ADBException("association cannot be null!!");
                                             }
-                                           localAssociation.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","association"),
+                                           localAssociation.serialize(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","association"),
                                                factory,xmlWriter);
                                         }
                     xmlWriter.writeEndElement();
@@ -508,7 +570,7 @@
                  java.util.ArrayList attribList = new java.util.ArrayList();
 
                  if (localPrivateIpAddressTracker){
-                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "privateIpAddress"));
                                  
                                         if (localPrivateIpAddress != null){
@@ -516,14 +578,23 @@
                                         } else {
                                            throw new org.apache.axis2.databinding.ADBException("privateIpAddress cannot be null!!");
                                         }
+                                    } if (localPrivateDnsNameTracker){
+                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
+                                                                      "privateDnsName"));
+                                 
+                                        if (localPrivateDnsName != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localPrivateDnsName));
+                                        } else {
+                                           throw new org.apache.axis2.databinding.ADBException("privateDnsName cannot be null!!");
+                                        }
                                     } if (localPrimaryTracker){
-                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                                      elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "primary"));
                                  
                                 elementList.add(
                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localPrimary));
                             } if (localAssociationTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/",
+                            elementList.add(new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/",
                                                                       "association"));
                             
                             
@@ -610,7 +681,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","privateIpAddress").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","privateIpAddress").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
@@ -628,7 +699,25 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","primary").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","privateDnsName").equals(reader.getName())){
+                                
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setPrivateDnsName(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                    else {
+                                        
+                                    }
+                                
+                                    
+                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","primary").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
@@ -646,7 +735,7 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2012-08-15/","association").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://ec2.amazonaws.com/doc/2014-06-15/","association").equals(reader.getName())){
                                 
                                                 object.setAssociation(com.amazon.ec2.InstanceNetworkInterfaceAssociationType.Factory.parse(reader));
                                               
