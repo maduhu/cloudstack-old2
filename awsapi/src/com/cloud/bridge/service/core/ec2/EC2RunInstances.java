@@ -33,6 +33,7 @@ public class EC2RunInstances {
     private Integer    size;  		// <- in gigs
     private List<String>  groupIdSet;
     private List<String>  groupNameSet;
+	private boolean associateIp;
 	
 	public EC2RunInstances() {
 		instanceType = null;
@@ -47,6 +48,7 @@ public class EC2RunInstances {
 		size		 = 0;
         groupIdSet   = new ArrayList<String>();
         groupNameSet = new ArrayList<String>();
+		associateIp	 = true;
 	}
 	
 	public void setInstanceType( String instanceType ) {
@@ -103,6 +105,14 @@ public class EC2RunInstances {
 
 	public void setIpAddress(String privateIpAddress) {
 		this.ipAddress = privateIpAddress;
+	}
+
+	public boolean associatePublicIp() {
+		return associateIp;
+	}
+
+	public void setAssociatePublicIp(boolean associateIp) {
+		this.associateIp = associateIp;
 	}
 
 	public void setMaxCount( int maxCount ) {

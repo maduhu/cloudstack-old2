@@ -1271,6 +1271,11 @@ public class EC2RestServlet extends HttpServlet {
                     else
                         EC2request.addSecuritGroupName( value[0]);
                 }
+            } else if (key.startsWith("NetworkInterface") && key.endsWith("AssociatePublicIpAddress")) {
+                String[] value = request.getParameterValues(key);
+                if (null != value && 0 < value.length) {
+                    EC2request.setAssociatePublicIp(value[0].equalsIgnoreCase("true"));
+                }
             }
         }
 

@@ -774,9 +774,9 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 		String type = rit.getInstanceType();	
 		String keyName = rit.getKeyName();
 		String privateIpAddress = rit.getPrivateIpAddress();
-		
+
 		EC2RunInstances request = new EC2RunInstances();
-		
+
 		request.setTemplateId(rit.getImageId());
 
         if (rit.getMinCount() < 1) {
@@ -794,6 +794,17 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 		if (null != userData) request.setUserData(userData.getData());
 		if (null != keyName) request.setKeyName(rit.getKeyName() );
 		if (null != privateIpAddress) request.setIpAddress(privateIpAddress);
+
+		// Check if AssociatePublicIpAddress is set
+		if (rit.getNetworkInterfaceSet() != null && rit.getNetworkInterfaceSet().getItem() != null ) {
+			if (rit.getNetworkInterfaceSet().getItem().length > 1) {
+				throw new EC2ServiceException(ClientError.Unsupported, "Only one network interface supported");
+			}
+
+			if (rit.getNetworkInterfaceSet().getItem().length == 1) {
+				request.setAssociatePublicIp(rit.getNetworkInterfaceSet().getItem()[0].getAssociatePublicIpAddress());
+			}
+		}
 
 		// -> we can only support one group per instance
 		if (null != gst) {
