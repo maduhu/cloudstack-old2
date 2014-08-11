@@ -316,6 +316,8 @@ ServerResource {
     private Map<TrafficType, VifDriver> _trafficTypeVifDrivers;
     protected static final String DEFAULT_OVS_VIF_DRIVER_CLASS_NAME = "com.cloud.hypervisor.kvm.resource.OvsVifDriver";
     protected static final String DEFAULT_BRIDGE_VIF_DRIVER_CLASS_NAME = "com.cloud.hypervisor.kvm.resource.BridgeVifDriver";
+    
+    private boolean hostStatsSinceBoot;
 
     private static final class KeyValueInterpreter extends OutputInterpreter {
         private final Map<String, String> map = new HashMap<String, String>();
@@ -504,6 +506,13 @@ ServerResource {
 
         _storage = new JavaStorageLayer();
         _storage.configure("StorageLayer", params);
+        
+        //Host stats measurement method: since boot (default) or current (measure at this very moment).
+        hostStatsSinceBoot = true;
+        String hostStatsMethod = (String) params.get("host.stats.method");
+        if (hostStatsMethod != null && hostStatsMethod.equals("current")) {
+            hostStatsSinceBoot = false;
+        }
 
         String domrScriptsDir = (String) params.get("domr.scripts.dir");
         if (domrScriptsDir == null) {
@@ -3043,21 +3052,30 @@ ServerResource {
             return null;
         }
     }
-
-    private Answer execute(GetHostStatsCommand cmd) {
-        String version = getTopVersion();
-        
+    
+    protected double getCpuUtilForHostStats(String topVersion, boolean useHostStatsSinceBoot) {
         //This is the default command which works for top 3.2.8
-        String command = "idle=$(top -b -n 1|grep Cpu\\(s\\):|cut -d% -f4|cut -d, -f2);echo $idle";
+        String command = "";
         
-        if (version != null) {
-            if (version.equals("3.3.3")) {
+        if (useHostStatsSinceBoot) {
+            command += "top -b -n 1";
+        }
+        else {
+            command += "top -b -d 1 -n 4";
+        }
+        
+        if (topVersion != null) {
+            if (topVersion.equals("3.3.3")) {
                 //More reliable way to find the values for top 3.3.3--also doesn't rely on cut.
-                command = "idle=$(top -b -n 1 | grep Cpu\\(s\\): | awk '{ print $8 }');echo $idle";
+                command += "| grep Cpu\\(s\\): | awk '{ print $8 }'";
+            }
+            else {
+                //Original 4.2 command, updated to allow method "current" querying (sed is an addition).
+                command += "| grep Cpu\\(s\\): | cut -d% -f4 | cut -d, -f2 | sed 's/[[:space:]]//g'";
             }
         }
         else {
-            s_logger.warn("Unable to determine top version. Using default command.");
+            throw new IllegalStateException("Unable to determine top version.");
         }
         
         final Script cpuScript = new Script("/bin/bash", s_logger);
@@ -3065,14 +3083,53 @@ ServerResource {
         cpuScript
         .add(command);
 
-        final OutputInterpreter.OneLineParser parser = new OutputInterpreter.OneLineParser();
-        String result = cpuScript.execute(parser);
-        if (result != null) {
-            s_logger.debug("Unable to get the host CPU state: " + result);
-            return new Answer(cmd, false, result);
+        if (useHostStatsSinceBoot) {
+            s_logger.info("Reporting CPU load since boot");
+            final OutputInterpreter.OneLineParser parser = new OutputInterpreter.OneLineParser();
+            String result = cpuScript.execute(parser);
+            if (result != null) {
+                throw new IllegalStateException(result);
+            }
+            
+            return (100.0D - Double.parseDouble(parser.getLine()));
         }
-        double cpuUtil = (100.0D - Double.parseDouble(parser.getLine()));
+        else {
+            s_logger.info("Reporting current CPU load");
+            final OutputInterpreter.AllLinesParser parser = new OutputInterpreter.AllLinesParser();
+            String result = cpuScript.execute(parser);
+            if (result != null) {
+                throw new IllegalStateException(result);
+            }
+            
+            String[] cpuLoads = parser.getLines().split("\n");
+            
+            //We need to skip the first number from top, as it's always the load since boot.
+            //So we take the next 3 samples and average them together. These numbers are the
+            //current load.
+            double averageLoad = 0.0;
+            for (int c = 1; c < cpuLoads.length; c++) {
+                averageLoad += Double.parseDouble(cpuLoads[c]);
+            }
+            
+            averageLoad /= cpuLoads.length - 1;
+            
+            return (100.0D - averageLoad);
+        }
+    }
 
+    private Answer execute(GetHostStatsCommand cmd) {
+        String version = getTopVersion();
+        double cpuUtil;
+        
+        try {
+            cpuUtil = getCpuUtilForHostStats(version, hostStatsSinceBoot);
+        }
+        catch (IllegalStateException e) {
+            s_logger.debug("Unable to get the host CPU state: " + e.getMessage());
+            return new Answer(cmd, false, e.getMessage());
+        }
+        
+        String result = null;
         long freeMem = 0;
         final Script memScript = new Script("/bin/bash", s_logger);
         memScript.add("-c");
