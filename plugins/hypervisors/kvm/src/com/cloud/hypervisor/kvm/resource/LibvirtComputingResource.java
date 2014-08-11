@@ -3111,7 +3111,7 @@ ServerResource {
                 averageLoad += Double.parseDouble(cpuLoads[c]);
             }
             
-            averageLoad /= cpuLoads.length - 1;
+            averageLoad /= (double)(cpuLoads.length - 1);
             
             return (100.0D - averageLoad);
         }
