@@ -773,6 +773,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 		UserDataType userData = rit.getUserData();
 		String type = rit.getInstanceType();	
 		String keyName = rit.getKeyName();
+		String privateIpAddress = rit.getPrivateIpAddress();
 		
 		EC2RunInstances request = new EC2RunInstances();
 		
@@ -792,7 +793,8 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 		if (null != prt) request.setZoneName(prt.getAvailabilityZone());
 		if (null != userData) request.setUserData(userData.getData());
 		if (null != keyName) request.setKeyName(rit.getKeyName() );
-		
+		if (null != privateIpAddress) request.setIpAddress(privateIpAddress);
+
 		// -> we can only support one group per instance
 		if (null != gst) {
 			GroupItemType[] items = gst.getItem();

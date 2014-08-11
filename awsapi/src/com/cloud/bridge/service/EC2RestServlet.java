@@ -1250,6 +1250,11 @@ public class EC2RestServlet extends HttpServlet {
             EC2request.setKeyName(keyName[0]);
         }
 
+        String[] privateIpAddress = request.getParameterValues("PrivateIpAddress");
+        if (privateIpAddress != null) {
+            EC2request.setIpAddress(privateIpAddress[0]);
+        }
+
         String[] userData = request.getParameterValues("UserData");
         if ( userData != null) {
             EC2request.setUserData( userData[0]);

@@ -27,6 +27,7 @@ public class EC2RunInstances {
 	private String groupId;
 	private String userData;
 	private String keyName;
+	private String ipAddress;
 	private int    maxCount;
 	private int    minCount;
     private Integer    size;  		// <- in gigs
@@ -40,6 +41,7 @@ public class EC2RunInstances {
 		groupId      = null;
 		userData     = null;
 		keyName      = null;
+		ipAddress    = null;
 		maxCount     = 0;
 		minCount     = 0;
 		size		 = 0;
@@ -93,6 +95,14 @@ public class EC2RunInstances {
 
 	public void setKeyName(String publicKeyName) {
 		this.keyName = publicKeyName;
+	}
+
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(String privateIpAddress) {
+		this.ipAddress = privateIpAddress;
 	}
 
 	public void setMaxCount( int maxCount ) {
