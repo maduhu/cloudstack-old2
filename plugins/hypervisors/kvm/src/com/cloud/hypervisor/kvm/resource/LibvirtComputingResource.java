@@ -3005,12 +3005,65 @@ ServerResource {
     private Answer execute(CheckHealthCommand cmd) {
         return new CheckHealthAnswer(cmd, true);
     }
-
-    private Answer execute(GetHostStatsCommand cmd) {
+    
+    protected String getTopVersion() {
         final Script cpuScript = new Script("/bin/bash", s_logger);
         cpuScript.add("-c");
         cpuScript
-        .add("idle=$(top -b -n 1|grep Cpu\\(s\\):|cut -d% -f4|cut -d, -f2);echo $idle");
+        .add("top -help | awk -F'version' 'NR==1{print $2}' | sed 's/[[:space:]]//g'");
+        
+        final OutputInterpreter.OneLineParser parser = new OutputInterpreter.OneLineParser();
+        String result = cpuScript.execute(parser);
+        
+        if (result == null) {
+            String version = parser.getLine();
+            
+            //The versions we have seen are for example 3.2.8 or 3.3.3
+            Pattern majorMinorBugfix = Pattern.compile("\\d\\.\\d\\.\\d");
+            Matcher majorMinorBugfixMatcher = majorMinorBugfix.matcher(version);
+            
+            if (majorMinorBugfixMatcher.matches()) {
+                return version; 
+            }
+            else {
+                //Maybe it is in the format x.y, e.g. 3.2
+                Pattern majorMinor = Pattern.compile("\\d.\\d");
+                Matcher majorMinorMatcher = majorMinor.matcher(version);
+                if (majorMinorMatcher.matches()) {
+                    return version;
+                }
+                else {
+                    s_logger.warn("Could not parse top version: " + version);
+                    return null;
+                }
+            }
+        }
+        else {
+            s_logger.warn("Unable to determine top version: " + result);   
+            return null;
+        }
+    }
+
+    private Answer execute(GetHostStatsCommand cmd) {
+        String version = getTopVersion();
+        
+        //This is the default command which works for top 3.2.8
+        String command = "idle=$(top -b -n 1|grep Cpu\\(s\\):|cut -d% -f4|cut -d, -f2);echo $idle";
+        
+        if (version != null) {
+            if (version.equals("3.3.3")) {
+                //More reliable way to find the values for top 3.3.3--also doesn't rely on cut.
+                command = "idle=$(top -b -n 1 | grep Cpu\\(s\\): | awk '{ print $8 }');echo $idle";
+            }
+        }
+        else {
+            s_logger.warn("Unable to determine top version. Using default command.");
+        }
+        
+        final Script cpuScript = new Script("/bin/bash", s_logger);
+        cpuScript.add("-c");
+        cpuScript
+        .add(command);
 
         final OutputInterpreter.OneLineParser parser = new OutputInterpreter.OneLineParser();
         String result = cpuScript.execute(parser);
