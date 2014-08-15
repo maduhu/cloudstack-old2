@@ -23,8 +23,10 @@ import javax.ejb.Local;
 import javax.inject.Inject;
 import javax.naming.ConfigurationException;
 
+import bsh.StringUtil;
+
 import com.cloud.dc.*;
-import com.cloud.dc.ClusterDetailsDao;
+
 import org.apache.log4j.Logger;
 
 import com.cloud.capacity.CapacityManager;
@@ -102,11 +104,24 @@ public class BareMetalPlanner extends AdapterBase implements DeploymentPlanner {
 		for (ClusterVO cluster : clusters) {
 			hosts = _resourceMgr.listAllUpAndEnabledHosts(Host.Type.Routing, cluster.getId(), cluster.getPodId(), cluster.getDataCenterId());
 			if (hostTag != null) {
+			    outer:
 				for (HostVO h : hosts) {
-					_hostDao.loadDetails(h);
-					if (h.getDetail("hostTag") != null && h.getDetail("hostTag").equalsIgnoreCase(hostTag)) {
-						target = h;
-						break;
+					_hostDao.loadHostTags(h);
+					
+					//If only there was a .containsIgnoreCase...
+					if (h.getHostTags() != null) {
+					    boolean foundTag = false;
+					    for (String tag : h.getHostTags()) {
+					        if (tag.equalsIgnoreCase(hostTag)) {
+					            foundTag = true;
+					            break;
+					        }
+					    }
+					    
+					    if (foundTag) {
+    						target = h;
+    						break outer;
+					    }
 					}
 				}
 			}
