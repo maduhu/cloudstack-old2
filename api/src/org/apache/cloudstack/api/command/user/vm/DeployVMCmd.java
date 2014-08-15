@@ -187,6 +187,13 @@ public class DeployVMCmd extends BaseAsyncCreateCmd {
     @Parameter(name=ApiConstants.DISPLAY_VM, type=CommandType.BOOLEAN, since="4.2", description="an optional field, whether to the display the vm to the end user or not.")
     private Boolean displayVm;
 
+    @Parameter(name = ApiConstants.CUSTOM_ID, type = CommandType.STRING,
+            description = "an optional field, in case you want to set a custom id to the resource. Allowed to Root Admins only")
+    private String customId;
+
+    @Parameter(name = ApiConstants.DETAILS, type = CommandType.MAP, since = "4.3", description = "used to specify the custom parameters.")
+    private Map details;
+
     /////////////////////////////////////////////////////
     /////////////////// Accessors ///////////////////////
     /////////////////////////////////////////////////////
@@ -212,6 +219,22 @@ public class DeployVMCmd extends BaseAsyncCreateCmd {
             return UserContext.current().getCaller().getDomainId();
         }
         return domainId;
+    }
+
+    public Map<String, String> getDetails() {
+        Map<String, String> customparameterMap = new HashMap<String, String>();
+        if (details != null && details.size() != 0) {
+            Collection parameterCollection = details.values();
+            Iterator iter = parameterCollection.iterator();
+            while (iter.hasNext()) {
+                HashMap<String, String> value = (HashMap<String, String>)iter.next();
+                for (Map.Entry<String,String> entry: value.entrySet()) {
+                    customparameterMap.put(entry.getKey(),entry.getValue());
+                }
+            }
+        }
+
+        return customparameterMap;
     }
 
     public String getGroup() {
@@ -362,6 +385,10 @@ public class DeployVMCmd extends BaseAsyncCreateCmd {
         }
     }
 
+    public String getCustomId() {
+        return customId;
+    }
+
     /////////////////////////////////////////////////////
     /////////////// API Implementation///////////////////
     /////////////////////////////////////////////////////
@@ -494,19 +521,19 @@ public class DeployVMCmd extends BaseAsyncCreateCmd {
                     throw new InvalidParameterValueException("Can't specify network Ids in Basic zone");
                 } else {
                     vm = _userVmService.createBasicSecurityGroupVirtualMachine(zone, serviceOffering, template, getSecurityGroupIdList(), owner, name,
-                            displayName, diskOfferingId, size, group, getHypervisor(), this.getHttpMethod(), userData, sshKeyPairName, getIpToNetworkMap(), addrs, displayVm, keyboard, getAffinityGroupIdList());
+                            displayName, diskOfferingId, size, group, getHypervisor(), this.getHttpMethod(), userData, sshKeyPairName, getIpToNetworkMap(), addrs, displayVm, keyboard, getAffinityGroupIdList(), getDetails(), getCustomId());
                 }
             } else {
                 if (zone.isSecurityGroupEnabled())  {
                     vm = _userVmService.createAdvancedSecurityGroupVirtualMachine(zone, serviceOffering, template, getNetworkIds(), getSecurityGroupIdList(),
-                            owner, name, displayName, diskOfferingId, size, group, getHypervisor(), this.getHttpMethod(), userData, sshKeyPairName, getIpToNetworkMap(), addrs, displayVm, keyboard, getAffinityGroupIdList());
+                            owner, name, displayName, diskOfferingId, size, group, getHypervisor(), this.getHttpMethod(), userData, sshKeyPairName, getIpToNetworkMap(), addrs, displayVm, keyboard, getAffinityGroupIdList(), getDetails(), getCustomId());
 
                 } else {
                     if (getSecurityGroupIdList() != null && !getSecurityGroupIdList().isEmpty()) {
                         throw new InvalidParameterValueException("Can't create vm with security groups; security group feature is not enabled per zone");
                     }
                     vm = _userVmService.createAdvancedVirtualMachine(zone, serviceOffering, template, getNetworkIds(), owner, name, displayName,
-                            diskOfferingId, size, group, getHypervisor(), this.getHttpMethod(), userData, sshKeyPairName, getIpToNetworkMap(), addrs, displayVm, keyboard, getAffinityGroupIdList());
+                            diskOfferingId, size, group, getHypervisor(), this.getHttpMethod(), userData, sshKeyPairName, getIpToNetworkMap(), addrs, displayVm, keyboard, getAffinityGroupIdList(), getDetails(), getCustomId());
 
                 }
             }

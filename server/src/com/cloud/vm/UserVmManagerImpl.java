@@ -2221,7 +2221,7 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
             String hostName, String displayName, Long diskOfferingId, Long diskSize, String group,
 	    HypervisorType hypervisor, HTTPMethod httpmethod, String userData, String sshKeyPair,
 	    Map<Long, IpAddresses> requestedIps, IpAddresses defaultIps, Boolean displayVm, String keyboard,
-	    List<Long> affinityGroupIdList)
+	    List<Long> affinityGroupIdList, Map<String, String> customParameters, String customId)
         throws InsufficientCapacityException, ConcurrentOperationException, ResourceUnavailableException, StorageUnavailableException, ResourceAllocationException {
 
         Account caller = UserContext.current().getCaller();
@@ -2281,7 +2281,7 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
             List<Long> securityGroupIdList, Account owner, String hostName, String displayName, Long diskOfferingId,
 	        Long diskSize, String group, HypervisorType hypervisor, HTTPMethod httpmethod, String userData,
             String sshKeyPair, Map<Long, IpAddresses> requestedIps, IpAddresses defaultIps, Boolean displayVm, String keyboard,
-	        List<Long> affinityGroupIdList) throws InsufficientCapacityException, ConcurrentOperationException,
+	        List<Long> affinityGroupIdList, Map<String, String> customParameters, String customId) throws InsufficientCapacityException, ConcurrentOperationException,
 	        ResourceUnavailableException, StorageUnavailableException, ResourceAllocationException {
 
         Account caller = UserContext.current().getCaller();
@@ -2396,7 +2396,7 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
     public UserVm createAdvancedVirtualMachine(DataCenter zone, ServiceOffering serviceOffering, VirtualMachineTemplate template, List<Long> networkIdList, Account owner, String hostName,
         String displayName, Long diskOfferingId, Long diskSize, String group, HypervisorType hypervisor,
 	    HTTPMethod httpmethod, String userData, String sshKeyPair, Map<Long, IpAddresses> requestedIps,
-	    IpAddresses defaultIps, Boolean displayvm, String keyboard, List<Long> affinityGroupIdList)
+	    IpAddresses defaultIps, Boolean displayvm, String keyboard, List<Long> affinityGroupIdList, Map<String, String> customParameters, String customId)
         throws InsufficientCapacityException, ConcurrentOperationException, ResourceUnavailableException, StorageUnavailableException, ResourceAllocationException {
 
         Account caller = UserContext.current().getCaller();
