@@ -805,7 +805,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 				InstanceNetworkInterfaceSetItemRequestType netSet =  rit.getNetworkInterfaceSet().getItem()[0];
 
 				if (null == privateIpAddress) {
-					if (!netSet.getPrivateIpAddress().isEmpty()) {
+					if (null != netSet.getPrivateIpAddress() && !netSet.getPrivateIpAddress().isEmpty()) {
 						request.setIpAddress(netSet.getPrivateIpAddress());
 					} else if (netSet.getPrivateIpAddressesSet().getItem().length == 1) {
 						request.setIpAddress(netSet.getPrivateIpAddressesSet().getItem()[0].getPrivateIpAddress());
