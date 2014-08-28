@@ -165,6 +165,11 @@ EOF
   locale-gen en_US.UTF-8
 }
 
+fix_conntrackd() {
+  sed -i '/Stats {/,/}/ s/LogFile on/LogFile off/' /etc/conntrackd/conntrackd.conf
+  rm -f /var/log/conntrackd-stats.log
+}
+
 fix_vhdutil() {
   wget --no-check-certificate http://download.cloud.com.s3.amazonaws.com/tools/vhd-util -O /bin/vhd-util
   chmod a+x /bin/vhd-util
@@ -176,6 +181,7 @@ do_fixes() {
   fix_acpid
   fix_hostname
   fix_locale
+  fix_conntrackd
   fix_vhdutil
 }
 
