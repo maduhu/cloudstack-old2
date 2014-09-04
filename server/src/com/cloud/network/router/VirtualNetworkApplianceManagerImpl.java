@@ -3771,14 +3771,17 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
     
     private void createDefaultEgressRuleCommand(VirtualRouter router, Commands cmds, long guestNetworkId) {
         NetworkVO network = _networkDao.findById(guestNetworkId);
+        DataCenter zone = _dcDao.findById(network.getDataCenterId());
         NetworkOfferingVO offering = _networkOfferingDao.findById(network.getNetworkOfferingId());
         
-        if (offering.getEgressDefaultPolicy()) {
+        if (offering.getEgressDefaultPolicy() && _networkModel.areServicesSupportedInNetwork(network.getId(), Service.Firewall)
+        && (network.getGuestType() == Network.GuestType.Isolated ||
+        (network.getGuestType() == Network.GuestType.Shared && zone.getNetworkType() == NetworkType.Advanced))) {
             s_logger.debug("applying default firewall egress rules as part of router rules finalization");
             List<String> sourceCidr = new ArrayList<String>();
             
             sourceCidr.add(NetUtils.ALL_CIDRS);
-            FirewallRuleVO rule= new FirewallRuleVO(null, null, null, null, "all", guestNetworkId, network.getAccountId(), network.getDomainId(), Purpose.Firewall, sourceCidr,
+            FirewallRuleVO rule = new FirewallRuleVO(null, null, null, null, "all", guestNetworkId, network.getAccountId(), network.getDomainId(), Purpose.Firewall, sourceCidr,
                     null, null, null, FirewallRule.TrafficType.Egress, FirewallRuleType.System);
             
             FirewallRuleTO ruleTO = new FirewallRuleTO(rule, null,"",Purpose.Firewall, rule.getTrafficType(), true);
