@@ -181,6 +181,7 @@ import com.cloud.network.lb.LoadBalancingRulesManager;
 import com.cloud.network.router.VirtualRouter.RedundantState;
 import com.cloud.network.router.VirtualRouter.Role;
 import com.cloud.network.rules.FirewallRule;
+import com.cloud.network.rules.FirewallRule.FirewallRuleType;
 import com.cloud.network.rules.FirewallRule.Purpose;
 import com.cloud.network.rules.LoadBalancerContainer.Scheme;
 import com.cloud.network.rules.PortForwardingRule;
@@ -2417,6 +2418,9 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
         if (!firewallRulesEgress.isEmpty()) {
             createFirewallRulesCommands(firewallRulesEgress, router, cmds, guestNetworkId);
         }
+        else {
+            createDefaultEgressRuleCommand(router, cmds, guestNetworkId);
+        }
 
         if (publicIps != null && !publicIps.isEmpty()) {
             List<RemoteAccessVpn> vpns = new ArrayList<RemoteAccessVpn>();
@@ -3763,6 +3767,34 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
         }
 
         cmds.addCommand(cmd);
+    }
+    
+    private void createDefaultEgressRuleCommand(VirtualRouter router, Commands cmds, long guestNetworkId) {
+        NetworkVO network = _networkDao.findById(guestNetworkId);
+        NetworkOfferingVO offering = _networkOfferingDao.findById(network.getNetworkOfferingId());
+        
+        if (offering.getEgressDefaultPolicy()) {
+            s_logger.debug("applying default firewall egress rules as part of router rules finalization");
+            List<String> sourceCidr = new ArrayList<String>();
+            
+            sourceCidr.add(NetUtils.ALL_CIDRS);
+            FirewallRuleVO rule= new FirewallRuleVO(null, null, null, null, "all", guestNetworkId, network.getAccountId(), network.getDomainId(), Purpose.Firewall, sourceCidr,
+                    null, null, null, FirewallRule.TrafficType.Egress, FirewallRuleType.System);
+            
+            FirewallRuleTO ruleTO = new FirewallRuleTO(rule, null,"",Purpose.Firewall, rule.getTrafficType(), true);
+            List<FirewallRuleTO> rulesTO = new ArrayList<FirewallRuleTO>(1);
+            rulesTO.add(ruleTO);
+            
+            SetFirewallRulesCommand cmd = new SetFirewallRulesCommand(rulesTO);
+            cmd.setAccessDetail(NetworkElementCommand.ROUTER_IP, getRouterControlIp(router.getId()));
+            cmd.setAccessDetail(NetworkElementCommand.ROUTER_GUEST_IP, getRouterIpInNetwork(guestNetworkId, router.getId()));
+            cmd.setAccessDetail(NetworkElementCommand.ROUTER_NAME, router.getInstanceName());
+            DataCenterVO dcVo = _dcDao.findById(router.getDataCenterId());
+            cmd.setAccessDetail(NetworkElementCommand.ZONE_NETWORK_TYPE, dcVo.getNetworkType().toString());
+            cmd.setAccessDetail(NetworkElementCommand.FIREWALL_EGRESS_DEFAULT, String.valueOf(true));
+            
+            cmds.addCommand(cmd);
+        }
     }
 
 
