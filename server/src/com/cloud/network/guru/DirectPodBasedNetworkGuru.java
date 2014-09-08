@@ -99,15 +99,22 @@ public class DirectPodBasedNetworkGuru extends DirectNetworkGuru {
             rsStrategy = ReservationStrategy.Create;
         }
         
-        if (nic != null && nic.getRequestedIpv4() != null) {
-            throw new CloudRuntimeException("Does not support custom ip allocation at this time: " + nic);
-        }
-       
+        //
+        // Uncommented to enable setting of IP addresses for direct attached networking.
+        //
+        // if (nic != null && nic.getRequestedIpv4() != null) {
+        //   throw new CloudRuntimeException("Does not support custom ip allocation at this time: " + nic);
+        //}
+        
         if (nic == null) {
             nic = new NicProfile(rsStrategy, null, null, null, null);
         } else if (nic.getIp4Address() == null) {
+            s_logger.debug(String.format("Requested IP Address: %s, Existing IP Address: %s", nic.getRequestedIpv4(), nic.getIp4Address()));
+            nic.setIp4Address(nic.getRequestedIpv4());
             nic.setStrategy(ReservationStrategy.Start);
-        } else {
+       } else {
+            s_logger.info(String.format("Requested IP Address: %s, Existing IP Address: %s", nic.getRequestedIpv4(), nic.getIp4Address()));   
+            nic.setIp4Address(nic.getRequestedIpv4());
             nic.setStrategy(ReservationStrategy.Create);
         }
         
