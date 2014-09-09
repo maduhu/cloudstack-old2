@@ -40,6 +40,7 @@ import com.cloud.deploy.DeployDestination;
 import com.cloud.exception.ConcurrentOperationException;
 import com.cloud.exception.InsufficientAddressCapacityException;
 import com.cloud.exception.InsufficientVirtualNetworkCapcityException;
+import com.cloud.hypervisor.Hypervisor.HypervisorType;
 import com.cloud.network.Network;
 import com.cloud.network.NetworkManager;
 import com.cloud.network.Networks.AddressFormat;
@@ -98,13 +99,11 @@ public class DirectPodBasedNetworkGuru extends DirectNetworkGuru {
         if ("external".equalsIgnoreCase(dhcpStrategy)) {
             rsStrategy = ReservationStrategy.Create;
         }
-        
-        //
-        // Uncommented to enable setting of IP addresses for direct attached networking.
-        //
-        // if (nic != null && nic.getRequestedIpv4() != null) {
-        //   throw new CloudRuntimeException("Does not support custom ip allocation at this time: " + nic);
-        //}
+
+        // Only BareMetal supports custom IP allocation
+        if (nic != null && nic.getRequestedIpv4() != null && vm.getHypervisorType() == HypervisorType.BareMetal) {
+           throw new CloudRuntimeException("Does not support custom ip allocation at this time: " + nic);
+        }
         
         if (nic == null) {
             nic = new NicProfile(rsStrategy, null, null, null, null);
