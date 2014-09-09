@@ -59,6 +59,7 @@ import org.apache.axis2.databinding.ADBBean;
 import org.apache.axis2.databinding.ADBException;
 import org.apache.axis2.databinding.utils.writer.MTOMAwareXMLSerializer;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
@@ -1271,10 +1272,16 @@ public class EC2RestServlet extends HttpServlet {
                     else
                         EC2request.addSecuritGroupName( value[0]);
                 }
+            // Only one NetworkInterface is supported and thus we can get away with less rigorous parameter testing:
             } else if (key.startsWith("NetworkInterface") && key.endsWith("AssociatePublicIpAddress")) {
-                String[] value = request.getParameterValues(key);
-                if (null != value && 0 < value.length) {
-                    EC2request.setAssociatePublicIp(value[0].equalsIgnoreCase("true"));
+                String value = request.getParameter(key);
+                if (!StringUtils.isEmpty(value)) {
+                    EC2request.setAssociatePublicIp(value.equalsIgnoreCase("true"));
+                }
+            } else if (key.startsWith("NetworkInterface") && key.endsWith("PrivateIpAddress")) {
+                String value = request.getParameter(key);
+                if (!StringUtils.isEmpty(value)) {
+                    EC2request.setIpAddress(value);
                 }
             }
         }
