@@ -101,7 +101,7 @@ public class DirectPodBasedNetworkGuru extends DirectNetworkGuru {
         }
 
         // Only BareMetal supports custom IP allocation
-        if (nic != null && nic.getRequestedIpv4() != null && vm.getHypervisorType() == HypervisorType.BareMetal) {
+        if (nic != null && nic.getRequestedIpv4() != null && vm.getHypervisorType() != HypervisorType.BareMetal) {
            throw new CloudRuntimeException("Does not support custom ip allocation at this time: " + nic);
         }
         
