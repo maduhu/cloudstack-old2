@@ -198,6 +198,7 @@ public class BareMetalTemplateAdapter extends TemplateAdapterBase implements Tem
     	// If there are no more non-destroyed template host entries for this template, delete it
 		if (success && (_tmpltStoreDao.listByTemplate(templateId).size() == 0)) {
 			long accountId = template.getAccountId();
+			long domainId = template.getDomainId();
 
 			VMTemplateVO lock = _tmpltDao.acquireInLockTable(templateId);
 
@@ -208,7 +209,7 @@ public class BareMetalTemplateAdapter extends TemplateAdapterBase implements Tem
 				} else if (_tmpltDao.remove(templateId)) {
                     // Decrement the number of templates and total secondary storage space used by the account.
                     _resourceLimitMgr.decrementResourceCount(accountId, ResourceType.template);
-                    _resourceLimitMgr.recalculateResourceCount(accountId, template.getDomainId(),
+                    _resourceLimitMgr.recalculateResourceCount(accountId, domainId,
                             ResourceType.secondary_storage.getOrdinal());
 				}
 
