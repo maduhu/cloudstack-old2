@@ -185,11 +185,13 @@ public class BareMetalTemplateAdapter extends TemplateAdapterBase implements Tem
             }
 		}
 
-        VMTemplateZoneVO templateZone = _tmpltZoneDao.findByZoneTemplate(profile.getZoneId(), templateId);
-
-        if (templateZone != null) {
-            _tmpltZoneDao.remove(templateZone.getId());
-        }
+		if (profile.getZoneId() != null) {
+			VMTemplateZoneVO templateZone = _tmpltZoneDao.findByZoneTemplate(profile.getZoneId(), templateId);
+	
+	        if (templateZone != null) {
+	        	_tmpltZoneDao.remove(templateZone.getId());
+	        }
+		}
 
     	s_logger.debug("Successfully marked template host refs for template: " + template.getName() + " as destroyed in zone: " + zoneName);
 
