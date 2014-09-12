@@ -14,6 +14,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
+import com.cloud.bridge.persist.dao.CloudStackUserDao;
+
 public class QueryAPIAuthHandlerTest {
 
 	String validAuthHeader = "AWS4-HMAC-SHA256 Credential=ASDF1234ASDF1234ASDF/20140910/is-1a/ec2/aws4_request,SignedHeaders=date;host;x-amz-date,Signature=98ad721746da40c64f1a55b78f14c238d841ea1380cd77a1b5971af0ece108bd";
@@ -23,7 +25,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testVerifyAuthScheme() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
 
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader);
 		assertTrue(authHandler.verifyAuthScheme());
@@ -35,7 +37,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testVerifyAuthParams() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader);
 
 		assertTrue(authHandler.verifyAuthScheme());
@@ -57,7 +59,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testGetSigningKey() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader);
 
 		assertTrue(authHandler.verifyAuthScheme());
@@ -74,7 +76,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testHmac() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader);
 
 		assertTrue(authHandler.verifyAuthScheme());
@@ -88,7 +90,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testHash() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, null);
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader);
 
 		assertTrue(authHandler.verifyAuthScheme());
@@ -102,7 +104,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testGetCanonicalQueryString() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
 		when(request.getQueryString()).thenReturn("?Version=123&SomeParam=value");
 
 		String expected = "SomeParam=value&Version=123";
@@ -114,7 +116,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testGetCanoncialHeaders() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader);
 		when(request.getHeader("date")).thenReturn("header-value");
 		when(request.getHeader("host")).thenReturn("header-value");
@@ -132,7 +134,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testGetRequestBody() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 
 		try {
@@ -146,7 +148,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testGetReader() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 
 		try {
@@ -165,7 +167,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testGetCanonicalRequest() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 
 		try {
@@ -204,7 +206,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testGetStringToSign() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 
 		try {
@@ -239,7 +241,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testVerifyScopeDate() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader.replace("20140910", "20140808"));
 
 		assertTrue(authHandler.verifyAuthScheme());

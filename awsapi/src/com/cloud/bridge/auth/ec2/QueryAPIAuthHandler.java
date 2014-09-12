@@ -31,6 +31,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.cloud.bridge.persist.dao.CloudStackUserDao;
 import com.cloud.bridge.persist.dao.CloudStackUserDaoImpl;
 import com.cloud.bridge.service.exception.EC2ServiceException;
 import com.cloud.bridge.service.exception.EC2ServiceException.ClientError;
@@ -58,7 +59,7 @@ public class QueryAPIAuthHandler {
 	protected HttpServletRequest request;
 	protected SupportedAuthSchemes authScheme;
 
-	@Inject protected CloudStackUserDaoImpl userDao;
+	protected CloudStackUserDao userDao;
 
 	/**
 	 * The authentication schemes/versions supported by this handler
@@ -89,8 +90,9 @@ public class QueryAPIAuthHandler {
 		}
 	}
 
-	public QueryAPIAuthHandler(HttpServletRequest request) {
+	public QueryAPIAuthHandler(HttpServletRequest request, CloudStackUserDao userDao) {
 		this.request = request;
+		this.userDao = userDao;
 	}
 
 	/**

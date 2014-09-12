@@ -2054,7 +2054,7 @@ public class EC2RestServlet extends HttpServlet {
 
         // Check if we're dealing with header based authentication...
         if (!StringUtils.isEmpty(request.getHeader("Authorization"))) {
-            QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+            QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, userDao);
 
             if (authHandler.authenticate()) {
                 String key = authHandler.getApiKey();
