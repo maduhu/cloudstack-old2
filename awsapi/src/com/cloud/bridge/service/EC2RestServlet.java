@@ -245,21 +245,6 @@ public class EC2RestServlet extends HttpServlet {
 
         }
 
-
-        String action = request.getParameter( "Action" );
-        logRequest(request);
-
-        // -> unauthenticated calls, should still be done over HTTPS
-        if (action.equalsIgnoreCase( "SetUserKeys" )) {
-            setUserKeys(request, response);
-            return;
-        }
-
-        if (action.equalsIgnoreCase( "CloudEC2Version" )) {
-            cloudEC2Version(request, response);
-            return;
-        }
-
         // -> authenticated calls
         try {
             Pair<Boolean, HttpServletRequest> authenticated = authenticateRequest(request, response);
@@ -267,6 +252,7 @@ public class EC2RestServlet extends HttpServlet {
             if (!authenticated.first()) return;
 
             request = authenticated.second();
+            String action = request.getParameter("Action");
 
             if (action.equalsIgnoreCase( "AllocateAddress"           )) allocateAddress(request, response);
             else if (action.equalsIgnoreCase( "AssociateAddress"          )) associateAddress(request, response);
