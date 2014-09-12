@@ -105,6 +105,7 @@ import com.amazon.ec2.RunInstancesResponse;
 import com.amazon.ec2.StartInstancesResponse;
 import com.amazon.ec2.StopInstancesResponse;
 import com.amazon.ec2.TerminateInstancesResponse;
+import com.cloud.bridge.auth.ec2.QueryAPIAuthHandler;
 import com.cloud.bridge.axis.namespace.Namespace;
 import com.cloud.bridge.axis.namespace.RequestContext;
 import com.cloud.bridge.model.UserCredentialsVO;
@@ -164,6 +165,7 @@ import com.cloud.bridge.util.AuthenticationUtils;
 import com.cloud.bridge.util.ConfigurationHelper;
 import com.cloud.bridge.util.EC2RestAuth;
 import com.cloud.stack.models.CloudStackAccount;
+import com.cloud.utils.Pair;
 import com.cloud.utils.db.Transaction;
 
 @Component("EC2RestServlet")
@@ -260,7 +262,11 @@ public class EC2RestServlet extends HttpServlet {
 
         // -> authenticated calls
         try {
-            if (!authenticateRequest( request, response )) return;
+            Pair<Boolean, HttpServletRequest> authenticated = authenticateRequest(request, response);
+
+            if (!authenticated.first()) return;
+
+            request = authenticated.second();
 
             if (action.equalsIgnoreCase( "AllocateAddress"           )) allocateAddress(request, response);
             else if (action.equalsIgnoreCase( "AssociateAddress"          )) associateAddress(request, response);
@@ -2019,13 +2025,48 @@ public class EC2RestServlet extends HttpServlet {
      * used as input to the signature calculation.  In addition, it tests the given "Expires"
      * parameter to see if the signature has expired and if so the request fails.
      */
-    private boolean authenticateRequest( HttpServletRequest request, HttpServletResponse response ) 
+    private Pair<Boolean, HttpServletRequest> authenticateRequest(HttpServletRequest request, HttpServletResponse response)
             throws SignatureException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, ParseException 
             {
         String cloudSecretKey = null;    
         String cloudAccessKey = null;
         String signature      = null;
         String sigMethod      = null;           
+
+        // First, check if the version specified is one we can handle and save it for response generation
+        String version = request.getParameter("Version");
+        if (version != null) {
+            for (Namespace n : Namespace.values()) {
+                if (version.equals(n.getVersion())) {
+                    RequestContext.current().setNamespace(n);
+                    break;
+                }
+            }
+
+            if (RequestContext.current().getNamespace() == null) {
+                logger.debug("Unsupported Version");
+                throw new EC2ServiceException(ClientError.Unsupported, "Unsupported version");
+            }
+        } else {
+            logger.debug("Missing Parameter Version");
+            throw new EC2ServiceException(ClientError.MissingParamter, "Version");
+        }
+
+        // Check if we're dealing with header based authentication...
+        if (!StringUtils.isEmpty(request.getHeader("Authorization"))) {
+            QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request);
+
+            if (authHandler.authenticate()) {
+                String key = authHandler.getApiKey();
+                String secret = authHandler.getSecretKey();
+                UserContext.current().initContext(key, secret, key, "REST request", null );
+
+                return new Pair<Boolean, HttpServletRequest>(true, authHandler.getRequest());
+            }
+
+            return new Pair<Boolean, HttpServletRequest>(false, authHandler.getRequest());
+        }
+        // ... otherwise fall back to the original version.
 
         // [A] Basic parameters required for an authenticated rest request
         //  -> note that the Servlet engine will un-URL encode all parameters we extract via "getParameterValues()" calls
@@ -2053,25 +2094,6 @@ public class EC2RestServlet extends HttpServlet {
             }
         } else {
             throw new EC2ServiceException( ClientError.MissingParamter, "Missing required parameter - SignatureMethod");
-        }
-
-        // Check if the version specified is one we can handle and save it for response generation
-        String version = request.getParameter("Version");
-        if (version != null) {
-            for (Namespace n : Namespace.values()) {
-                if (version.equals(n.getVersion())) {
-                    RequestContext.current().setNamespace(n);
-                    break;
-                }
-            }
-
-            if (RequestContext.current().getNamespace() == null) {
-                logger.debug("Unsupported Version");
-                throw new EC2ServiceException(ClientError.Unsupported, "Unsupported version");
-            }
-        } else {
-            logger.debug("Missing Parameter Version");
-            throw new EC2ServiceException(ClientError.MissingParamter, "Version");
         }
 
         String[] sigVersion = request.getParameterValues( "SignatureVersion" );
@@ -2151,7 +2173,7 @@ public class EC2RestServlet extends HttpServlet {
 
         if ( restAuth.verifySignature( request.getMethod(), cloudSecretKey, signature, sigMethod )) {
             UserContext.current().initContext( cloudAccessKey, cloudSecretKey, cloudAccessKey, "REST request", null );
-            return true;
+            return new Pair<Boolean, HttpServletRequest>(true, request);
         }
         else throw new EC2ServiceException( ClientError.SignatureDoesNotMatch,
                 "The request signature calculated does not match the signature provided by the user.");
