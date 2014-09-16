@@ -1,3 +1,9 @@
+cloudstack (4.2.1-14.09.00) unstable; urgency=low
+
+  * Release revision 14.09.00
+
+ -- jeff <jeff@io>  Tue, 16 Sep 2014 11:35:09 +0000
+
 cloudstack (4.2.1-snapshot) unstable; urgency=low
 
   * Update the version to 4.2.1 to be in sync with Maven (again)
