@@ -39,10 +39,25 @@ if [ -n "$1" ] ; then
   DEFOSSNOSS="-D_ossnoss nonoss"
 fi
 
-
 VERSION=`(cd ../../; mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version) | grep '^[0-9]\.'`
 RELEASE_REVISION="14.09.00"
 GQREL=$RELEASE_REVISION
+
+# determine whether or not we are building a "snapshot" package, which
+# means not an officially tagged release.
+output=$(git describe --long --tags)
+version=$(echo $output | awk -F'-' '{print $1}')
+commits=$(echo $output | awk -F'-' '{print $2}')
+object=$(echo $output | awk -F'-' '{print $3}' | awk '{print substr($0, 2)}')
+
+if [ "$commits" != "0" ]; then
+  # this is a snapshot version and we need to mark it as 'nextver',
+  # which means this is for the next version to be released. rather
+  # than actually calculate the next version it is simpler (lazier) to
+  # just put nextver on the line.
+  GQREL="$GQREL_nextver"
+fi
+
 if echo $VERSION | grep SNAPSHOT ; then
   REALVER=`echo $VERSION | cut -d '-' -f 1`
   DEFVER="-D_ver $REALVER"
