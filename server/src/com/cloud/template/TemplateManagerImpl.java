@@ -1936,7 +1936,7 @@ TemplateManager, TemplateApiService {
 				templateOwner, cmd.getDetails(), false, null, false,
 				TemplateType.USER);
 	
-		tmplProfile.setSize((long)-1);
+		tmplProfile.setSize((long)0);
 		tmplProfile.setCreated(new Date());
 		
 		VMTemplateVO tmpl = adapter.create(tmplProfile);
@@ -2148,6 +2148,7 @@ TemplateManager, TemplateApiService {
 		}
 		privateTemplate.setSourceTemplateId(sourceTemplateId);
 
+		
 		VMTemplateVO template = this._tmpltDao.persist(privateTemplate);
 		// Increment the number of templates
 		if (template != null) {
