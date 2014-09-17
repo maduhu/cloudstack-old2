@@ -43,6 +43,7 @@ public interface BaremetalPxeManager extends Manager, PluggableService {
     public enum BaremetalPxeType {
         PING,
         KICK_START,
+        BASIC_PXE
     }
     
 	boolean prepare(VirtualMachineProfile profile, NicProfile nic, DeployDestination dest, ReservationContext context);
