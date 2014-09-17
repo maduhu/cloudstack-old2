@@ -1,3 +1,9 @@
+cloudstack (4.2.1-14.09.02) unstable; urgency=low
+
+  * Release revision 14.09.02
+
+ -- jeff <jeff@io>  Wed, 17 Sep 2014 18:58:53 +0000
+
 cloudstack (4.2.1-14.09.01) unstable; urgency=low
 
   * Release revision 14.09.01
