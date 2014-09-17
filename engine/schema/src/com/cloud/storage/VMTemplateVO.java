@@ -331,6 +331,10 @@ public class VMTemplateVO implements VirtualMachineTemplate {
     public Date getCreated() {
         return created;
     }
+    
+    public void setCreated(Date date) {
+    	this.created = date;
+    }
 
     @Override
     public String getUrl() {

@@ -16,6 +16,7 @@
 // under the License.
 package com.cloud.storage;
 
+import java.util.Date;
 import java.util.Map;
 
 import com.cloud.hypervisor.Hypervisor.HypervisorType;
@@ -50,6 +51,8 @@ public class TemplateProfile {
     Boolean isDynamicallyScalable;
     TemplateType templateType;
 	
+    Long size=null;
+    Date created=null;
 
 	public TemplateProfile(Long templateId, Long userId, String name, String displayText, Integer bits, Boolean passwordEnabled, Boolean requiresHvm,
 			String url, Boolean isPublic, Boolean featured, Boolean isExtractable, ImageFormat format, Long guestOsId, Long zoneId,
@@ -95,7 +98,23 @@ public class TemplateProfile {
         this.isDynamicallyScalable = isDynamicallyScalable;
         this.templateType = templateType;
     }	
+    
+    public Date getCreated() {
+    	return this.created;
+    }
 
+    public void setCreated(Date date) {
+    	this.created = date;
+    }
+    
+    public Long getSize() {
+    	return this.size;
+    }
+    
+    public void setSize(Long size) {
+    	this.size = size;
+    }
+    
 	public Long getTemplateId() {
 		return templateId;
 	}

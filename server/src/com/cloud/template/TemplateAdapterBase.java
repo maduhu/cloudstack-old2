@@ -288,7 +288,9 @@ public abstract class TemplateAdapterBase extends AdapterBase implements Templat
                 profile.getPasswordEnabled(), profile.getGuestOsId(), profile.getBootable(), profile.getHypervisorType(), profile.getTemplateTag(),
                 profile.getDetails(), profile.getSshKeyEnabled(), profile.IsDynamicallyScalable());
 
-
+        template.setSize(profile.getSize());
+        template.setCreated(profile.getCreated());
+        
         if (zoneId == null || zoneId.longValue() == -1) {
             List<DataCenterVO> dcs = _dcDao.listAll();
 

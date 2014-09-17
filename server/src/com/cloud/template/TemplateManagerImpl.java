@@ -1936,6 +1936,8 @@ TemplateManager, TemplateApiService {
 				templateOwner, cmd.getDetails(), false, null, false,
 				TemplateType.USER);
 	
+		tmplProfile.setSize((long)-1);
+		tmplProfile.setCreated(new Date());
 		
 		VMTemplateVO tmpl = adapter.create(tmplProfile);
 		if (urlNull){
