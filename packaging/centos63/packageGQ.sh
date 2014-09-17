@@ -50,7 +50,7 @@ version=$(echo $output | awk -F'-' '{print $1}')
 commits=$(echo $output | awk -F'-' '{print $2}')
 object=$(echo $output | awk -F'-' '{print $3}' | awk '{print substr($0, 2)}')
 
-if [ "$commits" != "0" ]; then
+if [ "$commits" -ne "0" ]; then
   # this is a snapshot version and we need to mark it as 'nextver',
   # which means this is for the next version to be released. rather
   # than actually calculate the next version it is simpler (lazier) to
