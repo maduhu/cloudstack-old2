@@ -31,6 +31,7 @@ import javax.ejb.Local;
 import javax.inject.Inject;
 import javax.naming.ConfigurationException;
 
+import org.apache.cloudstack.api.AddBaremetalBasicPxeServerCmd;
 import org.apache.cloudstack.api.AddBaremetalKickStartPxeCmd;
 import org.apache.cloudstack.api.AddBaremetalPxeCmd;
 import org.apache.cloudstack.api.AddBaremetalPxePingServerCmd;
@@ -251,6 +252,7 @@ public class BaremetalPxeManagerImpl extends ManagerBase implements BaremetalPxe
 	@Override
 	public List<Class<?>> getCommands() {
 	    List<Class<?>> cmds = new ArrayList<Class<?>>();
+	    cmds.add(AddBaremetalBasicPxeServerCmd.class);
 	    cmds.add(AddBaremetalKickStartPxeCmd.class);
 	    cmds.add(AddBaremetalPxePingServerCmd.class);
 	    cmds.add(ListBaremetalPxeServersCmd.class);
