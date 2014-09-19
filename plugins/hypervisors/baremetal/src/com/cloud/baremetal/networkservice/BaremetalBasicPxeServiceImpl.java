@@ -24,6 +24,7 @@ import com.cloud.baremetal.database.BaremetalPxeVO;
 import com.cloud.baremetal.networkservice.BaremetalPxeManager.BaremetalPxeType;
 import com.cloud.deploy.DeployDestination;
 import com.cloud.host.Host;
+import com.cloud.host.HostVO;
 import com.cloud.host.dao.HostDetailsDao;
 import com.cloud.network.PhysicalNetworkServiceProvider;
 import com.cloud.network.dao.NetworkDao;
@@ -178,7 +179,16 @@ public class BaremetalBasicPxeServiceImpl extends BareMetalPxeServiceBase implem
 
     @Override
     public BaremetalPxeResponse getApiResponse(BaremetalPxeVO vo) {
-        return null;
+        BaremetalPxeResponse response = new BaremetalPxeResponse();
+        response.setId(vo.getUuid());
+        HostVO host = _hostDao.findById(vo.getHostId());
+        response.setUrl(host.getPrivateIpAddress());
+        PhysicalNetworkServiceProviderVO providerVO = _physicalNetworkServiceProviderDao.findById(vo.getNetworkServiceProviderId());
+        response.setPhysicalNetworkId(providerVO.getUuid());
+        PhysicalNetworkVO nwVO = _physicalNetworkDao.findById(vo.getPhysicalNetworkId());
+        response.setPhysicalNetworkId(nwVO.getUuid());
+        response.setObjectName("baremetalpxeserver");
+        return response;
     }
 
     @Override
