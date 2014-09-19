@@ -897,6 +897,7 @@
 
   <bean id="BaremetalManager" class="com.cloud.baremetal.manager.BaremetalManagerImpl"/>
   <bean id="BaremetalDhcpManager" class="com.cloud.baremetal.networkservice.BaremetalDhcpManagerImpl"/>
+  <bean id="BaremetalBasicPxeService" class="com.cloud.baremetal.networkservice.BaremetalBasicPxeServiceImpl"/>
   <bean id="BaremetalKickStartPxeService" class="com.cloud.baremetal.networkservice.BaremetalKickStartServiceImpl"/>
   <bean id="BaremetalPingPxeService" class="com.cloud.baremetal.networkservice.BareMetalPingServiceImpl" />
   <bean id="BaremetalPxeManager" class="com.cloud.baremetal.networkservice.BaremetalPxeManagerImpl" /> 
