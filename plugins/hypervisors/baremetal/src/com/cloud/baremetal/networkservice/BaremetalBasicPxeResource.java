@@ -28,7 +28,7 @@ public class BaremetalBasicPxeResource extends BaremetalPxeResourceBase {
     private String tftpDir;
 
     public interface Constants {
-        String PREPARE_SCRIPT  = "scripts/network/basicpxe/prepare_basic_pxe_bootfile.py";
+        String PREPARE_SCRIPT  = "scripts/network/basicpxe/prepare_basicpxe_bootfile.py";
         String USERDATA_SCRIPT = "scripts/network/ping/baremetal_user_data.py";
 
         String REMOTE_SCRIPT_PATH = "/usr/bin/";
