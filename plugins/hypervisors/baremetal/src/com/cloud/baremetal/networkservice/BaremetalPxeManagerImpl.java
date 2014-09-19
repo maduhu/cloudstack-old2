@@ -128,8 +128,9 @@ public class BaremetalPxeManagerImpl extends ManagerBase implements BaremetalPxe
 	    String templateUrl = profile.getTemplate().getUrl();
 	    if (templateUrl.startsWith("ks=")){
 	    	type = BaremetalPxeType.KICK_START;
-	    }
-	    else {
+	    } else if (templateUrl.startsWith("pxe:")) {
+	        type = BaremetalPxeType.BASIC_PXE;
+	    } else {
 	    	type = BaremetalPxeType.PING;
 	    }
 		return getServiceByType(type.toString()).prepare(profile, nic, dest, context);
