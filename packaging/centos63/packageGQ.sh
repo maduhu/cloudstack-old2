@@ -55,7 +55,7 @@ if [ "$commits" -ne "0" ]; then
   # which means this is for the next version to be released. rather
   # than actually calculate the next version it is simpler (lazier) to
   # just put nextver on the line.
-  GQREL="${GQREL}_nextver"
+  GQREL="${GQREL}+nextver"
 fi
 
 if echo $VERSION | grep SNAPSHOT ; then
