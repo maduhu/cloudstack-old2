@@ -153,7 +153,7 @@ public class BaremetalBasicPxeResource extends BaremetalPxeResourceBase {
             sshConnection = openSSHConnection();
 
             String script = String.format(
-                "python /usr/bin/prepare_basic_pxe_bootfile.py %s %s %s %s",
+                "python /usr/bin/prepare_basicpxe_bootfile.py %s %s %s %s",
                 tftpDir,
                 cmd.getMac(),
                 Base64.encodeBase64String(cmd.getKernel().getBytes()),
