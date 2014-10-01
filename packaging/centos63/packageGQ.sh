@@ -40,7 +40,7 @@ if [ -n "$1" ] ; then
 fi
 
 VERSION=`(cd ../../; mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version) | grep '^[0-9]\.'`
-RELEASE_REVISION="14.09.04"
+RELEASE_REVISION="14.09.06"
 GQREL=$RELEASE_REVISION
 
 # determine whether or not we are building a "snapshot" package, which
@@ -55,7 +55,7 @@ if [ "$commits" -ne "0" ]; then
   # which means this is for the next version to be released. rather
   # than actually calculate the next version it is simpler (lazier) to
   # just put nextver on the line.
-  GQREL="${GQREL}_nextver"
+  GQREL="${GQREL}+nextver"
 fi
 
 if echo $VERSION | grep SNAPSHOT ; then
