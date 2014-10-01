@@ -1,10 +1,5 @@
 package com.cloud.bridge.auth.ec2;
 
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
@@ -20,10 +15,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
@@ -32,7 +29,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.cloud.bridge.persist.dao.CloudStackUserDao;
-import com.cloud.bridge.persist.dao.CloudStackUserDaoImpl;
 import com.cloud.bridge.service.exception.EC2ServiceException;
 import com.cloud.bridge.service.exception.EC2ServiceException.ClientError;
 import com.cloud.bridge.service.exception.EC2ServiceException.ServerError;
@@ -50,6 +46,7 @@ public class QueryAPIAuthHandler {
 
 	protected String apiKey;
 	protected String secretKey;
+	protected String amzDateTime;
 	protected String scopeDate;
 	protected String scopeRegion;
 	protected String scopeService;
@@ -128,6 +125,7 @@ public class QueryAPIAuthHandler {
 	 * Verify we support the proposed authentication scheme.
 	 */
 	protected boolean verifyAuthScheme() {
+		reconstructPayload();
 		String authHeader = request.getHeader("Authorization");
 
 		for (SupportedAuthSchemes supportedAuthScheme : SupportedAuthSchemes.values()) {
@@ -161,12 +159,16 @@ public class QueryAPIAuthHandler {
 			if (!matcher.find())
 				return false;
 
+			// Note that even if "X-Amz-Date" is not listed as one of the signed headers we will still need to 
+			// privide a timestamp for the request string to be signed.
+			amzDateTime = getAmzDate();
+
 			apiKey = matcher.group(1);
 			scopeDate = matcher.group(2);
 			scopeRegion = matcher.group(3);
 			scopeService = matcher.group(4);
 
-			if (apiKey.isEmpty() || scopeDate.isEmpty() ||
+			if (apiKey.isEmpty() || amzDateTime.isEmpty() || scopeDate.isEmpty() ||
 					scopeRegion.isEmpty() || scopeService.isEmpty() ||
 					!matcher.group(5).equals(authScheme.getRequestConstant())) {
 
@@ -197,7 +199,7 @@ public class QueryAPIAuthHandler {
 	protected boolean verifyTimeScope() {
 		int scopeYear = Integer.valueOf(scopeDate.substring(0,4));
 		int scopeMonth = Integer.valueOf(scopeDate.substring(4,6)) - 1;
-		int scopeDay = Integer.valueOf(scopeDate.substring(6));
+		int scopeDay = Integer.valueOf(scopeDate.substring(6,8));
 
 		Calendar now = Calendar.getInstance();
 		Calendar scope = Calendar.getInstance();
@@ -225,10 +227,26 @@ public class QueryAPIAuthHandler {
 	}
 
 	/**
+	 * Helper method to convert bytes to hex.
+	 *
+	 * @param bytes The byte array to be converted
+	 * @return The byte array as lower case hex string.
+	 */
+	private String byteArrayToHex(byte[] bytes) {
+		StringBuilder buffer = new StringBuilder(bytes.length * 2);
+		for(byte item: bytes) {
+			buffer.append(String.format("%02x", item & 0xff));
+		}
+		return buffer.toString();
+	}
+
+	/**
 	 * Verify the provided signature.
 	 */
 	protected boolean verifySignature() {
-		String calculatedSignature = Hex.encodeHexString(hmac(getSigningKey(), getStringToSign()));
+		byte[] signatureBytes = hmac(getSigningKey(), getStringToSign());
+        String calculatedSignature = byteArrayToHex(signatureBytes);
+
 		boolean signatureMatch = calculatedSignature.equals(signature);
 
 		if (!signatureMatch)
@@ -268,7 +286,7 @@ public class QueryAPIAuthHandler {
 
 		return null;
 	}
-
+	
 	/**
 	 * Constructs a string for signing.
 	 *
@@ -288,7 +306,7 @@ public class QueryAPIAuthHandler {
 		case AWS4:
 			str.append(authScheme.getName());						// "AWS4-HMAC-SHA256"
 			str.append("\n");
-			str.append(scopeDate);									// TimeStampInISO8601Format
+			str.append(amzDateTime);								// TimeStampInISO8601Format
 			str.append("\n");
 			str.append(getScope());									// Scope
 			str.append("\n");
@@ -328,7 +346,7 @@ public class QueryAPIAuthHandler {
 			req.append("\n");
 			req.append(StringUtils.join(signedHeaders, ";"));	// SignedHeaders
 			req.append("\n");
-			req.append(Hex.encodeHex(hash(getRequestBody())));	// HashedPayload
+			req.append(Hex.encodeHex(hash(reconstructPayload())));	// HashedPayload
 			break;
 		}
 
@@ -395,7 +413,6 @@ public class QueryAPIAuthHandler {
 				headers.append(headerVal.trim());
 				headers.append("\n");
 			}
-			headers.deleteCharAt(headers.length() - 1);
 			break;
 		}
 
@@ -403,35 +420,32 @@ public class QueryAPIAuthHandler {
 	}
 
 	/**
-	 * Reads the full request body and returns as a string. Calls getReader() on the request
-	 * when the request method is POST; thus preventing all further attempts to read the body.
-	 * Use getRequest() for a wrapper request object with getParameter*() methods that function.
+	 * EC2 tools calculate the signature based on the exact payload. However the request has
+	 * already been parsed when it gets the EC2RestServlet. Hence we must count on being able
+	 * to reconstruct it from the parameter strings.
+	 * 
+	 * NOTE: The order is critical, so we are dependent on the parameter map not being permuted!
 	 *
-	 * @return The full request body
+	 * @return The reconstructed payload.
 	 */
-	protected String getRequestBody() {
+	public String reconstructPayload() {
 		if (request.getMethod().equalsIgnoreCase("GET"))
 			return "";
 
 		StringBuilder buffer = new StringBuilder();
-		BufferedReader reader = null;
-		String line;
-
-		try {
-			reader = request.getReader();
-
-			while ((line = reader.readLine()) != null) {
-				buffer.append(line);
+		Map<String, String[]> paramMap = request.getParameterMap();
+		for (String paramName : paramMap.keySet()) {
+			buffer.append(paramName);
+			buffer.append("=");
+			for (String paramValue : paramMap.get(paramName)) {
+				buffer.append(paramValue);
 			}
-		} catch (IOException e) {
-			requestBody = "";
-			return requestBody;
-		} finally {
-			try {
-				reader.close();
-			} catch (IOException e) {}
+			buffer.append("&");
 		}
 
+		if (buffer.length() > 0) {
+			buffer.setLength(buffer.length() - 1);
+		}
 		requestBody = buffer.toString();
 		return requestBody;
 	}
@@ -443,6 +457,17 @@ public class QueryAPIAuthHandler {
 	 */
 	protected String getScope() {
 		return StringUtils.join(new String[] { scopeDate, scopeRegion, scopeService, authScheme.getRequestConstant() }, "/");
+	}
+
+	/**
+	 * Returns the the request date in ISO8601 format, i.e. YYYYMMDD'T'HHMMSS'Z'
+	 */
+	protected String getAmzDate() {
+		String dateHeader = request.getHeader("x-amz-date");
+		if (StringUtils.isEmpty(dateHeader )) {
+			dateHeader = request.getHeader("Date");
+		}
+		return dateHeader;
 	}
 
 	/**

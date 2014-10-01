@@ -136,8 +136,8 @@ import com.cloud.bridge.service.core.ec2.EC2Engine;
 import com.cloud.bridge.service.core.ec2.EC2Filter;
 import com.cloud.bridge.service.core.ec2.EC2GroupFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2Image;
-import com.cloud.bridge.service.core.ec2.EC2ImageFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2ImageAttributes.ImageAttribute;
+import com.cloud.bridge.service.core.ec2.EC2ImageFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2ImageLaunchPermission;
 import com.cloud.bridge.service.core.ec2.EC2ImportKeyPair;
 import com.cloud.bridge.service.core.ec2.EC2InstanceFilterSet;
@@ -244,7 +244,9 @@ public class EC2RestServlet extends HttpServlet {
             System.out.println("EC2RestServlet.doGetOrPost: javax.servlet.forward.query_string: "+request.getAttribute("javax.servlet.forward.query_string"));
 
         }
-
+        
+        String[] baction = request.getParameterValues("Action");
+        
         // -> authenticated calls
         try {
             Pair<Boolean, HttpServletRequest> authenticated = authenticateRequest(request, response);
@@ -2258,7 +2260,7 @@ public class EC2RestServlet extends HttpServlet {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         XMLStreamWriter xmlWriter = xmlOutFactory.createXMLStreamWriter(out);
         MTOMAwareXMLSerializer mtomWriter = new MTOMAwareXMLSerializer(xmlWriter);
-        mtomWriter.setDefaultNamespace(RequestContext.current().getNamespace().getUrl());
+        mtomWriter.setDefaultNamespace(RequestContext.current().getNamespace() == null ? null : RequestContext.current().getNamespace().getUrl());
         EC2Response.serialize(null, factory, mtomWriter);
         xmlWriter.flush();
 
