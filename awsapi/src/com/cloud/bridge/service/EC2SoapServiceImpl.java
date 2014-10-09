@@ -1935,7 +1935,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 		param1.setVolumeId( engineResponse.getId().toString());
 		param1.setInstanceId( (null == engineResponse.getInstanceId() ? "" : engineResponse.getInstanceId().toString()));
 		param1.setDevice( (null == engineResponse.getDevice() ? "" : engineResponse.getDevice()));
-        param1.setStatus(engineResponse.getAttachmentState());
+        param1.setStatus(null == engineResponse.getAttachmentState() ? "" : engineResponse.getAttachmentState());
 		param1.setAttachTime( cal );
 			
 		param1.setRequestId( UUID.randomUUID().toString());
