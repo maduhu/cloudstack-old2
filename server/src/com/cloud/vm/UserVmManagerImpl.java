@@ -17,6 +17,7 @@
 package com.cloud.vm;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,6 +84,7 @@ import com.cloud.agent.api.PlugNicAnswer;
 import com.cloud.agent.api.PlugNicCommand;
 import com.cloud.agent.api.PvlanSetupCommand;
 import com.cloud.agent.api.StartAnswer;
+import com.cloud.agent.api.StartCommand;
 import com.cloud.agent.api.StopAnswer;
 import com.cloud.agent.api.UnPlugNicAnswer;
 import com.cloud.agent.api.UnPlugNicCommand;
@@ -3100,6 +3102,21 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
                     || network.getTrafficType() == TrafficType.Public) {
                 userVm.setPrivateIpAddress(nic.getIp4Address());
                 userVm.setPrivateMacAddress(nic.getMacAddress());
+            }
+        }
+        
+        //Disable default security group rules? Controlled by network offering tag
+        //of "disableDefaultRules". It is up to the agent to understand this. Mostly
+        //applies to KVM hypervisor agent only.
+        List<? extends Network> networks = _networkModel.listNetworksUsedByVm(userVm.getId(), false);
+        for (Network network : networks) {
+            NetworkOffering offering = _networkOfferingDao.findById(network.getNetworkOfferingId());
+            if (offering != null) {
+                String[] tags = offering.getTags() != null ? offering.getTags().split(",") : null;
+                if (tags != null && Arrays.asList(tags).contains("disableDefaultRules")) {
+                    StartCommand start = cmds.getCommand(StartCommand.class);
+                    start.setContextParam("disableDefaultRules", "true");
+                }
             }
         }
 

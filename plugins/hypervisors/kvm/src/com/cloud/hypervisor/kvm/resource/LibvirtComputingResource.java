@@ -3672,7 +3672,15 @@ ServerResource {
                         } else {
                             secIpsStr = "0:";
                         }
-                        default_network_rules(conn, vmName, nic, vmSpec.getId(), secIpsStr);
+                        
+                        //Setting the default security group rules is optional, and is controlled by
+                        //the network offering tag "disableDefaultRules". 
+                        String disableDefaultRules = cmd.getContextParam("disableDefaultRules");
+                        boolean disable = disableDefaultRules != null && disableDefaultRules.equals("true");
+                        
+                        if (!disable) {
+                            default_network_rules(conn, vmName, nic, vmSpec.getId(), secIpsStr);
+                        }
                     }
                 }
             }
