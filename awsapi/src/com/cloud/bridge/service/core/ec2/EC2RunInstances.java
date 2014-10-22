@@ -34,6 +34,7 @@ public class EC2RunInstances {
     private List<String>  groupIdSet;
     private List<String>  groupNameSet;
 	private boolean associateIp;
+	private String subnetId;
 	
 	public EC2RunInstances() {
 		instanceType = null;
@@ -153,6 +154,14 @@ public class EC2RunInstances {
 		
     public String[] getSecurityGroupNameSet() {
         return groupNameSet.toArray(new String[0]);
+    }
+
+    public String getSubnetId() {
+        return subnetId;
+    }
+
+    public void setSubnetId(String subnetId) {
+        this.subnetId = subnetId;
     }
 
 }

@@ -774,6 +774,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 		String type = rit.getInstanceType();	
 		String keyName = rit.getKeyName();
 		String privateIpAddress = rit.getPrivateIpAddress();
+		String subnetId = rit.getSubnetId();
 
 		EC2RunInstances request = new EC2RunInstances();
 
@@ -794,6 +795,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 		if (null != userData) request.setUserData(userData.getData());
 		if (null != keyName) request.setKeyName(rit.getKeyName() );
 		if (null != privateIpAddress) request.setIpAddress(privateIpAddress);
+		if (null != subnetId) request.setSubnetId(subnetId);
 
 		// Check if AssociatePublicIpAddress is set
 		if (rit.getNetworkInterfaceSet() != null && rit.getNetworkInterfaceSet().getItem() != null ) {
