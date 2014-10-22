@@ -1434,7 +1434,29 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
         response.setDescribeInstanceAttributeResponse( param1 );
 		return response;
 	}
-
+	
+	public static DescribeSubnetsResponse toDescribeSubnetsResponse(Object engineResponse) {
+	    DescribeSubnetsResponse response = new DescribeSubnetsResponse();
+	    DescribeSubnetsResponseType param1 = new DescribeSubnetsResponseType();
+	    
+	    SubnetSetType subnets = new SubnetSetType();
+	    SubnetType subnet = new SubnetType();
+	    subnet.setAvailabilityZone("zone1");
+	    subnet.setAvailableIpAddressCount(10);
+	    subnet.setCidrBlock("10.0.0.1/16");
+	    subnet.setDefaultForAz(false); //put isolated network as default here
+	    subnet.setMapPublicIpOnLaunch(false); //maybe only for isolated this is false?
+	    subnet.setState("available"); //pending if network is not in allocated state
+	    subnet.setSubnetId("mynetwork"); //network name
+	    
+	    subnet.setTagSet(setResourceTags(null)); //translate the tags as well i guess
+	    subnet.setVpcId("none"); //we have no vpc on this mofo
+	    
+	    param1.setRequestId(UUID.randomUUID().toString());
+	    param1.setSubnetSet(subnets);
+	    response.setDescribeSubnetsResponse(param1);
+	    return response;
+	}
 	
 	public static DescribeInstancesResponse toDescribeInstancesResponse(EC2DescribeInstancesResponse engineResponse, EC2Engine engine) 
 	{
@@ -2562,7 +2584,9 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 	}
 
 	public DescribeSubnetsResponse describeSubnets(DescribeSubnets describeSubnets) {
-		throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
+	    //TODO Implement it!
+	    return toDescribeSubnetsResponse(new Object());
+		//throw new EC2ServiceException(ClientError.Unsupported, "This operation is not available");
 	}
 	
 	public DescribeVpcsResponse describeVpcs(DescribeVpcs describeVpcs) {

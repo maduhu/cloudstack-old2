@@ -88,6 +88,7 @@ import com.amazon.ec2.DescribeInstancesResponse;
 import com.amazon.ec2.DescribeKeyPairsResponse;
 import com.amazon.ec2.DescribeSecurityGroupsResponse;
 import com.amazon.ec2.DescribeSnapshotsResponse;
+import com.amazon.ec2.DescribeSubnetsResponse;
 import com.amazon.ec2.DescribeTagsResponse;
 import com.amazon.ec2.DescribeVolumesResponse;
 import com.amazon.ec2.DetachVolumeResponse;
@@ -269,6 +270,7 @@ public class EC2RestServlet extends HttpServlet {
             else if (action.equalsIgnoreCase( "DeleteVolume"              )) deleteVolume(request, response);   
             else if (action.equalsIgnoreCase( "DeregisterImage"           )) deregisterImage(request, response);    
             else if (action.equalsIgnoreCase( "DescribeAddresses"         )) describeAddresses(request, response);
+            else if (action.equalsIgnoreCase( "DescribeSubnets"           )) describeSubnets(request, response);
             else if (action.equalsIgnoreCase( "DescribeAvailabilityZones" )) describeAvailabilityZones(request, response); 
             else if (action.equalsIgnoreCase( "DescribeImageAttribute"    )) describeImageAttribute(request, response);  
             else if (action.equalsIgnoreCase( "DescribeImages"            )) describeImages(request, response);  
@@ -1523,6 +1525,13 @@ public class EC2RestServlet extends HttpServlet {
         DescribeInstancesResponse EC2response = EC2SoapServiceImpl.toDescribeInstancesResponse( engine.describeInstances( EC2request ), engine);
         serializeResponse(response, EC2response);
             }
+    
+    private void describeSubnets(HttpServletRequest request, HttpServletResponse response ) throws ADBException,
+          XMLStreamException, IOException {
+        //TODO implement
+        DescribeSubnetsResponse EC2response = EC2SoapServiceImpl.toDescribeSubnetsResponse(new Object());
+        serializeResponse(response, EC2response);
+    }
 
     private void describeAddresses( HttpServletRequest request, HttpServletResponse response )
             throws ADBException, XMLStreamException, IOException {
