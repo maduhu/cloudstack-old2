@@ -1254,6 +1254,12 @@ public class EC2RestServlet extends HttpServlet {
         if ( userData != null) {
             EC2request.setUserData( userData[0]);
         }
+        
+        //Hack for choosing the CS network to deploy on.
+        String[] subnetId = request.getParameterValues("SubnetId");
+        if (subnetId != null) {
+            EC2request.setSubnetId(subnetId[0]);
+        }
 
         Enumeration<?> names = request.getParameterNames();
         while( names.hasMoreElements()) {

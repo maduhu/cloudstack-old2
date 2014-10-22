@@ -1411,13 +1411,17 @@ public class EC2Engine extends ManagerBase {
                 groupIds = constructList(sgIdList);
             if (sgNameList.length != 0)
                 groupNames = constructList(sgNameList);
+            
+            //Use subnet ID for deploying on multiple networks.
+            //If none specified, it will be null and work normally.
+            String networkId = request.getSubnetId();
 
             // now actually deploy the vms
             for( int i=0; i < createInstances; i++ ) {
                 try{
                     CloudStackUserVm resp = getApi().deployVirtualMachine(svcOffering.getId(),
                             request.getTemplateId(), zoneId, null, null, null, null,
-                            null, null, null, request.getKeyName(), null, null,
+                            null, null, null, request.getKeyName(), null, networkId,
                             groupIds, groupNames, request.getSize().longValue(), request.getUserData());
                     EC2Instance vm = new EC2Instance();
                     vm.setId(resp.getId().toString());
