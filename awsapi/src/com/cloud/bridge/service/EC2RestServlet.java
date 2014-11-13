@@ -88,6 +88,7 @@ import com.amazon.ec2.DescribeInstancesResponse;
 import com.amazon.ec2.DescribeKeyPairsResponse;
 import com.amazon.ec2.DescribeSecurityGroupsResponse;
 import com.amazon.ec2.DescribeSnapshotsResponse;
+import com.amazon.ec2.DescribeSubnetsResponse;
 import com.amazon.ec2.DescribeTagsResponse;
 import com.amazon.ec2.DescribeVolumesResponse;
 import com.amazon.ec2.DetachVolumeResponse;
@@ -129,6 +130,8 @@ import com.cloud.bridge.service.core.ec2.EC2DescribeInstances;
 import com.cloud.bridge.service.core.ec2.EC2DescribeKeyPairs;
 import com.cloud.bridge.service.core.ec2.EC2DescribeSecurityGroups;
 import com.cloud.bridge.service.core.ec2.EC2DescribeSnapshots;
+import com.cloud.bridge.service.core.ec2.EC2DescribeSubnets;
+import com.cloud.bridge.service.core.ec2.EC2DescribeSubnetsResponse;
 import com.cloud.bridge.service.core.ec2.EC2DescribeTags;
 import com.cloud.bridge.service.core.ec2.EC2DescribeVolumes;
 import com.cloud.bridge.service.core.ec2.EC2DisassociateAddress;
@@ -153,6 +156,7 @@ import com.cloud.bridge.service.core.ec2.EC2SecurityGroup;
 import com.cloud.bridge.service.core.ec2.EC2SnapshotFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2StartInstances;
 import com.cloud.bridge.service.core.ec2.EC2StopInstances;
+import com.cloud.bridge.service.core.ec2.EC2SubnetFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2Tags;
 import com.cloud.bridge.service.core.ec2.EC2TagsFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2Volume;
@@ -269,6 +273,7 @@ public class EC2RestServlet extends HttpServlet {
             else if (action.equalsIgnoreCase( "DeleteVolume"              )) deleteVolume(request, response);   
             else if (action.equalsIgnoreCase( "DeregisterImage"           )) deregisterImage(request, response);    
             else if (action.equalsIgnoreCase( "DescribeAddresses"         )) describeAddresses(request, response);
+            else if (action.equalsIgnoreCase( "DescribeSubnets"           )) describeSubnets(request, response);
             else if (action.equalsIgnoreCase( "DescribeAvailabilityZones" )) describeAvailabilityZones(request, response); 
             else if (action.equalsIgnoreCase( "DescribeImageAttribute"    )) describeImageAttribute(request, response);  
             else if (action.equalsIgnoreCase( "DescribeImages"            )) describeImages(request, response);  
@@ -1523,6 +1528,35 @@ public class EC2RestServlet extends HttpServlet {
         DescribeInstancesResponse EC2response = EC2SoapServiceImpl.toDescribeInstancesResponse( engine.describeInstances( EC2request ), engine);
         serializeResponse(response, EC2response);
             }
+    
+    private void describeSubnets(HttpServletRequest request, HttpServletResponse response ) throws ADBException,
+          XMLStreamException, IOException {
+    	EC2DescribeSubnets EC2request = new EC2DescribeSubnets();
+
+        // -> load in all the subnet_id parameters if any
+    	Enumeration<?> names = request.getParameterNames();
+        while( names.hasMoreElements()) {
+            String key = (String)names.nextElement();
+            if (key.startsWith("SubnetId")) {
+                String[] value = request.getParameterValues( key );
+                if (null != value && 0 < value.length) EC2request.addSubnetIds(value[0]);;
+            }
+        }		
+        // add filters
+        EC2Filter[] filterSet = extractFilters( request );
+        if ( filterSet != null ) {
+            EC2SubnetFilterSet ifs = new EC2SubnetFilterSet();
+            for( int i=0; i < filterSet.length; i++ ) {
+                ifs.addFilter(filterSet[i]);
+            }
+            EC2request.setIfs(ifs);
+        }
+        
+        
+    	EC2Engine engine = ServiceProvider.getInstance().getEC2Engine();
+        DescribeSubnetsResponse EC2response = EC2SoapServiceImpl.toDescribeSubnetsResponse(engine.describeSubnets(EC2request));
+        serializeResponse(response, EC2response);
+    }
 
     private void describeAddresses( HttpServletRequest request, HttpServletResponse response )
             throws ADBException, XMLStreamException, IOException {

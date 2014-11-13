@@ -30,6 +30,8 @@ public class CloudStackNetwork {
 	private String broadcastDomainType;
 	@SerializedName(ApiConstants.BROADCAST_URI)
 	private String broadcastURI;
+    @SerializedName(ApiConstants.CIDR)
+    private String cidr;
 	@SerializedName(ApiConstants.DISPLAY_TEXT)
 	private String displaytext;
     @SerializedName(ApiConstants.DNS1)
@@ -73,7 +75,7 @@ public class CloudStackNetwork {
     @SerializedName(ApiConstants.STATE)
     private String state;
     @SerializedName(ApiConstants.TAGS)
-    private String tags;
+    private List<CloudStackKeyValue> tags;
    	@SerializedName(ApiConstants.TRAFFIC_TYPE)
 	private String trafficType;
     @SerializedName(ApiConstants.TYPE)
@@ -331,7 +333,7 @@ public class CloudStackNetwork {
 	/**
 	 * @return the tags
 	 */
-	public String getTags() {
+	public List<CloudStackKeyValue> getTags() {
 		return tags;
 	}
 
@@ -362,7 +364,9 @@ public class CloudStackNetwork {
 		return vlan;
 	}
 
-
+	public String getCidr() {
+		return cidr;
+	}
 
 	/**
 	 * @return the zoneId

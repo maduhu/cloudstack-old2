@@ -79,24 +79,24 @@ import com.cloud.utils.component.ManagerBase;
  */
 @Component
 public class EC2Engine extends ManagerBase {
-    protected final static Logger logger = Logger.getLogger(EC2Engine.class);
-    String managementServer = null;
-    String cloudAPIPort = null;
+	protected final static Logger logger = Logger.getLogger(EC2Engine.class);
+	String managementServer = null;
+	String cloudAPIPort = null;
 
-    @Inject OfferingDao ofDao;
-    @Inject CloudStackAccountDao accDao;
-    
-    private CloudStackApi _eng = null;
+	@Inject OfferingDao ofDao;
+	@Inject CloudStackAccountDao accDao;
 
-    private CloudStackAccount currentAccount = null;
+	private CloudStackApi _eng = null;
 
-    public EC2Engine() throws IOException {
-    }
-    
+	private CloudStackAccount currentAccount = null;
+
+	public EC2Engine() throws IOException {
+	}
+
 	@Override
 	public boolean configure(String name, Map<String, Object> params)
 			throws ConfigurationException {
-		
+
 		try {
 			loadConfigValues();
 		} catch(IOException e) {
@@ -2888,4 +2888,97 @@ public class EC2Engine extends ManagerBase {
             }
         }
     }
+
+
+		/**
+	 * fetches the subnets
+	 * @return
+	 */
+	private EC2DescribeSubnetsResponse listSubnets(String subnetId, EC2DescribeSubnetsResponse subnets) {
+		List<CloudStackNetwork> result = new ArrayList<CloudStackNetwork>();
+		try {
+			List<CloudStackNetwork> network = null;
+			if (subnetId != null) {
+			network = getApi().listNetworks(null, null, subnetId, null, null, null, null, null, null, null);
+			}
+			
+			else {
+				network = getApi().listNetworks(null, null, null, null, null, null, null, null, null, null);
+			}
+			
+			if (network != null) {
+				result.addAll(network);
+			}
+			if (result != null && result.size() > 0) {
+				for (CloudStackNetwork net : result) {
+					EC2Subnet ec2Subnet = new EC2Subnet();
+
+					ec2Subnet.setAvailabilityZone(getApi().listZones(null, null, net.getZoneId(), null).get(0).getName());
+					int m = Integer.parseInt(net.getCidr().split("/")[1]);
+					int ips = (int) (Math.pow(2, 32-m) - 3);
+					ec2Subnet.setAvailable_ips(ips); // returns maximum available ips for address
+					ec2Subnet.setCidr(net.getCidr());
+					ec2Subnet.setDefaultForAvailabilityZone(false); // always false
+					ec2Subnet.setId(net.getId()); //should this be name?
+					ec2Subnet.setPublicIPs(true); // the ips are always available to the public
+					String state = net.getState();
+					if (state.equals("Setup")) {
+						state = "pending";
+					}
+					else if (state.equals("Implemented") || state.equals("Allocated")) {
+						state = "available";
+					}
+					ec2Subnet.setState(state);
+					ec2Subnet.setSubnetIdentifier("SUBNET"); //this is hard coded yes?
+					if (net.getVlan() != null)  // vlan of the network
+						ec2Subnet.setVpcId(net.getVlan()); 
+					else 
+						ec2Subnet.setVpcId("n/a"); 
+					
+					List<CloudStackKeyValue> resourceTags = net.getTags();
+					for(CloudStackKeyValue resourceTag : resourceTags) {
+						EC2TagKeyValue param = new EC2TagKeyValue();
+						param.setKey(resourceTag.getKey());
+						if (resourceTag.getValue() != null)
+							param.setValue(resourceTag.getValue());
+						ec2Subnet.addResourceTag(param);
+					}
+					subnets.addSubnet(ec2Subnet);
+
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return subnets;
+	}
+
+
+
+	public EC2DescribeSubnetsResponse describeSubnets(EC2DescribeSubnets request) {
+
+		EC2DescribeSubnetsResponse subnets = new EC2DescribeSubnetsResponse();
+		try {
+			String[] subnetIds = request.getSubnetIdsSet();
+			EC2SubnetFilterSet ifs = request.getIfs();
+
+			if ( subnetIds.length == 0 ) {
+				subnets = listSubnets(null, subnets);
+			} else {
+				for (String s : subnetIds) {
+					subnets = listSubnets(s, subnets);
+				}
+			}
+			if (ifs != null)
+				return ifs.evaluate(subnets);
+		} catch( Exception e ) {
+			logger.error( "EC2 DescribeImages - ", e);
+			handleException(e);
+		}
+		return subnets;
+		
+	}
+
+
 }
