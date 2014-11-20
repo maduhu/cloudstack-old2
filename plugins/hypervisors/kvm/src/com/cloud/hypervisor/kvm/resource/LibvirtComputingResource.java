@@ -3652,37 +3652,41 @@ ServerResource {
 
             s_logger.debug("starting " + vmName + ": " + vm.toString());
             startVM(conn, vmName, vm.toString());
-
-            NicTO[] nics = vmSpec.getNics();
-            for (NicTO nic : nics) {
-                if (nic.isSecurityGroupEnabled() || ( nic.getIsolationUri() != null
-                         && nic.getIsolationUri().getScheme().equalsIgnoreCase(IsolationType.Ec2.toString()))) {
-                    if (vmSpec.getType() != VirtualMachine.Type.User) {
-                        default_network_rules_for_systemvm(conn, vmName);
-                        break;
-                    } else {
-                        List<String> nicSecIps = nic.getNicSecIps();
-                        String secIpsStr;
-                        StringBuilder sb = new StringBuilder();
-                        if (nicSecIps != null) {
-                            for (String ip : nicSecIps) {
-                                sb.append(ip).append(":");
-                            }
-                            secIpsStr = sb.toString();
+            
+            //Setting the default security group rules is optional, and is controlled by
+            //the network offering tag "disableDefaultRules". 
+            String disableDefaultRules = cmd.getContextParam("disableDefaultRules");
+            boolean disable = disableDefaultRules != null && disableDefaultRules.equals("true");
+            
+            if (!disable) {
+                s_logger.info("Enabling default security group rules");
+                NicTO[] nics = vmSpec.getNics();
+                for (NicTO nic : nics) {
+                    if (nic.isSecurityGroupEnabled() || ( nic.getIsolationUri() != null
+                             && nic.getIsolationUri().getScheme().equalsIgnoreCase(IsolationType.Ec2.toString()))) {
+                        if (vmSpec.getType() != VirtualMachine.Type.User) {
+                            default_network_rules_for_systemvm(conn, vmName);
+                            break;
                         } else {
-                            secIpsStr = "0:";
-                        }
-                        
-                        //Setting the default security group rules is optional, and is controlled by
-                        //the network offering tag "disableDefaultRules". 
-                        String disableDefaultRules = cmd.getContextParam("disableDefaultRules");
-                        boolean disable = disableDefaultRules != null && disableDefaultRules.equals("true");
-                        
-                        if (!disable) {
+                            List<String> nicSecIps = nic.getNicSecIps();
+                            String secIpsStr;
+                            StringBuilder sb = new StringBuilder();
+                            if (nicSecIps != null) {
+                                for (String ip : nicSecIps) {
+                                    sb.append(ip).append(":");
+                                }
+                                secIpsStr = sb.toString();
+                            } else {
+                                secIpsStr = "0:";
+                            }
+                            
                             default_network_rules(conn, vmName, nic, vmSpec.getId(), secIpsStr);
                         }
                     }
                 }
+            }
+            else {
+                s_logger.info("Not enabling default security group rules");
             }
 
             // pass cmdline info to system vms
