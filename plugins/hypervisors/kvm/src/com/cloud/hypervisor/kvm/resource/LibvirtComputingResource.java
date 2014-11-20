@@ -3658,9 +3658,10 @@ ServerResource {
             String disableDefaultRules = cmd.getContextParam("disableDefaultRules");
             boolean disable = disableDefaultRules != null && disableDefaultRules.equals("true");
             
+            NicTO[] nics = vmSpec.getNics();
+            
             if (!disable) {
                 s_logger.info("Enabling default security group rules");
-                NicTO[] nics = vmSpec.getNics();
                 for (NicTO nic : nics) {
                     if (nic.isSecurityGroupEnabled() || ( nic.getIsolationUri() != null
                              && nic.getIsolationUri().getScheme().equalsIgnoreCase(IsolationType.Ec2.toString()))) {
