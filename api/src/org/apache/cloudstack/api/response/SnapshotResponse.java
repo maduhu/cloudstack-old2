@@ -99,9 +99,12 @@ public class SnapshotResponse extends BaseResponse implements ControlledEntityRe
 
     @SerializedName(ApiConstants.TAGS)  @Param(description="the list of resource tags associated with snapshot", responseObject = ResourceTagResponse.class)
     private List<ResourceTagResponse> tags;
+    
+    @SerializedName(ApiConstants.SIZE)
+    @Param(description = "the size of the snapshot")
+    private Long size;
 
-
-    @Override
+	@Override
     public String getObjectId() {
         return this.getId();
     }
@@ -184,4 +187,13 @@ public class SnapshotResponse extends BaseResponse implements ControlledEntityRe
     public void setTags(List<ResourceTagResponse> tags) {
         this.tags = tags;
     }
+    
+
+    public Long getSize() {
+		return size;
+	}
+
+	public void setSize(Long size) {
+		this.size = size;
+	}
 }

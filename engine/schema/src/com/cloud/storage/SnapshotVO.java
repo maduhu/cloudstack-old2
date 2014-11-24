@@ -171,7 +171,7 @@ public class SnapshotVO implements Snapshot {
         return false;
     }
 
-    public long getSize() {
+    public Long getSize() {
         return size;
     }
 

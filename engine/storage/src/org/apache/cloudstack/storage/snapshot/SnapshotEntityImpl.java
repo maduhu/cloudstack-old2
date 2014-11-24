@@ -183,4 +183,8 @@ public class SnapshotEntityImpl implements SnapshotEntity {
         return null;
     }
 
+    @Override 
+    public Long getSize() {
+    	return null;
+    }
 }
