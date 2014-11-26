@@ -91,6 +91,16 @@ public class KVMGuestOsMapper {
         s_mapper.put("Fedora 10", "Fedora 10");
         s_mapper.put("Fedora 9", "Fedora 9");
         s_mapper.put("Fedora 8", "Fedora 8");
+        s_mapper.put("Ubuntu 14.10 (32-bit)", "Ubuntu 14.04");
+        s_mapper.put("Ubuntu 14.10 (64-bit)", "Ubuntu 14.10");
+        s_mapper.put("Ubuntu 14.04 (32-bit)", "Ubuntu 14.04");
+        s_mapper.put("Ubuntu 14.04 (64-bit)", "Ubuntu 14.04");        
+        s_mapper.put("Ubuntu 13.10 (32-bit)", "Ubuntu 13.04");
+        s_mapper.put("Ubuntu 13.10 (64-bit)", "Ubuntu 13.04");
+        s_mapper.put("Ubuntu 13.04 (64-bit)", "Ubuntu 13.04");
+        s_mapper.put("Ubuntu 13.04 (32-bit)", "Ubuntu 13.04");
+        s_mapper.put("Ubuntu 12.10 (32-bit)", "Ubuntu 12.10");
+        s_mapper.put("Ubuntu 12.10 (64-bit)", "Ubuntu 12.10");        
         s_mapper.put("Ubuntu 12.04 (32-bit)", "Ubuntu 12.04");
         s_mapper.put("Ubuntu 12.04 (64-bit)", "Ubuntu 12.04");
         s_mapper.put("Ubuntu 10.04 (32-bit)", "Ubuntu 10.04");
