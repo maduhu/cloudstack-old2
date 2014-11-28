@@ -25,11 +25,11 @@ import org.apache.log4j.Logger;
 
 import com.cloud.user.Account;
 
-@APICommand(name = "queryAsyncJobResult", description="Retrieves the current status of deployVM job for instance.", responseObject=AsyncJobResponse.class)
+@APICommand(name = "queryAsyncJobForInstance", description="Retrieves the current status of deployVM job for instance.", responseObject=AsyncJobResponse.class)
 public class QueryAsyncJobForInstanceCmd extends BaseCmd {
     public static final Logger s_logger = Logger.getLogger(QueryAsyncJobForInstanceCmd.class.getName());
 
-    private static final String s_name = "queryasyncjobresponse";
+    private static final String s_name = "queryasyncjobforinstanceresponse";
 
     /////////////////////////////////////////////////////
     //////////////// API parameters /////////////////////
