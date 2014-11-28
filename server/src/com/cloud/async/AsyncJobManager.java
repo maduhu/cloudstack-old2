@@ -18,7 +18,9 @@ package com.cloud.async;
 
 import java.util.List;
 
+import org.apache.cloudstack.api.command.user.job.QueryAsyncJobForInstanceCmd;
 import org.apache.cloudstack.api.command.user.job.QueryAsyncJobResultCmd;
+
 import com.cloud.utils.component.Manager;
 
 public interface AsyncJobManager extends Manager {
@@ -48,4 +50,13 @@ public interface AsyncJobManager extends Manager {
      * @return an async-call result object
      */
     public AsyncJob queryAsyncJobResult(QueryAsyncJobResultCmd cmd);
+
+    /**
+     * Queries for the final result of an async deploy VM job. If the job is not finished, 
+     * this method will probably not return anything, since it relies on job result 
+     * description to find the job. 
+     * @param cmd the command that specifies the instance name
+     * @return an async-call result object
+     */
+    public AsyncJob queryAsyncJobResultForInstance(QueryAsyncJobForInstanceCmd cmd);
 }

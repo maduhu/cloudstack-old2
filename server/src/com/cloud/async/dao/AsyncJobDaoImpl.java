@@ -35,6 +35,7 @@ import com.cloud.utils.db.GenericDaoBase;
 import com.cloud.utils.db.SearchBuilder;
 import com.cloud.utils.db.SearchCriteria;
 import com.cloud.utils.db.Transaction;
+import com.cloud.utils.db.SearchCriteria.Op;
 
 @Component
 @Local(value = { AsyncJobDao.class })
@@ -45,6 +46,7 @@ public class AsyncJobDaoImpl extends GenericDaoBase<AsyncJobVO, Long> implements
 	private final SearchBuilder<AsyncJobVO> pendingAsyncJobsSearch;	
 	private final SearchBuilder<AsyncJobVO> expiringUnfinishedAsyncJobSearch;
 	private final SearchBuilder<AsyncJobVO> expiringCompletedAsyncJobSearch;
+	private final SearchBuilder<AsyncJobVO> deployVmJobSearch;
 
 	
 	public AsyncJobDaoImpl() {
@@ -79,6 +81,10 @@ public class AsyncJobDaoImpl extends GenericDaoBase<AsyncJobVO, Long> implements
 		expiringCompletedAsyncJobSearch.and("completeMsId", expiringCompletedAsyncJobSearch.entity().getCompleteMsid(), SearchCriteria.Op.NNULL);
 		expiringCompletedAsyncJobSearch.and("jobStatus", expiringCompletedAsyncJobSearch.entity().getStatus(), SearchCriteria.Op.NEQ);
 		expiringCompletedAsyncJobSearch.done();
+		
+		deployVmJobSearch = createSearchBuilder();
+		deployVmJobSearch.where("jobResult", deployVmJobSearch.entity().getResult(), Op.LIKE);
+		deployVmJobSearch.where("jobCmd", deployVmJobSearch.entity().getCmd(), Op.EQ);
 	}
 	
 	public AsyncJobVO findInstancePendingAsyncJob(String instanceType, long instanceId) {
@@ -146,4 +152,12 @@ public class AsyncJobDaoImpl extends GenericDaoBase<AsyncJobVO, Long> implements
         	s_logger.warn("Unable to reset job status for management server " + msid, e);
         }
 	}
+
+    @Override
+    public AsyncJobVO findDeployVmJob(String vmName) {
+        SearchCriteria<AsyncJobVO> sc = deployVmJobSearch.create();
+        sc.setParameters("jobResult", vmName);
+        sc.setParameters("jobCmd", "org.apache.cloudstack.api.command.user.vm.DeployVMCmd");
+        return findOneBy(sc);
+    }
 }

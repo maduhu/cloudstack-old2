@@ -39,6 +39,7 @@ import javax.naming.ConfigurationException;
 import org.apache.cloudstack.api.ApiErrorCode;
 import org.apache.cloudstack.api.BaseAsyncCmd;
 import org.apache.cloudstack.api.ServerApiException;
+import org.apache.cloudstack.api.command.user.job.QueryAsyncJobForInstanceCmd;
 import org.apache.cloudstack.api.command.user.job.QueryAsyncJobResultCmd;
 import org.apache.cloudstack.api.response.ExceptionResponse;
 import org.apache.cloudstack.framework.events.EventBus;
@@ -56,7 +57,6 @@ import com.cloud.async.dao.AsyncJobDao;
 import com.cloud.domain.dao.DomainDao;
 import com.cloud.domain.Domain;
 import com.cloud.domain.DomainVO;
-
 import com.cloud.cluster.ClusterManager;
 import com.cloud.cluster.ClusterManagerListener;
 import com.cloud.cluster.ManagementServerHostVO;
@@ -400,6 +400,33 @@ public class AsyncJobManagerImpl extends ManagerBase implements AsyncJobManager,
         //poll the job
         queryAsyncJobResult(cmd.getId());
         return _jobDao.findById(cmd.getId());
+    }
+    
+    @Override
+    public AsyncJob queryAsyncJobResultForInstance(QueryAsyncJobForInstanceCmd cmd) {
+        Account caller = UserContext.current().getCaller();
+
+        AsyncJobVO job = _jobDao.findDeployVmJob(cmd.getInstance());
+        if (job == null) {
+            throw new InvalidParameterValueException("Unable to find a job for instance " + cmd.getInstance());
+        }
+
+        User userJobOwner = _accountMgr.getUserIncludingRemoved(job.getUserId());
+        Account jobOwner = _accountMgr.getAccount(userJobOwner.getAccountId());
+
+        //check permissions
+        if (caller.getType() == Account.ACCOUNT_TYPE_NORMAL) {
+            //regular user can see only jobs he owns
+            if (caller.getId() != jobOwner.getId()) {
+                throw new PermissionDeniedException("Account " + caller + " is not authorized to see job-" + job.getId() + " = [ " + job.getUuid() + " ]");
+            }
+        } else if (caller.getType() == Account.ACCOUNT_TYPE_DOMAIN_ADMIN) {
+            _accountMgr.checkAccess(caller, null, true, jobOwner);
+        }
+
+        //poll the job
+        queryAsyncJobResult(job.getId());
+        return _jobDao.findById(job.getId());
     }
 
     @Override @DB

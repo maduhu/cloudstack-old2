@@ -163,6 +163,7 @@ import com.cloud.vm.VirtualMachine;
 import com.cloud.vm.VirtualMachine.Type;
 import com.cloud.vm.dao.NicSecondaryIpVO;
 import com.cloud.vm.snapshot.VMSnapshot;
+
 import org.apache.cloudstack.acl.ControlledEntity;
 import org.apache.cloudstack.acl.ControlledEntity.ACLType;
 import org.apache.cloudstack.affinity.AffinityGroup;
@@ -170,6 +171,7 @@ import org.apache.cloudstack.affinity.AffinityGroupResponse;
 import org.apache.cloudstack.api.ApiConstants.HostDetails;
 import org.apache.cloudstack.api.ApiConstants.VMDetails;
 import org.apache.cloudstack.api.ResponseGenerator;
+import org.apache.cloudstack.api.command.user.job.QueryAsyncJobForInstanceCmd;
 import org.apache.cloudstack.api.command.user.job.QueryAsyncJobResultCmd;
 import org.apache.cloudstack.api.response.AccountResponse;
 import org.apache.cloudstack.api.response.ApplicationLoadBalancerInstanceResponse;
@@ -275,6 +277,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -1907,6 +1910,12 @@ public class ApiResponseHelper implements ResponseGenerator {
     @Override
     public AsyncJobResponse queryJobResult(QueryAsyncJobResultCmd cmd) {
         AsyncJob result = ApiDBUtils._asyncMgr.queryAsyncJobResult(cmd);
+        return createAsyncJobResponse(result);
+    }
+    
+    @Override
+    public AsyncJobResponse queryJobResultForInstance(QueryAsyncJobForInstanceCmd cmd) {
+        AsyncJob result = ApiDBUtils._asyncMgr.queryAsyncJobResultForInstance(cmd);
         return createAsyncJobResponse(result);
     }
 

@@ -89,10 +89,12 @@ import com.cloud.vm.Nic;
 import com.cloud.vm.NicSecondaryIp;
 import com.cloud.vm.VirtualMachine;
 import com.cloud.vm.snapshot.VMSnapshot;
+
 import org.apache.cloudstack.affinity.AffinityGroup;
 import org.apache.cloudstack.affinity.AffinityGroupResponse;
 import org.apache.cloudstack.api.ApiConstants.HostDetails;
 import org.apache.cloudstack.api.ApiConstants.VMDetails;
+import org.apache.cloudstack.api.command.user.job.QueryAsyncJobForInstanceCmd;
 import org.apache.cloudstack.api.command.user.job.QueryAsyncJobResultCmd;
 import org.apache.cloudstack.api.response.AccountResponse;
 import org.apache.cloudstack.api.response.ApplicationLoadBalancerResponse;
@@ -185,6 +187,7 @@ import org.apache.cloudstack.region.Region;
 import org.apache.cloudstack.usage.Usage;
 
 import com.cloud.storage.ImageStore;
+
 import java.text.DecimalFormat;
 import java.util.EnumSet;
 import java.util.List;
@@ -313,6 +316,8 @@ public interface ResponseGenerator {
     TemplatePermissionsResponse createTemplatePermissionsResponse(List<String> accountNames, Long id, boolean isAdmin);
 
     AsyncJobResponse queryJobResult(QueryAsyncJobResultCmd cmd);
+    
+    AsyncJobResponse queryJobResultForInstance(QueryAsyncJobForInstanceCmd cmd);
 
     NetworkOfferingResponse createNetworkOfferingResponse(NetworkOffering offering);
 
