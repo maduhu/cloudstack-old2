@@ -156,7 +156,7 @@ public class AsyncJobDaoImpl extends GenericDaoBase<AsyncJobVO, Long> implements
     @Override
     public AsyncJobVO findDeployVmJob(String vmName) {
         SearchCriteria<AsyncJobVO> sc = deployVmJobSearch.create();
-        sc.setParameters("jobResult", vmName);
+        sc.setParameters("jobResult", "%" + vmName + "%");
         sc.setParameters("jobCmd", "org.apache.cloudstack.api.command.user.vm.DeployVMCmd");
         return findOneBy(sc);
     }
