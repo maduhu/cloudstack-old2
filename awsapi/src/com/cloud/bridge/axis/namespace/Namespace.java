@@ -7,6 +7,7 @@ public enum Namespace {
 
     // Supported namespaces, in descending order of age.
 
+	EC2_2014_10_01("http://ec2.amazonaws.com/doc/2014-10-01/", "2014-10-01"),
     EC2_2014_06_15("http://ec2.amazonaws.com/doc/2014-06-15/", "2014-06-15"),
     EC2_2014_05_01("http://ec2.amazonaws.com/doc/2014-05-01/", "2014-05-01"),
     EC2_2014_02_01("http://ec2.amazonaws.com/doc/2014-02-01/", "2014-02-01"),
