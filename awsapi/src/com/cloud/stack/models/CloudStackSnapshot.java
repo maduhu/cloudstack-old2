@@ -51,6 +51,8 @@ public class CloudStackSnapshot {
     private String volumeType;
     @SerializedName(ApiConstants.TAGS)
     private List<CloudStackKeyValue> tags;
+    @SerializedName(ApiConstants.SIZE)
+    private String size;
 
     public CloudStackSnapshot() {
     }
@@ -115,4 +117,11 @@ public class CloudStackSnapshot {
         return tags;
     }
 
+	public String getSize() {
+		return size;
+	}
+
+	public void setSize(String size) {
+		this.size = size;
+	}
 }

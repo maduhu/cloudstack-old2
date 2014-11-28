@@ -25,7 +25,9 @@ import java.security.SignatureException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -460,7 +462,6 @@ public class EC2Engine extends ManagerBase {
                 if ( volumeIdSize.containsKey(snap.getVolumeId()) ) {
                     size = volumeIdSize.get(snap.getVolumeId());
                     duplicateVolume = true;
-                    break;
                 }
                 if ( !duplicateVolume ) {
                     EC2DescribeVolumesResponse volumes = new EC2DescribeVolumesResponse();
@@ -1882,54 +1883,59 @@ public class EC2Engine extends ManagerBase {
         List<CloudStackUserVm> vms = getApi().listVirtualMachines(null, null, true, null, null, null, null,
                 instId, null, null, null, null, null, null, null, null, resourceTagSet);
 
+        Collection<String> noDups = new HashSet<String>();
+        
         if(vms != null && vms.size() > 0) {
             for(CloudStackUserVm cloudVm : vms) {
-                EC2Instance ec2Vm = new EC2Instance();
-
-                ec2Vm.setId(cloudVm.getId().toString());
-                ec2Vm.setName(cloudVm.getName());
-                ec2Vm.setZoneName(cloudVm.getZoneName());
-                ec2Vm.setTemplateId(cloudVm.getTemplateId().toString());
-                ec2Vm.setGroup(cloudVm.getGroup());
-                ec2Vm.setState(cloudVm.getState());
-                ec2Vm.setCreated(cloudVm.getCreated());
-                ec2Vm.setIpAddress(cloudVm.getIpAddress());
-                ec2Vm.setAccountName(cloudVm.getAccountName());
-                ec2Vm.setDomainId(cloudVm.getDomainId());
-                ec2Vm.setHypervisor( mapToAmazonHypervisorType(cloudVm.getHypervisor()) );
-                ec2Vm.setRootDeviceType(cloudVm.getRootDeviceType());
-                ec2Vm.setRootDeviceId(cloudVm.getRootDeviceId());
-                ec2Vm.setServiceOffering(serviceOfferingIdToInstanceType(cloudVm.getServiceOfferingId().toString()));
-                ec2Vm.setKeyPairName(cloudVm.getKeyPairName());
-
-                List<CloudStackNic> nics = cloudVm.getNics();
-                for(CloudStackNic nic : nics) {
-                    if(nic.getIsDefault()) {
-                        ec2Vm.setPrivateIpAddress(nic.getIpaddress());
-                        break;
-                    }
-                }
-
-                List<CloudStackKeyValue> resourceTags = cloudVm.getTags();
-                for(CloudStackKeyValue resourceTag : resourceTags) {
-                    EC2TagKeyValue param = new EC2TagKeyValue();
-                    param.setKey(resourceTag.getKey());
-                    if (resourceTag.getValue() != null)
-                        param.setValue(resourceTag.getValue());
-                    ec2Vm.addResourceTag(param);
-                }
-
-                if (cloudVm.getSecurityGroupList() != null && cloudVm.getSecurityGroupList().size() > 0) {
-                    List<CloudStackSecurityGroup> securityGroupList = cloudVm.getSecurityGroupList();
-                    for (CloudStackSecurityGroup securityGroup : securityGroupList) {
-                        EC2SecurityGroup param = new EC2SecurityGroup();
-                        param.setId(securityGroup.getId());
-                        param.setName(securityGroup.getName());
-                        ec2Vm.addGroupName(param);
-                    }
-                }
-
-                instances.addInstance(ec2Vm);
+            	if (!noDups.contains(cloudVm.getId())) {
+            		noDups.add(cloudVm.getId());
+	                EC2Instance ec2Vm = new EC2Instance();
+	
+	                ec2Vm.setId(cloudVm.getId().toString());
+	                ec2Vm.setName(cloudVm.getName());
+	                ec2Vm.setZoneName(cloudVm.getZoneName());
+	                ec2Vm.setTemplateId(cloudVm.getTemplateId().toString());
+	                ec2Vm.setGroup(cloudVm.getGroup());
+	                ec2Vm.setState(cloudVm.getState());
+	                ec2Vm.setCreated(cloudVm.getCreated());
+	                ec2Vm.setIpAddress(cloudVm.getIpAddress());
+	                ec2Vm.setAccountName(cloudVm.getAccountName());
+	                ec2Vm.setDomainId(cloudVm.getDomainId());
+	                ec2Vm.setHypervisor( mapToAmazonHypervisorType(cloudVm.getHypervisor()) );
+	                ec2Vm.setRootDeviceType(cloudVm.getRootDeviceType());
+	                ec2Vm.setRootDeviceId(cloudVm.getRootDeviceId());
+	                ec2Vm.setServiceOffering(serviceOfferingIdToInstanceType(cloudVm.getServiceOfferingId().toString()));
+	                ec2Vm.setKeyPairName(cloudVm.getKeyPairName());
+	
+	                List<CloudStackNic> nics = cloudVm.getNics();
+	                for(CloudStackNic nic : nics) {
+	                    if(nic.getIsDefault()) {
+	                        ec2Vm.setPrivateIpAddress(nic.getIpaddress());
+	                        break;
+	                    }
+	                }
+	
+	                List<CloudStackKeyValue> resourceTags = cloudVm.getTags();
+	                for(CloudStackKeyValue resourceTag : resourceTags) {
+	                    EC2TagKeyValue param = new EC2TagKeyValue();
+	                    param.setKey(resourceTag.getKey());
+	                    if (resourceTag.getValue() != null)
+	                        param.setValue(resourceTag.getValue());
+	                    ec2Vm.addResourceTag(param);
+	                }
+	
+	                if (cloudVm.getSecurityGroupList() != null && cloudVm.getSecurityGroupList().size() > 0) {
+	                    List<CloudStackSecurityGroup> securityGroupList = cloudVm.getSecurityGroupList();
+	                    for (CloudStackSecurityGroup securityGroup : securityGroupList) {
+	                        EC2SecurityGroup param = new EC2SecurityGroup();
+	                        param.setId(securityGroup.getId());
+	                        param.setName(securityGroup.getName());
+	                        ec2Vm.addGroupName(param);
+	                    }
+	                }
+	
+	                instances.addInstance(ec2Vm);
+            	}
             }
         }else{
             if(instanceId != null){

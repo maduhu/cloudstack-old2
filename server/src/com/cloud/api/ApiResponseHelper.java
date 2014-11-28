@@ -442,6 +442,8 @@ public class ApiResponseHelper implements ResponseGenerator {
         }
         snapshotResponse.setTags(tagResponses);
 
+        snapshotResponse.setSize(snapshot.getSize());
+        
         snapshotResponse.setObjectName("snapshot");
         return snapshotResponse;
     }

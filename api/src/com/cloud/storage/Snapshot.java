@@ -104,5 +104,7 @@ public interface Snapshot extends ControlledEntity, Identity, InternalIdentity, 
     boolean isRecursive();
 
     short getsnapshotType();
+    
+    Long getSize();
 
 }
