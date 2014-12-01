@@ -201,6 +201,13 @@ public class SnapshotDaoImpl extends GenericDaoBase<SnapshotVO, Long> implements
         secondaryStorageSearch.and("isRemoved", secondaryStorageSearch.entity().getRemoved(), Op.NULL);
         secondaryStorageSearch.done();
     }
+    
+    @Override
+    public List<SnapshotVO> listByAccountId(long accountId) {
+        SearchCriteria<SnapshotVO> sc = this.AccountIdSearch.create();
+        sc.setParameters("accountId", accountId);
+        return listBy(sc, null);
+    }
 
     @Override
     public Long getSecHostId(long volumeId) {
