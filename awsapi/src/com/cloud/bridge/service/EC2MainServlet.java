@@ -17,10 +17,8 @@
 package com.cloud.bridge.service;
 
 import java.io.IOException;
-
 import java.io.OutputStreamWriter;
 import java.util.UUID;
-
 import javax.inject.Inject;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -88,9 +86,16 @@ public class EC2MainServlet extends HttpServlet{
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         doGetOrPost(req, resp);
     }
-
     protected void doGetOrPost(HttpServletRequest request, HttpServletResponse response) {
-        String action = request.getParameter( "Action" );
+    	HttpServletRequest wrappedRequest = request;
+    	if ("POST".equalsIgnoreCase(wrappedRequest.getMethod())) {
+			try {
+				wrappedRequest = new OrderedHttpServletRequest(request);
+			} catch (IOException ex) {
+	            faultResponse(response, "Unavailable" , "Unable to parse request.");
+	            return;
+			}
+    	}
         if(!isEC2APIEnabled){
             //response.sendError(404, "EC2 API is disabled.");
             response.setStatus(404);
@@ -98,11 +103,11 @@ public class EC2MainServlet extends HttpServlet{
             return;
         }
 
-        if(action != null){
+        if(wrappedRequest.getParameterMap().containsKey("Action")){
             //We presume it's a Query/Rest call
             try {
-                RequestDispatcher dispatcher = request.getRequestDispatcher(EC2_REST_SERVLET_PATH);
-                dispatcher.forward(request, response);
+                RequestDispatcher dispatcher = wrappedRequest.getRequestDispatcher(EC2_REST_SERVLET_PATH);
+                dispatcher.forward(wrappedRequest, response);
             } catch (ServletException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
@@ -111,7 +116,7 @@ public class EC2MainServlet extends HttpServlet{
         }
         else {
             try {
-                request.getRequestDispatcher(EC2_SOAP_SERVLET_PATH).forward(request, response);
+            	wrappedRequest.getRequestDispatcher(EC2_SOAP_SERVLET_PATH).forward(wrappedRequest, response);
             } catch (ServletException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {

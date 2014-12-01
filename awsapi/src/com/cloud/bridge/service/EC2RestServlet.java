@@ -45,6 +45,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -239,7 +240,15 @@ public class EC2RestServlet extends HttpServlet {
     }
 
     protected void doGetOrPost(HttpServletRequest request, HttpServletResponse response) {
-
+    	HttpServletRequest wrappedRequest = request;
+    	if ("POST".equalsIgnoreCase(wrappedRequest.getMethod())) {
+			try {
+				wrappedRequest = new OrderedHttpServletRequest(request);
+			} catch (IOException ex) {
+	            faultResponse(response, "Unavailable" , "Unable to parse request.");
+	            return;
+			}
+    	}
         if(debug){
             System.out.println("EC2RestServlet.doGetOrPost: javax.servlet.forward.request_uri: "+request.getAttribute("javax.servlet.forward.request_uri"));
             System.out.println("EC2RestServlet.doGetOrPost: javax.servlet.forward.context_path: "+request.getAttribute("javax.servlet.forward.context_path"));
@@ -248,7 +257,6 @@ public class EC2RestServlet extends HttpServlet {
             System.out.println("EC2RestServlet.doGetOrPost: javax.servlet.forward.query_string: "+request.getAttribute("javax.servlet.forward.query_string"));
 
         }
-
         String action = request.getParameter( "Action" );
         logRequest(request);
 
@@ -2100,10 +2108,10 @@ public class EC2RestServlet extends HttpServlet {
                 String secret = authHandler.getSecretKey();
                 UserContext.current().initContext(key, secret, key, "REST request", null );
 
-                return new Pair<Boolean, HttpServletRequest>(true, authHandler.getRequest());
+                return new Pair<Boolean, HttpServletRequest>(true, request);
             }
 
-            return new Pair<Boolean, HttpServletRequest>(false, authHandler.getRequest());
+            return new Pair<Boolean, HttpServletRequest>(false, request);
         }
         // ... otherwise fall back to the original version.
 

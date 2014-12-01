@@ -1,18 +1,13 @@
 package com.cloud.bridge.auth.ec2;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +17,6 @@ import java.util.regex.Pattern;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
@@ -125,7 +119,6 @@ public class QueryAPIAuthHandler {
 	 * Verify we support the proposed authentication scheme.
 	 */
 	protected boolean verifyAuthScheme() {
-		reconstructPayload();
 		String authHeader = request.getHeader("Authorization");
 
 		for (SupportedAuthSchemes supportedAuthScheme : SupportedAuthSchemes.values()) {
@@ -346,11 +339,51 @@ public class QueryAPIAuthHandler {
 			req.append("\n");
 			req.append(StringUtils.join(signedHeaders, ";"));	// SignedHeaders
 			req.append("\n");
-			req.append(Hex.encodeHex(hash(reconstructPayload())));	// HashedPayload
+			req.append(Hex.encodeHex(hash(getPayload())));		// HashedPayload
 			break;
 		}
 
 		return req.toString();
+	}
+
+	public String getPayload() {
+		if (StringUtils.isEmpty(requestBody)) {
+		    if (!readInputStream()) {
+			    reconstructPayload();
+		    }
+		}
+		return requestBody;
+	}
+	
+	// Return true if the entire request stream is successfully read, OW false, e.g. if the input stream has already been read.
+	public boolean readInputStream() {
+		byte[] requestPayload = null;
+		if (request.getContentLength() > 0) {
+			try {
+			    InputStream ios = request.getInputStream();
+			    requestPayload = new byte[request.getContentLength()];
+			    int bytesRead = 0, pos = 0;
+			    while ((bytesRead = ios.read(requestPayload, pos, requestPayload.length - bytesRead)) != -1) {
+			        pos += bytesRead;
+			    }
+			} catch (Exception ex) {
+				return false;
+			}
+			requestBody = payloadToString(requestPayload);
+		} 
+		return requestPayload != null && request.getContentLength() == requestPayload.length;
+	}
+
+	private String payloadToString(byte[] requestPayload) {
+	    String enc = request.getCharacterEncoding();
+	    if(enc == null) {
+	        enc = "UTF-8";
+	    }
+	    try {
+			return new String(requestPayload, enc);
+		} catch (UnsupportedEncodingException e) {
+			return StringUtils.EMPTY;
+		}
 	}
 
 	/**
@@ -420,31 +453,31 @@ public class QueryAPIAuthHandler {
 	}
 
 	/**
-	 * EC2 tools calculate the signature based on the exact payload. However the request has
-	 * already been parsed when it gets the EC2RestServlet. Hence we must count on being able
-	 * to reconstruct it from the parameter strings.
+	 * EC2 tools calculate the signature based on the exact payload. However the request may
+	 * already have been parsed, e.g. if it has been forwarded by someone else. 
+	 * If it has been forwarded by us then the input stream is still available, or at minimum
+	 * the parameter map is ordered. Hence we will first try the input stream, then the
+	 * parameter map.
 	 * 
-	 * NOTE: The order is critical, so we are dependent on the parameter map not being permuted!
+	 * NOTE: The order is critical, so if the request has been forwarded by a third party
+	 *       then we are counting on the parameter map not being permuted.
 	 *
 	 * @return The reconstructed payload.
 	 */
 	public String reconstructPayload() {
-		if (request.getMethod().equalsIgnoreCase("GET"))
-			return "";
-
 		StringBuilder buffer = new StringBuilder();
-		Map<String, String[]> paramMap = request.getParameterMap();
-		for (String paramName : paramMap.keySet()) {
+		String querySeparator = "";
+		for (String paramName : request.getParameterMap().keySet()) {
+			buffer.append(querySeparator);
 			buffer.append(paramName);
 			buffer.append("=");
-			for (String paramValue : paramMap.get(paramName)) {
+			String valuePrefix = "";
+			for (String paramValue : request.getParameterMap().get(paramName)) {
+				buffer.append(valuePrefix);
 				buffer.append(paramValue);
+				valuePrefix = "&" + paramName + "=";
 			}
-			buffer.append("&");
-		}
-
-		if (buffer.length() > 0) {
-			buffer.setLength(buffer.length() - 1);
+			querySeparator = "&";
 		}
 		requestBody = buffer.toString();
 		return requestBody;
@@ -549,59 +582,6 @@ public class QueryAPIAuthHandler {
 			logger.error(e);
 			return null;
 		}
-	}
-
-	/**
-	 * Since it is necessary to read the body of the request to authenticate a POST
-	 * request, we return a wrapper object to enable subsequent calls to getParameter*()
-	 * methods.
-	 *
-	 * If the HTTP method is GET we return the original request.
-	 *
-	 * @return The authenticated request
-	 */
-	public HttpServletRequest getRequest() {
-		if (request.getMethod().equalsIgnoreCase("GET"))
-			return request;
-
-		final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
-
-		for (String pair : requestBody.split("&")) {
-			String[] kv = pair.split("=");
-			if (kv.length > 0) {
-				String[] values = parameterMap.get(kv[1]);
-				if (values == null) {
-					parameterMap.put(kv[0], new String[] { kv.length == 1 ? "" : kv[1] });
-				} else {
-					List<String> list = new ArrayList<String>(Arrays.asList(values));
-					list.add(kv.length == 1 ? "" : kv[1]);
-					parameterMap.put(kv[0], list.toArray(new String[list.size()]));
-				}
-			}
-		}
-
-		return new HttpServletRequestWrapper(request) {
-			@Override
-			public Map<String, String[]> getParameterMap() {
-				return parameterMap;
-			}
-
-			@Override
-			public String getParameter(String name) {
-				String[] values = parameterMap.get(name);
-				return values != null && values.length > 0 ? values[0] : null;
-			}
-
-			@Override
-			public String[] getParameterValues(String name) {
-				return parameterMap.get(name);
-			}
-
-			@Override
-			public Enumeration<String> getParameterNames() {
-				return Collections.enumeration(parameterMap.keySet());
-			}
-		};
 	}
 
 	public String getApiKey() {
