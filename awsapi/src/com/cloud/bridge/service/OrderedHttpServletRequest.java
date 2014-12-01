@@ -124,7 +124,7 @@ public class OrderedHttpServletRequest extends HttpServletRequestWrapper {
 		    InputStream ios = getRequest().getInputStream();
 		    requestPayload = new byte[getRequest().getContentLength()];
 		    int bytesRead = 0, pos = 0;
-		    while ((bytesRead = ios.read(requestPayload, pos, requestPayload.length - bytesRead)) != -1) {
+		    while ((bytesRead = ios.read(requestPayload, pos, requestPayload.length - bytesRead)) > 0) {
 		        pos += bytesRead;
 		    }
 		} 
