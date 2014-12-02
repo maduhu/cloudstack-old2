@@ -120,15 +120,16 @@ public class OrderedHttpServletRequest extends HttpServletRequestWrapper {
 
 	// Return true if the entire request stream is successfully read, OW false, e.g. if the input stream has already been read.
 	public boolean readInputStream() throws IOException {
+		int pos = 0;
 		if (getRequest().getContentLength() > 0) {
 		    InputStream ios = getRequest().getInputStream();
 		    requestPayload = new byte[getRequest().getContentLength()];
-		    int bytesRead = 0, pos = 0;
+		    int bytesRead = 0;
 		    while ((bytesRead = ios.read(requestPayload, pos, requestPayload.length - bytesRead)) > 0) {
 		        pos += bytesRead;
 		    }
 		} 
-		return requestPayload != null && getRequest().getContentLength() == requestPayload.length;
+		return requestPayload != null && getRequest().getContentLength() == pos;
 	}
 
 	@Override
