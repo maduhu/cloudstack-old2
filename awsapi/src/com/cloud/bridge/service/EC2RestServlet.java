@@ -2205,14 +2205,10 @@ public class EC2RestServlet extends HttpServlet {
                     String paramName = (String) params.nextElement();
                     // exclude the signature string obviously. ;)
                     if (paramName.equalsIgnoreCase("Signature")) continue;
-                    // URLEncoder performs application/x-www-form-urlencoded-type encoding and not Percent encoding
-                    // according to RFC 3986 as required by Amazon, we need to Percent-encode (URL Encode)
-                    String encodedValue = URLEncoder.encode(request.getParameter(paramName), "UTF-8")
-                            .replace("+", "%20").replace("*", "%2A");
                     if (queryString == null) 
-                        queryString = paramName + "=" + encodedValue;
+                        queryString = paramName + "=" + request.getParameter(paramName);
                     else 
-                        queryString = queryString + "&" + paramName + "=" + encodedValue;
+                        queryString = queryString + "&" + paramName + "=" + request.getParameter(paramName);
                 }
             }
         }

@@ -176,7 +176,7 @@ public class EC2RestAuth {
 	 * @param httpVerb  - the type of HTTP request (e.g., GET, PUT)
 	 * @param secretKey - value obtained from the AWSAccessKeyId
 	 * @param signature - the signature we are trying to recreate, note can be URL-encoded
-	 * @param method    - { "HmacSHA1", "HmacSHA256" }
+	 * @param method    - { "HmacSHA1", "HmacSHA256" } default to HmacSHA256
 	 * 
 	 * @throws SignatureException 
 	 * 
@@ -191,10 +191,11 @@ public class EC2RestAuth {
 		httpVerb  = httpVerb.trim();
 		secretKey = secretKey.trim();
 		signature = signature.trim();
+		String algorithm = method.equalsIgnoreCase("HmacSHA1") ? "HmacSHA1" : "HmacSHA256";
 		
 		// -> first calculate the StringToSign after the caller has initialized all the header values
 		String StringToSign = genStringToSign( httpVerb );
-		String calSig = calculateRFC2104HMAC( StringToSign, secretKey, method.equalsIgnoreCase( "HmacSHA1" ));
+		String calSig = calculateRFC2104HMAC( StringToSign, secretKey, algorithm);
 			
 		// -> the passed in signature is defined to be URL encoded? (and it must be base64 encoded)
 		int offset = signature.indexOf( "%" );
@@ -246,26 +247,18 @@ public class EC2RestAuth {
      * @return String   - the recalculated string
      * @throws SignatureException
      */
-    private String calculateRFC2104HMAC( String signIt, String secretKey, boolean useSHA1 )
+    private String calculateRFC2104HMAC( String signIt, String secretKey, String algorithm )
         throws SignatureException {
     	SecretKeySpec key = null;
     	Mac    hmacShaAlg = null;
     	String result     = null;
  	    
    	    try { 	
-   	    	if ( useSHA1 ) {
-   	    		 key = new SecretKeySpec( secretKey.getBytes(), "HmacSHA1" );
-   	    		 hmacShaAlg = Mac.getInstance( "HmacSHA1" );
-   	    	}
-   	    	else {
-   	    		 key = new SecretKeySpec( secretKey.getBytes(), "HmacSHA256" );
-   	    		 hmacShaAlg = Mac.getInstance( "HmacSHA256" );
-   	    	}
-   	    	
+   	    	key = new SecretKeySpec( secretKey.getBytes("UTF8"), algorithm);
+   	    	hmacShaAlg = Mac.getInstance( algorithm );
    	    	hmacShaAlg.init( key ); 
-   	    	byte [] rawHmac = hmacShaAlg.doFinal( signIt.getBytes());
-            result = new String( Base64.encodeBase64( rawHmac ));
-            
+   	    	byte [] rawHmac = hmacShaAlg.doFinal( signIt.getBytes("UTF8"));
+            result = new String( Base64.encodeBase64(rawHmac));        
    	    } catch( Exception e ) {
    		    throw new SignatureException( "Failed to generate keyed HMAC on REST request: " + e.getMessage());
    	    }
