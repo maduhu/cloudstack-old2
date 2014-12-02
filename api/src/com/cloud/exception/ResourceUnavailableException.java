@@ -33,6 +33,12 @@ public class ResourceUnavailableException extends CloudException {
         _scope = scope;
         _id = resourceId;
     }
+    
+    public ResourceUnavailableException(String msg, Class<?> scope, long resourceId, boolean abort, Throwable cause) {
+        super(new StringBuilder("Resource [").append(scope.getSimpleName()).append(":").append(resourceId).append("] is unreachable: ").append(msg).toString(), abort, cause);
+        _scope = scope;
+        _id = resourceId;
+    }
 
     public Class<?> getScope() {
         return _scope;

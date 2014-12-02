@@ -3818,7 +3818,7 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
     }
     
     protected boolean applyRules(Network network, List<? extends VirtualRouter> routers, String typeString, 
-            boolean isPodLevelException, Long podId, boolean failWhenDisconnect, RuleApplier applier) throws ResourceUnavailableException {
+            boolean isPodLevelException, Long podId, boolean failWhenDisconnect, RuleApplier applier) throws ResourceUnavailableException {        
         if (routers == null || routers.isEmpty()) {
             s_logger.warn("Unable to apply " + typeString + ", virtual router doesn't exist in the network " + network.getId());
             throw new ResourceUnavailableException("Unable to apply " + typeString , DataCenter.class, network.getDataCenterId());
@@ -3859,10 +3859,10 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
                 //If rules fail to apply on one domR and not due to disconnection, no need to proceed with the rest
                 if (!result) {
                     if (isZoneBasic && isPodLevelException) {
-                        throw new RouterUnavailableException("Unable to apply " + typeString + " on router ", Pod.class, podId);
+                        throw new RouterUnavailableException("Unable to apply " + typeString + " on router ", Pod.class, podId, true, null);
                     }
                     throw new RouterUnavailableException("Unable to apply " + typeString + " on router ", DataCenter.class,
-                            router.getDataCenterId());
+                            router.getDataCenterId(), true, null);
                 }
 
             } else if (router.getState() == State.Stopped || router.getState() == State.Stopping) {
@@ -3872,10 +3872,10 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
                 s_logger.warn("Unable to apply " + typeString +", virtual router is not in the right state " + router.getState());
                 if (isZoneBasic && isPodLevelException) {
                     throw new RouterUnavailableException("Unable to apply " + typeString + 
-                            ", virtual router is not in the right state", Pod.class, podId);
+                            ", virtual router is not in the right state", Pod.class, podId, true, null);
                 }
                 throw new RouterUnavailableException("Unable to apply " + typeString + 
-                        ", virtual router is not in the right state", DataCenter.class, router.getDataCenterId());
+                        ", virtual router is not in the right state", DataCenter.class, router.getDataCenterId(), true, null);
             }
         }
 
@@ -3891,9 +3891,9 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
                 }
             }
             if (isZoneBasic && isPodLevelException) {
-                throw new RouterUnavailableException(msg, Pod.class, podId);
+                throw new RouterUnavailableException(msg, Pod.class, podId, true, null);
             }
-            throw new RouterUnavailableException(msg, DataCenter.class, disconnectedRouters.get(0).getDataCenterId());
+            throw new RouterUnavailableException(msg, DataCenter.class, disconnectedRouters.get(0).getDataCenterId(), true, null);
         }
 
         result = true;

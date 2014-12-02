@@ -985,6 +985,11 @@ public class VirtualMachineManagerImpl extends ManagerBase implements VirtualMac
                             throw e;
                         }
                     }
+                    
+                    //Rethrow to abort execution if it has been requested.
+                    if (e.getAbort()) {
+                        throw e;
+                    }
                 } catch (InsufficientCapacityException e) {
                     s_logger.info("Insufficient capacity ", e);
                     if (!avoids.add(e)) {
@@ -993,6 +998,11 @@ public class VirtualMachineManagerImpl extends ManagerBase implements VirtualMac
                         } else {
                             s_logger.warn("unexpected InsufficientCapacityException : " + e.getScope().getName(), e);
                         }
+                    }
+                    
+                    //Rethrow to abort execution if it has been requested.
+                    if (e.getAbort()) {
+                        throw e;
                     }
                 } catch (Exception e) {
                     s_logger.error("Failed to start instance " + vm, e);
