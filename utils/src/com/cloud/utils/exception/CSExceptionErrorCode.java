@@ -65,6 +65,9 @@ public class CSExceptionErrorCode {
             ExceptionErrorCodeMap.put("com.cloud.exception.VirtualMachineMigrationException", 4395);
             ExceptionErrorCodeMap.put("com.cloud.async.AsyncCommandQueued", 4540);
             ExceptionErrorCodeMap.put("com.cloud.exception.RequestLimitException", 4545);
+            
+            // New error codes begin at range 5000
+            ExceptionErrorCodeMap.put("com.cloud.exception.RouterUnavailableException", 5000);
 
             // Have a special error code for ServerApiException when it is
             // thrown in a standalone manner when failing to detect any of the above
