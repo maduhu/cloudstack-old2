@@ -300,7 +300,6 @@ registerUserKeys=15
 
 ### async-query command
 queryAsyncJobResult=15
-queryAsyncJobForInstance=15
 listAsyncJobs=15
 
 #### storage pools commands
