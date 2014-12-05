@@ -336,7 +336,7 @@ cp awsapi/resource/Axis2/axis2.xml ${RPM_BUILD_ROOT}%{_datadir}/%{name}-bridge/w
 cp awsapi/target/WEB-INF/services/cloud-ec2.aar ${RPM_BUILD_ROOT}%{_datadir}/%{name}-bridge/webapps/awsapi/WEB-INF/services
 
 
-for name in applicationContext.xml cloud-bridge.properties commons-logging.properties ec2-service.properties ; do
+for name in applicationContext.xml cloud-bridge.properties commons-logging.properties ec2-service.properties log4j-cloud.xml ; do
   mv ${RPM_BUILD_ROOT}%{_datadir}/%{name}-bridge/webapps/awsapi/WEB-INF/classes/$name \
     ${RPM_BUILD_ROOT}%{_sysconfdir}/%{name}/management/$name
 done
