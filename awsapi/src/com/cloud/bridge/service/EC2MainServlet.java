@@ -19,6 +19,7 @@ package com.cloud.bridge.service;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.UUID;
+
 import javax.inject.Inject;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -36,6 +37,7 @@ import com.cloud.bridge.util.ConfigurationHelper;
 import com.cloud.utils.LogUtils;
 import com.cloud.utils.component.ComponentContext;
 import com.cloud.utils.db.DB;
+import com.cloud.utils.db.Transaction;
 
 @Component("EC2MainServlet")
 @DB
@@ -48,6 +50,7 @@ public class EC2MainServlet extends HttpServlet{
     public static final String ENABLE_EC2_API="enable.ec2.api";
     private static boolean isEC2APIEnabled = false;
     public static final Logger logger = Logger.getLogger(EC2MainServlet.class);
+    public static final Logger testlogger = Logger.getLogger(Transaction.class);
     @Inject CloudStackConfigurationDao csDao;
     
     public EC2MainServlet() {
@@ -72,6 +75,7 @@ public class EC2MainServlet extends HttpServlet{
                 isEC2APIEnabled = Boolean.valueOf(value);
             }
             logger.info("Value of EC2 API Flag ::" + value);
+            testlogger.info("Should see this in awsapi log");
         }catch(Exception e){
             throw new ServletException("Error initializing awsapi: " + e.getMessage(), e);
         }
