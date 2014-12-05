@@ -18,6 +18,7 @@
 package com.cloud.network.router;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -62,6 +63,7 @@ import com.cloud.agent.api.ModifySshKeysCommand;
 import com.cloud.agent.api.NetworkUsageAnswer;
 import com.cloud.agent.api.NetworkUsageCommand;
 import com.cloud.agent.api.PvlanSetupCommand;
+import com.cloud.agent.api.StartCommand;
 import com.cloud.agent.api.StartupCommand;
 import com.cloud.agent.api.StopAnswer;
 import com.cloud.agent.api.check.CheckSshAnswer;
@@ -2292,6 +2294,21 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
     public boolean finalizeDeployment(Commands cmds, VirtualMachineProfile<DomainRouterVO> profile, 
             DeployDestination dest, ReservationContext context) throws ResourceUnavailableException {
         DomainRouterVO router = profile.getVirtualMachine();
+        
+        //Disable default security group rules? Controlled by network offering tag
+        //of "disableDefaultRules". It is up to the agent to understand this. Mostly
+        //applies to KVM hypervisor agent only.
+        List<? extends Network> networks = _networkModel.listNetworksUsedByVm(profile.getVirtualMachine().getId(), false);
+        for (Network network : networks) {
+            NetworkOffering offering = _networkOfferingDao.findById(network.getNetworkOfferingId());
+            if (offering != null) {
+                String[] tags = offering.getTags() != null ? offering.getTags().split(",") : null;
+                if (tags != null && Arrays.asList(tags).contains("disableDefaultRules")) {
+                    StartCommand start = cmds.getCommand(StartCommand.class);
+                    start.setContextParam("disableDefaultRules", "true");
+                }
+            }
+        }
 
         List<NicProfile> nics = profile.getNics();
         for (NicProfile nic : nics) {
