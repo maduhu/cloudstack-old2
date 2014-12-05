@@ -263,7 +263,6 @@ import org.apache.cloudstack.api.command.user.iso.RegisterIsoCmd;
 import org.apache.cloudstack.api.command.user.iso.UpdateIsoCmd;
 import org.apache.cloudstack.api.command.user.iso.UpdateIsoPermissionsCmd;
 import org.apache.cloudstack.api.command.user.job.ListAsyncJobsCmd;
-import org.apache.cloudstack.api.command.user.job.QueryAsyncJobForInstanceCmd;
 import org.apache.cloudstack.api.command.user.job.QueryAsyncJobResultCmd;
 import org.apache.cloudstack.api.command.user.loadbalancer.AssignToLoadBalancerRuleCmd;
 import org.apache.cloudstack.api.command.user.loadbalancer.CreateApplicationLoadBalancerCmd;
@@ -2713,7 +2712,6 @@ public class ManagementServerImpl extends ManagerBase implements ManagementServe
         cmdList.add(UpdateIsoPermissionsCmd.class);
         cmdList.add(ListAsyncJobsCmd.class);
         cmdList.add(QueryAsyncJobResultCmd.class);
-        cmdList.add(QueryAsyncJobForInstanceCmd.class);
         cmdList.add(AssignToLoadBalancerRuleCmd.class);
         cmdList.add(CreateLBStickinessPolicyCmd.class);
         cmdList.add(CreateLBHealthCheckPolicyCmd.class);

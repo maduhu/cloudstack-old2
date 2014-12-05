@@ -46,6 +46,7 @@ import com.cloud.exception.InsufficientCapacityException;
 import com.cloud.exception.InsufficientServerCapacityException;
 import com.cloud.exception.OperationTimedoutException;
 import com.cloud.exception.ResourceUnavailableException;
+import com.cloud.exception.RouterUnavailableException;
 import com.cloud.network.dao.NetworkDao;
 import com.cloud.org.Cluster;
 import com.cloud.service.dao.ServiceOfferingDao;
@@ -226,7 +227,14 @@ public class VMEntityManagerImpl implements VMEntityManager {
             try {
                 VMInstanceVO vmDeployed = _itMgr.start(vm, params, _userDao.findById(new Long(caller)),
                         _accountDao.findById(vm.getAccountId()), reservedPlan);
-            } catch (Exception ex) {
+            }
+            catch (RouterUnavailableException ex) {
+                //Router being unavailable will make the whole deployment crash no matter what host it's on,
+                //so just abort the whole thing.
+                //Start method should clean up the VM automatically.
+                throw ex;
+            }
+            catch (Exception ex) {
                 // Retry the deployment without using the reservation plan
                 DataCenterDeployment plan = new DataCenterDeployment(0, null, null, null, null, null);
 

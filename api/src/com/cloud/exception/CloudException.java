@@ -32,6 +32,10 @@ public class CloudException extends Exception {
 	protected ArrayList<String> idList = new ArrayList<String>();
 
 	protected Integer csErrorCode;
+	
+	// If execution of whatever job that experienced this exception should be immediately aborted
+	// (i.e. no retries). The exception text should go into the job result.
+	protected boolean abort = false;
 
 	public CloudException(String message) {
 		super(message);
@@ -42,8 +46,12 @@ public class CloudException extends Exception {
         super(message, cause);
         setCSErrorCode(CSExceptionErrorCode.getCSErrCode(this.getClass().getName()));
     }
-
-
+    
+    public CloudException(String message, boolean abort, Throwable cause) {
+        super(message, cause);
+        setAbort(abort);
+        setCSErrorCode(CSExceptionErrorCode.getCSErrCode(this.getClass().getName()));
+    }
 
 	public CloudException() {
 		super();
@@ -66,4 +74,14 @@ public class CloudException extends Exception {
 	public int getCSErrorCode() {
 		return this.csErrorCode;
 	}
+	
+	public boolean getAbort() {
+	    return abort;
+	}
+	
+	public void setAbort(boolean abort) {
+	    this.abort = abort;
+	}
+	
+	
 }
