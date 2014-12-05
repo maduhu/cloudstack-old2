@@ -18,6 +18,7 @@ package com.cloud.consoleproxy;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,6 +39,7 @@ import com.cloud.agent.AgentManager;
 import com.cloud.agent.api.Answer;
 import com.cloud.agent.api.ConsoleProxyLoadReportCommand;
 import com.cloud.agent.api.RebootCommand;
+import com.cloud.agent.api.StartCommand;
 import com.cloud.agent.api.StartupCommand;
 import com.cloud.agent.api.StartupProxyCommand;
 import com.cloud.agent.api.StopAnswer;
@@ -1402,6 +1404,22 @@ VirtualMachineGuru<ConsoleProxyVO>, SystemVmLoadScanHandler<Long>, ResourceState
     public boolean finalizeDeployment(Commands cmds, VirtualMachineProfile<ConsoleProxyVO> profile, DeployDestination dest, ReservationContext context) {
 
         finalizeCommandsOnStart(cmds, profile);
+        
+        //Disable default security group rules? Controlled by network offering tag
+        //of "disableDefaultRules". It is up to the agent to understand this. Mostly
+        //applies to KVM hypervisor agent only.
+        List<? extends Network> networks = _networkModel.listNetworksUsedByVm(profile.getVirtualMachine().getId(), false);
+        for (Network network : networks) {
+            NetworkOffering offering = _networkOfferingDao.findById(network.getNetworkOfferingId());
+            if (offering != null) {
+                String[] tags = offering.getTags() != null ? offering.getTags().split(",") : null;
+                if (tags != null && Arrays.asList(tags).contains("disableDefaultRules")) {
+                    StartCommand start = cmds.getCommand(StartCommand.class);
+                    start.setContextParam("disableDefaultRules", "true");
+                }
+            }
+        }
+
 
         ConsoleProxyVO proxy = profile.getVirtualMachine();
         DataCenter dc = dest.getDataCenter();

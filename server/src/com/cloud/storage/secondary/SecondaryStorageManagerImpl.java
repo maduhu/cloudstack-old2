@@ -19,6 +19,7 @@ package com.cloud.storage.secondary;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ import com.cloud.agent.api.RebootCommand;
 import com.cloud.agent.api.SecStorageFirewallCfgCommand;
 import com.cloud.agent.api.SecStorageSetupAnswer;
 import com.cloud.agent.api.SecStorageSetupCommand;
+import com.cloud.agent.api.StartCommand;
 import com.cloud.agent.api.SecStorageSetupCommand.Certificates;
 import com.cloud.agent.api.SecStorageVMSetupCommand;
 import com.cloud.agent.api.StartupCommand;
@@ -1137,6 +1139,22 @@ public class SecondaryStorageManagerImpl extends ManagerBase implements Secondar
     public boolean finalizeDeployment(Commands cmds, VirtualMachineProfile<SecondaryStorageVmVO> profile, DeployDestination dest, ReservationContext context) {
 
         finalizeCommandsOnStart(cmds, profile);
+
+        //Disable default security group rules? Controlled by network offering tag
+        //of "disableDefaultRules". It is up to the agent to understand this. Mostly
+        //applies to KVM hypervisor agent only.
+        List<? extends Network> networks = _networkModel.listNetworksUsedByVm(profile.getVirtualMachine().getId(), false);
+        for (Network network : networks) {
+            NetworkOffering offering = _networkOfferingDao.findById(network.getNetworkOfferingId());
+            if (offering != null) {
+                String[] tags = offering.getTags() != null ? offering.getTags().split(",") : null;
+                if (tags != null && Arrays.asList(tags).contains("disableDefaultRules")) {
+                    StartCommand start = cmds.getCommand(StartCommand.class);
+                    start.setContextParam("disableDefaultRules", "true");
+                }
+            }
+        }
+
 
         SecondaryStorageVmVO secVm = profile.getVirtualMachine();
         DataCenter dc = dest.getDataCenter();
