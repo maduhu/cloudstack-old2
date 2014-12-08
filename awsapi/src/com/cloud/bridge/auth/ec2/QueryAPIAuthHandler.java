@@ -363,7 +363,7 @@ public class QueryAPIAuthHandler {
 			    InputStream ios = request.getInputStream();
 			    requestPayload = new byte[request.getContentLength()];
 			    int bytesRead = 0, pos = 0;
-			    while ((bytesRead = ios.read(requestPayload, pos, requestPayload.length - bytesRead)) != -1) {
+			    while ((bytesRead = ios.read(requestPayload, pos, requestPayload.length - bytesRead)) > 0) {
 			        pos += bytesRead;
 			    }
 			} catch (Exception ex) {
