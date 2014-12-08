@@ -257,8 +257,8 @@ public class EC2RestServlet extends HttpServlet {
             System.out.println("EC2RestServlet.doGetOrPost: javax.servlet.forward.query_string: "+request.getAttribute("javax.servlet.forward.query_string"));
 
         }
-        String action = request.getParameter( "Action" );
-        logRequest(request);
+        String action = wrappedRequest.getParameter( "Action" );
+        logRequest(wrappedRequest);
 
         // -> unauthenticated calls, should still be done over HTTPS
         if (action.equalsIgnoreCase( "SetUserKeys" )) {
@@ -273,7 +273,7 @@ public class EC2RestServlet extends HttpServlet {
 
         // -> authenticated calls
         try {
-            Pair<Boolean, HttpServletRequest> authenticated = authenticateRequest(request, response);
+            Pair<Boolean, HttpServletRequest> authenticated = authenticateRequest(wrappedRequest, response);
 
             if (!authenticated.first()) return;
 
