@@ -1,6 +1,5 @@
 package com.cloud.bridge.auth.ec2;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

@@ -45,7 +45,6 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -132,7 +131,6 @@ import com.cloud.bridge.service.core.ec2.EC2DescribeKeyPairs;
 import com.cloud.bridge.service.core.ec2.EC2DescribeSecurityGroups;
 import com.cloud.bridge.service.core.ec2.EC2DescribeSnapshots;
 import com.cloud.bridge.service.core.ec2.EC2DescribeSubnets;
-import com.cloud.bridge.service.core.ec2.EC2DescribeSubnetsResponse;
 import com.cloud.bridge.service.core.ec2.EC2DescribeTags;
 import com.cloud.bridge.service.core.ec2.EC2DescribeVolumes;
 import com.cloud.bridge.service.core.ec2.EC2DisassociateAddress;
@@ -2199,16 +2197,17 @@ public class EC2RestServlet extends HttpServlet {
         // we need to construct queryString to avoid changing the auth code...
         if (queryString == null) {
             // construct our idea of a queryString with parameters!
+        	boolean encode = request.getContentType() != null && request.getContentType().equals("application/x-www-form-urlencoded");
             Enumeration<?> params = request.getParameterNames();
             if (params != null) {
                 while(params.hasMoreElements()) {
-                    String paramName = (String) params.nextElement();
+                    String paramName = urlEncode ((String) params.nextElement(), encode);
                     // exclude the signature string obviously. ;)
                     if (paramName.equalsIgnoreCase("Signature")) continue;
                     if (queryString == null) 
-                        queryString = paramName + "=" + request.getParameter(paramName);
+                        queryString = paramName + "=" + urlEncode(request.getParameter(paramName), encode);
                     else 
-                        queryString = queryString + "&" + paramName + "=" + request.getParameter(paramName);
+                        queryString = queryString + "&" + paramName + "=" + urlEncode(request.getParameter(paramName), encode);
                 }
             }
         }
@@ -2221,6 +2220,16 @@ public class EC2RestServlet extends HttpServlet {
         else throw new EC2ServiceException( ClientError.SignatureDoesNotMatch,
                 "The request signature calculated does not match the signature provided by the user.");
     }
+    
+	private String urlEncode(String item, boolean encode) {
+		if (encode) {
+            try {
+            	item = URLEncoder.encode(item, "UTF-8");
+            } catch(Exception e) {}
+		}
+		return item;
+	}
+
 
     /**
      * We check this to reduce replay attacks.
