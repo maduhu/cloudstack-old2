@@ -169,7 +169,13 @@ public class BareMetalDiscoverer extends DiscovererBase implements Discoverer, R
 			params.put(ApiConstants.PRIVATE_IP, ipmiIp);
 			params.put(ApiConstants.USERNAME, username);
 			params.put(ApiConstants.PASSWORD, password);
-			
+
+			// We specify blade number as host port in case of host being
+			// part of an IBM blade center.
+			if (url.getPort() != -1) {
+				params.put("BladeNumber", String.valueOf(url.getPort()));
+			}
+
 			String resourceClassName = _configDao.getValue(Config.ExternalBaremetalResourceClassName.key());
 			BareMetalResourceBase resource = null;
 			if (resourceClassName != null) {

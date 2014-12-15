@@ -19,7 +19,7 @@
  
 
 
-import sys, os, subprocess, errno, re
+import sys, os, subprocess, errno, re, pexpect
 from os.path import exists
 
 TOOl_PATH = "/usr/bin/ipmitool"
@@ -190,13 +190,66 @@ def boot_or_reboot(args):
     else:
         print "unknown power status:" + o.stdout
         return 1
-    
+
+
+def blade_ssh_session(args):
+    hostname = args.get("hostname")
+    usrname = args.get("usrname")
+    password = args.get("password")
+
+    ssh = pexpect.spawn("ssh %s@%s" % (usrname, hostname))
+    ssh.expect("password:")
+    ssh.sendline(password)
+    ssh.expect("system>")
+
+    return ssh
+
+
+def boot_dev_blade(args):
+    bladenum = args.get("blade_number")
+    bootdev = "nw" if args.get("dev") == "pxe" else "hd0 hd1 hd2 hd3"
+    ssh = blade_ssh_session(args)
+
+    ssh.sendline("bootseq -T system:blade[%s] %s\r\n" % (bladenum, bootdev))
+    ssh.expect("OK")
+    ssh.expect("system>")
+
+
+def reboot_blade(args):
+    bladenum = args.get("blade_number")
+    ssh = blade_ssh_session(args)
+
+    ssh.sendline("power -T system:blade[%s] -cycle\r\n" % bladenum)
+    ssh.expect("OK")
+    ssh.expect("system>")
+
+
+def power_blade(args):
+    bladenum = args.get("blade_number")
+    ssh = blade_ssh_session(args)
+    action = args.get("action")
+
+    if action == "soft":
+        action = "softoff"
+
+    ssh.sendline("power -T system:blade[%s] -%s\r\n" % (bladenum, action))
+    ssh.expect("OK")
+    ssh.expect("system>")
+
 
 call_table = {"ping":ping, "boot_dev":boot_dev, "reboot":reboot, "power":power, "boot_or_reboot":boot_or_reboot}
 def dispatch(args):
     cmd = args[1]
     params = args[2:]
     func_params = {}
+    if "bladecenter=true" in params:
+        call_table = {
+            "ping":ping,
+            "boot_dev":boot_dev_blade,
+            "reboot":reboot_blade,
+            "power":power_blade,
+            "boot_or_reboot":reboot_blade
+        }
 
     if call_table.has_key(cmd) == False:
         print "No function %s" % cmd
