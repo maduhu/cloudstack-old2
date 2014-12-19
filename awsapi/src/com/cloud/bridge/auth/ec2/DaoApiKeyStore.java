@@ -19,11 +19,9 @@ public class DaoApiKeyStore implements ApiKeyStore {
 	}
 
 	@Override
-	public Map<String, String> getRegionSecretApiKey(String publicApiKey, String region) {
+	public String getRegionSecretApiKey(String publicApiKey, String region) {
 		// Ignore region
-		Map<String, String> result = new HashMap<String, String>(1);
-		result.put(region, getSecretApiKey(publicApiKey));
-		return result;
+		return getSecretApiKey(publicApiKey);
 	}
 
 	@Override

@@ -33,7 +33,7 @@ public interface ApiKeyStore {
 	 * @param region		The cloud region, e.g. https://cloud.google.com/compute/docs/zones
 	 * @return				The
 	 */
-	public Map<String, String> getRegionSecretApiKey(String publiApiKey, String region);
+	public String getRegionSecretApiKey(String publicApiKey, String region);
 	
 	/**
 	 * getSecretApiKeySet
@@ -46,6 +46,6 @@ public interface ApiKeyStore {
 	 * @param regions		The regions to be queried, or empty to query all regions.
 	 * @return				A <region, secret> map.
 	 */
-	public Map<String, String> getSecretApiKeySet(String publiApiKey, Set<String> regions);	
+	public Map<String, String> getSecretApiKeySet(String publicApiKey, Set<String> regions);	
 
 }

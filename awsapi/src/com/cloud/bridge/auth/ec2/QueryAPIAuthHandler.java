@@ -37,7 +37,6 @@ public class QueryAPIAuthHandler {
 	public static final Logger logger = Logger.getLogger(QueryAPIAuthHandler.class);
 
 	protected String apiKey;
-	protected String secretKey;
 	protected String amzDateTime;
 	protected String scopeDate;
 	protected String scopeRegion;
@@ -48,7 +47,7 @@ public class QueryAPIAuthHandler {
 	protected HttpServletRequest request;
 	protected SupportedAuthSchemes authScheme;
 
-	protected ApiKeyStore userDao;
+	protected ApiKeyStore keyStore;
 
 	/**
 	 * The authentication schemes/versions supported by this handler
@@ -81,7 +80,7 @@ public class QueryAPIAuthHandler {
 
 	public QueryAPIAuthHandler(HttpServletRequest request, ApiKeyStore keystore) {
 		this.request = request;
-		this.userDao = keystore;
+		this.keyStore = keystore;
 	}
 
 	/**
@@ -209,7 +208,7 @@ public class QueryAPIAuthHandler {
 	 * Verify the provided API key has a corresponding secret key in the database.
 	 */
 	protected boolean verifyApiKey() {
-		secretKey = userDao.getSecretApiKey(apiKey);
+		String secretKey = getSecretKey();
 
 		if (secretKey == null) {
 			logger.debug(String.format("Unable to find API key: %s", apiKey));
@@ -263,7 +262,7 @@ public class QueryAPIAuthHandler {
 		switch (authScheme) {
 		case AWS4:
 			try {
-				byte[] scrtKeyArr = String.format("AWS4%s", secretKey).getBytes("UTF-8");
+				byte[] scrtKeyArr = String.format("AWS4%s", getSecretKey()).getBytes("UTF-8");
 				byte[] dateKey    = hmac(scrtKeyArr, scopeDate);
 				byte[] regionKey  = hmac(dateKey, scopeRegion);
 				byte[] serviceKey = hmac(regionKey, scopeService);
@@ -588,6 +587,6 @@ public class QueryAPIAuthHandler {
 	}
 
 	public String getSecretKey() {
-		return secretKey;
+		return keyStore.getSecretApiKey(apiKey);
 	}
 }

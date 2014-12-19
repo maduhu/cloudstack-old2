@@ -73,7 +73,8 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testGetSigningKey() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
+		ApiKeyStore keystore = new DaoApiKeyStore(mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, keystore);
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader);
 		when(request.getHeader("x-amz-date")).thenReturn(validAmzDateV4);
 		when(request.getMethod()).thenReturn("POST");
@@ -81,7 +82,7 @@ public class QueryAPIAuthHandlerTest {
 		assertTrue(authHandler.verifyAuthScheme());
 		assertTrue(authHandler.verifyAuthParams());
 
-		authHandler.secretKey = "1234ASDF1234ASDF1234";
+		when(keystore.getSecretApiKey("ASDF1234ASDF1234ASDF")).thenReturn("1234ASDF1234ASDF1234");
 
 		String expected = "09f67ab714788fbb3c0a9932a0f9c9233f894b5744606133c1becfc2c31a9f50";
 		String provided = new String(Hex.encodeHex(authHandler.getSigningKey()));
@@ -172,14 +173,15 @@ public class QueryAPIAuthHandlerTest {
 	public void testGetCanonicalRequest() {
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 		HttpServletRequest request = setupRequest(payload, validAuthHeader, "?Version=123&SomeParam=value", "header-value", validAmzDateV4, "", "");
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
+		ApiKeyStore keystore = new DaoApiKeyStore(mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, keystore);
 		when(request.getPathInfo()).thenReturn("/");
 
 
 		assertTrue(authHandler.verifyAuthScheme());
 		assertTrue(authHandler.verifyAuthParams());
 
-		authHandler.secretKey = "1234ASDF1234ASDF1234";
+		when(keystore.getSecretApiKey("ASDF1234ASDF1234ASDF")).thenReturn("1234ASDF1234ASDF1234");
 
 		String expected = StringUtils.join(new String[] {
 			"POST",
@@ -234,11 +236,13 @@ public class QueryAPIAuthHandlerTest {
 		// Test 1
 		String payload = "Action=DescribeImages&Version=2014-06-15&Owner.1=self";
 		HttpServletRequest request1 = setupRequest(payload, validAuthHeaderV4, "", validHostV4, validAmzDateV4, validUserAgentV4, "");
-		QueryAPIAuthHandler authHandler1 = new QueryAPIAuthHandler(request1, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
-
+		ApiKeyStore keystore = new DaoApiKeyStore(mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler1 = new QueryAPIAuthHandler(request1, keystore);
+		
+		when(keystore.getSecretApiKey("V0FWSHRFeTRmWk00NEpvNzl1a3dReExQMjJ5azdn")).thenReturn(validSecretKeyV4);
+		
 		assertTrue(authHandler1.verifyAuthScheme());
 		assertTrue(authHandler1.verifyAuthParams());
-		authHandler1.secretKey = validSecretKeyV4;
 		assertTrue(authHandler1.verifySignature());
 
 		
@@ -247,11 +251,11 @@ public class QueryAPIAuthHandlerTest {
 		String contentType = "application/x-www-form-urlencoded; charset=utf-8\n";
 		payload = "Action=ListUsers&Version=2010-05-08";
 		HttpServletRequest request2 = setupRequest(payload, validHeader2, "", "iam.amazonaws.com", "20110909T233600Z", "", contentType);
-		QueryAPIAuthHandler authHandler2 = new QueryAPIAuthHandler(request2, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
+		QueryAPIAuthHandler authHandler2 = new QueryAPIAuthHandler(request2, keystore);
 
 		assertTrue(authHandler2.verifyAuthScheme());
 		assertTrue(authHandler2.verifyAuthParams());
-		authHandler2.secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY";
+		when(keystore.getSecretApiKey("V0FWSHRFeTRmWk00NEpvNzl1a3dReExQMjJ5azdn")).thenReturn("wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY");
 		assertTrue(authHandler2.verifySignature());
 	}	
 	
@@ -259,12 +263,13 @@ public class QueryAPIAuthHandlerTest {
 	public void testGetStringToSign() {
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 		HttpServletRequest request = setupRequest(payload, validAuthHeader, "?Version=123&SomeParam=value", "header-value", validAmzDateV4, "", "");
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
+		ApiKeyStore keystore = new DaoApiKeyStore(mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, keystore);
 
+		when(keystore.getSecretApiKey("ASDF1234ASDF1234ASDF")).thenReturn("1234ASDF1234ASDF1234");
+		
 		assertTrue(authHandler.verifyAuthScheme());
 		assertTrue(authHandler.verifyAuthParams());
-
-		authHandler.secretKey = "1234ASDF1234ASDF1234";
 
 		String expected = StringUtils.join(new String[] {
 			"AWS4-HMAC-SHA256",
