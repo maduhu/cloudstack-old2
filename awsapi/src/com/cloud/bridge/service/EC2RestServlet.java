@@ -106,6 +106,7 @@ import com.amazon.ec2.RunInstancesResponse;
 import com.amazon.ec2.StartInstancesResponse;
 import com.amazon.ec2.StopInstancesResponse;
 import com.amazon.ec2.TerminateInstancesResponse;
+import com.cloud.bridge.auth.ec2.DaoApiKeyStore;
 import com.cloud.bridge.auth.ec2.QueryAPIAuthHandler;
 import com.cloud.bridge.axis.namespace.Namespace;
 import com.cloud.bridge.axis.namespace.RequestContext;
@@ -2099,7 +2100,7 @@ public class EC2RestServlet extends HttpServlet {
 
         // Check if we're dealing with header based authentication...
         if (!StringUtils.isEmpty(request.getHeader("Authorization"))) {
-            QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, userDao);
+            QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(userDao));
 
             if (authHandler.authenticate()) {
                 String key = authHandler.getApiKey();

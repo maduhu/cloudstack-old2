@@ -21,7 +21,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.cloud.bridge.persist.dao.CloudStackUserDao;
 import com.cloud.bridge.service.exception.EC2ServiceException;
 import com.cloud.bridge.service.exception.EC2ServiceException.ClientError;
 import com.cloud.bridge.service.exception.EC2ServiceException.ServerError;
@@ -49,7 +48,7 @@ public class QueryAPIAuthHandler {
 	protected HttpServletRequest request;
 	protected SupportedAuthSchemes authScheme;
 
-	protected CloudStackUserDao userDao;
+	protected ApiKeyStore userDao;
 
 	/**
 	 * The authentication schemes/versions supported by this handler
@@ -80,9 +79,9 @@ public class QueryAPIAuthHandler {
 		}
 	}
 
-	public QueryAPIAuthHandler(HttpServletRequest request, CloudStackUserDao userDao) {
+	public QueryAPIAuthHandler(HttpServletRequest request, ApiKeyStore keystore) {
 		this.request = request;
-		this.userDao = userDao;
+		this.userDao = keystore;
 	}
 
 	/**
@@ -210,10 +209,11 @@ public class QueryAPIAuthHandler {
 	 * Verify the provided API key has a corresponding secret key in the database.
 	 */
 	protected boolean verifyApiKey() {
-		secretKey = userDao.getSecretKeyByAccessKey(apiKey);
+		secretKey = userDao.getSecretApiKey(apiKey);
 
-		if (secretKey == null)
+		if (secretKey == null) {
 			logger.debug(String.format("Unable to find API key: %s", apiKey));
+		}
 
 		return secretKey != null;
 	}
