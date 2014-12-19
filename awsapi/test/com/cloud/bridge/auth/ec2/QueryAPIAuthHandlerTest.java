@@ -33,7 +33,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testVerifyAuthScheme() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader);
 		when(request.getMethod()).thenReturn("POST");
@@ -47,7 +47,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testVerifyAuthParams() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader);
 		when(request.getHeader("x-amz-date")).thenReturn(validAmzDateV4);
 		when(request.getMethod()).thenReturn("POST");
@@ -73,7 +73,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testGetSigningKey() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader);
 		when(request.getHeader("x-amz-date")).thenReturn(validAmzDateV4);
 		when(request.getMethod()).thenReturn("POST");
@@ -92,7 +92,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testHmac() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 		when(request.getHeader("Authorization")).thenReturn(validAuthHeader);
 		when(request.getHeader("X-Amz-Date")).thenReturn(validAmzDateV4);
 		when(request.getMethod()).thenReturn("POST");
@@ -121,7 +121,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testGetCanonicalQueryString() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 		when(request.getQueryString()).thenReturn("?Version=123&SomeParam=value");
 
 		String expected = "SomeParam=value&Version=123";
@@ -133,7 +133,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testGetCanoncialHeaders() {
 		HttpServletRequest request = setupRequest("", validAuthHeader, "", "header-value", validAmzDateV4, "", "");
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 		when(request.getHeader("date")).thenReturn("header-value");
 		
 		assertTrue(authHandler.verifyAuthScheme());
@@ -149,16 +149,16 @@ public class QueryAPIAuthHandlerTest {
 	public void testreconstructPayload() {
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 		HttpServletRequest request = setupRequest(payload, validAuthHeader, "", "", validAmzDateV4, "", "");
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 
-		//assertEquals(authHandler.reconstructPayload(), payload);
+		assertEquals(authHandler.reconstructPayload(), payload);
 	}
 
 	@Test
 	public void testGetReader() {
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 		HttpServletRequest request = setupRequest(payload, validAuthHeader, "", "", validAmzDateV4, "", "");
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 
 		assertNotNull(request.getParameterMap().get("Action"));
 		assertNotNull(request.getParameterMap());
@@ -172,7 +172,7 @@ public class QueryAPIAuthHandlerTest {
 	public void testGetCanonicalRequest() {
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 		HttpServletRequest request = setupRequest(payload, validAuthHeader, "?Version=123&SomeParam=value", "header-value", validAmzDateV4, "", "");
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 		when(request.getPathInfo()).thenReturn("/");
 
 
@@ -234,7 +234,7 @@ public class QueryAPIAuthHandlerTest {
 		// Test 1
 		String payload = "Action=DescribeImages&Version=2014-06-15&Owner.1=self";
 		HttpServletRequest request1 = setupRequest(payload, validAuthHeaderV4, "", validHostV4, validAmzDateV4, validUserAgentV4, "");
-		QueryAPIAuthHandler authHandler1 = new QueryAPIAuthHandler(request1, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler1 = new QueryAPIAuthHandler(request1, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 
 		assertTrue(authHandler1.verifyAuthScheme());
 		assertTrue(authHandler1.verifyAuthParams());
@@ -247,7 +247,7 @@ public class QueryAPIAuthHandlerTest {
 		String contentType = "application/x-www-form-urlencoded; charset=utf-8\n";
 		payload = "Action=ListUsers&Version=2010-05-08";
 		HttpServletRequest request2 = setupRequest(payload, validHeader2, "", "iam.amazonaws.com", "20110909T233600Z", "", contentType);
-		QueryAPIAuthHandler authHandler2 = new QueryAPIAuthHandler(request2, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler2 = new QueryAPIAuthHandler(request2, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 
 		assertTrue(authHandler2.verifyAuthScheme());
 		assertTrue(authHandler2.verifyAuthParams());
@@ -259,7 +259,7 @@ public class QueryAPIAuthHandlerTest {
 	public void testGetStringToSign() {
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 		HttpServletRequest request = setupRequest(payload, validAuthHeader, "?Version=123&SomeParam=value", "header-value", validAmzDateV4, "", "");
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 
 		assertTrue(authHandler.verifyAuthScheme());
 		assertTrue(authHandler.verifyAuthParams());
@@ -280,7 +280,7 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testVerifyScopeDate() {
 		HttpServletRequest request = setupRequest("", validAuthHeader, "", "header-value", validAmzDateV4, "", "");
-		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, new DaoApiKeyStore(mock(CloudStackUserDao.class)));
 
 		assertTrue(authHandler.verifyAuthScheme());
 		assertTrue(authHandler.verifyAuthParams());
