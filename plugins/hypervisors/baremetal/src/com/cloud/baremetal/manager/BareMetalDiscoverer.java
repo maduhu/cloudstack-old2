@@ -135,7 +135,12 @@ public class BareMetalDiscoverer extends DiscovererBase implements Discoverer, R
 			InetAddress ia = InetAddress.getByName(hostname);
 			String ipmiIp = ia.getHostAddress();
 			String guid = UUID.nameUUIDFromBytes(ipmiIp.getBytes()).toString();
-			
+
+			// Calculate the GUID from the full URL if the hostname/IPMI IP is not unique
+			if (url.getPort() != -1) {
+				guid = UUID.nameUUIDFromBytes(url.toString().getBytes()).toString();
+			}
+
 			String injectScript = "scripts/util/ipmi.py";
 			String scriptPath = Script.findScript("", injectScript);
 			if (scriptPath == null) {
