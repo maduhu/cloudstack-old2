@@ -193,6 +193,10 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_pingCommand.add("hostname=" + _ip);
 		_pingCommand.add("usrname=" + _username);
 		_pingCommand.add("password=" + _password, ParamType.PASSWORD);
+		if (_isPartOfBladeCenter) {
+			_pingCommand.add("bladecenter=true");
+			_pingCommand.add("blade_number=" + _bladeNumber);
+		}
 
 		_setPxeBootCommand = new Script2(pythonPath, s_logger);
 		_setPxeBootCommand.add(scriptPath);
@@ -239,6 +243,11 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_getStatusCommand.add("hostname=" + _ip);
 		_getStatusCommand.add("usrname=" + _username);
 		_getStatusCommand.add("password=" + _password, ParamType.PASSWORD);
+		if (_isPartOfBladeCenter) {
+			_getStatusCommand.add("bladecenter=true");
+			_getStatusCommand.add("blade_number=" + _bladeNumber);
+		}
+
 
 		_powerOnCommand = new Script2(pythonPath, s_logger);
 		_powerOnCommand.add(scriptPath);
@@ -250,7 +259,7 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_powerOnCommand.add("action=on");
 		if (_isPartOfBladeCenter) {
 			_powerOnCommand.add("bladecenter=true");
-			_powerOffCommand.add("blade_number=" + _bladeNumber);
+			_powerOnCommand.add("blade_number=" + _bladeNumber);
 		}
 
 		_powerOffCommand = new Script2(pythonPath, s_logger);
