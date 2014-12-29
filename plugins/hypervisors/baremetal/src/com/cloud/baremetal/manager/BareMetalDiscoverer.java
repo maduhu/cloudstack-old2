@@ -148,6 +148,10 @@ public class BareMetalDiscoverer extends DiscovererBase implements Discoverer, R
 			command.add("hostname="+ipmiIp);
 			command.add("usrname="+username);
 			command.add("password="+password, ParamType.PASSWORD);
+			if (url.getPort() != -1) {
+				command.add("bladecenter=true");
+				command.add("blade_number=" + String.valueOf(url.getPort()));
+			}
 			final String result = command.execute();
 			if (result != null) {
 				s_logger.warn(String.format("Can not set up ipmi connection(ip=%1$s, username=%2$s, password=%3$s, args) because %4$s", ipmiIp, username, "******", result));
