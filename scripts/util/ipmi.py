@@ -197,7 +197,7 @@ def blade_ssh_session(args):
     usrname = args.get("usrname")
     password = args.get("password")
 
-    ssh = pexpect.spawn("ssh %s@%s" % (usrname, hostname))
+    ssh = pexpect.spawn("ssh -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' %s@%s" % (usrname, hostname))
     ssh.expect("password:")
     ssh.sendline(password)
     ssh.expect("system>")
@@ -236,15 +236,27 @@ def power_blade(args):
     ssh.expect("OK")
     ssh.expect("system>")
 
+    print "Chassis Power is %s" % ("on" if action == "on" else "off")
 
-call_table = {"ping":ping, "boot_dev":boot_dev, "reboot":reboot, "power":power, "boot_or_reboot":boot_or_reboot}
+
+def ping_blade(args):
+    bladenum = args.get("blade_number")
+    ssh = blade_ssh_session(args)
+
+    ssh.sendline("info -T system:blade[%s]\r\n" % bladenum)
+    index = ssh.expect([".*Power On Time: .* days", ".*system>"])
+
+    print "Chassis Power is %s" % ("on" if index == 0 else "off")
+
+
 def dispatch(args):
+    call_table = {"ping":ping, "boot_dev":boot_dev, "reboot":reboot, "power":power, "boot_or_reboot":boot_or_reboot}
     cmd = args[1]
     params = args[2:]
     func_params = {}
     if "bladecenter=true" in params:
         call_table = {
-            "ping":ping,
+            "ping":ping_blade,
             "boot_dev":boot_dev_blade,
             "reboot":reboot_blade,
             "power":power_blade,
