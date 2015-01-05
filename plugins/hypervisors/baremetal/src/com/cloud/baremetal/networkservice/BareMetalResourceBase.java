@@ -411,6 +411,11 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		cmd.setPrivateMacAddress(_mac);
 		cmd.setPublicMacAddress(_mac);
 		cmd.setStateChanges(fullSync());
+
+		if (_isPartOfBladeCenter) {
+			cmd.setName(String.format("%s:%d", _ip, _bladeNumber));
+		}
+
 		return new StartupCommand[] { cmd };
 	}
 
