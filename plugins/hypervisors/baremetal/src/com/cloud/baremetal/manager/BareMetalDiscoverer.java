@@ -135,7 +135,12 @@ public class BareMetalDiscoverer extends DiscovererBase implements Discoverer, R
 			InetAddress ia = InetAddress.getByName(hostname);
 			String ipmiIp = ia.getHostAddress();
 			String guid = UUID.nameUUIDFromBytes(ipmiIp.getBytes()).toString();
-			
+
+			// Calculate the GUID from the full URL if the hostname/IPMI IP is not unique
+			if (url.getPort() != -1) {
+				guid = UUID.nameUUIDFromBytes(url.toString().getBytes()).toString();
+			}
+
 			String injectScript = "scripts/util/ipmi.py";
 			String scriptPath = Script.findScript("", injectScript);
 			if (scriptPath == null) {
@@ -148,6 +153,10 @@ public class BareMetalDiscoverer extends DiscovererBase implements Discoverer, R
 			command.add("hostname="+ipmiIp);
 			command.add("usrname="+username);
 			command.add("password="+password, ParamType.PASSWORD);
+			if (url.getPort() != -1) {
+				command.add("bladecenter=true");
+				command.add("blade_number=" + String.valueOf(url.getPort()));
+			}
 			final String result = command.execute();
 			if (result != null) {
 				s_logger.warn(String.format("Can not set up ipmi connection(ip=%1$s, username=%2$s, password=%3$s, args) because %4$s", ipmiIp, username, "******", result));
@@ -169,7 +178,14 @@ public class BareMetalDiscoverer extends DiscovererBase implements Discoverer, R
 			params.put(ApiConstants.PRIVATE_IP, ipmiIp);
 			params.put(ApiConstants.USERNAME, username);
 			params.put(ApiConstants.PASSWORD, password);
-			
+
+			// We specify blade number as host port in case of host being
+			// part of an IBM blade center.
+			if (url.getPort() != -1) {
+				params.put("BladeNumber", String.valueOf(url.getPort()));
+				details.put("BladeNumber", String.valueOf(url.getPort()));
+			}
+
 			String resourceClassName = _configDao.getValue(Config.ExternalBaremetalResourceClassName.key());
 			BareMetalResourceBase resource = null;
 			if (resourceClassName != null) {

@@ -91,6 +91,8 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 	protected String _vmName;
 	protected VMInstanceDao vmDao;
     protected int ipmiRetryTimes = 5;
+    protected boolean _isPartOfBladeCenter = false;
+    protected int _bladeNumber;
 
 
 	private void changeVmState(String vmName, VirtualMachine.State state) {
@@ -159,6 +161,11 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		    _isEchoScAgent = Boolean.valueOf(echoScAgent);
 		}
 
+		if (params.containsKey("BladeNumber")) {
+			_isPartOfBladeCenter = true;
+			_bladeNumber = Integer.valueOf((String)params.get("BladeNumber"));
+		}
+
         ConfigurationDao configDao = ComponentContext.getComponent(ConfigurationDao.class);
         String ipmiIface = "default";
         try {
@@ -186,6 +193,10 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_pingCommand.add("hostname=" + _ip);
 		_pingCommand.add("usrname=" + _username);
 		_pingCommand.add("password=" + _password, ParamType.PASSWORD);
+		if (_isPartOfBladeCenter) {
+			_pingCommand.add("bladecenter=true");
+			_pingCommand.add("blade_number=" + _bladeNumber);
+		}
 
 		_setPxeBootCommand = new Script2(pythonPath, s_logger);
 		_setPxeBootCommand.add(scriptPath);
@@ -195,6 +206,10 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_setPxeBootCommand.add("usrname=" + _username);
 		_setPxeBootCommand.add("password=" + _password, ParamType.PASSWORD);
 		_setPxeBootCommand.add("dev=pxe");
+		if (_isPartOfBladeCenter) {
+			_setPxeBootCommand.add("bladecenter=true");
+			_setPxeBootCommand.add("blade_number=" + _bladeNumber);
+		}
 
 		_setDiskBootCommand = new Script2(pythonPath, s_logger);
 		_setDiskBootCommand.add(scriptPath);
@@ -204,6 +219,10 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_setDiskBootCommand.add("usrname=" + _username);
 		_setDiskBootCommand.add("password=" + _password, ParamType.PASSWORD);
 		_setDiskBootCommand.add("dev=disk");
+		if (_isPartOfBladeCenter) {
+			_setDiskBootCommand.add("bladecenter=true");
+			_setDiskBootCommand.add("blade_number=" + _bladeNumber);
+		}
 
 		_rebootCommand = new Script2(pythonPath, s_logger);
 		_rebootCommand.add(scriptPath);
@@ -212,6 +231,10 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_rebootCommand.add("hostname=" + _ip);
 		_rebootCommand.add("usrname=" + _username);
 		_rebootCommand.add("password=" + _password, ParamType.PASSWORD);
+		if (_isPartOfBladeCenter) {
+			_rebootCommand.add("bladecenter=true");
+			_rebootCommand.add("blade_number=" + _bladeNumber);
+		}
 
 		_getStatusCommand = new Script2(pythonPath, s_logger);
 		_getStatusCommand.add(scriptPath);
@@ -220,6 +243,11 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_getStatusCommand.add("hostname=" + _ip);
 		_getStatusCommand.add("usrname=" + _username);
 		_getStatusCommand.add("password=" + _password, ParamType.PASSWORD);
+		if (_isPartOfBladeCenter) {
+			_getStatusCommand.add("bladecenter=true");
+			_getStatusCommand.add("blade_number=" + _bladeNumber);
+		}
+
 
 		_powerOnCommand = new Script2(pythonPath, s_logger);
 		_powerOnCommand.add(scriptPath);
@@ -229,6 +257,10 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_powerOnCommand.add("usrname=" + _username);
 		_powerOnCommand.add("password=" + _password, ParamType.PASSWORD);
 		_powerOnCommand.add("action=on");
+		if (_isPartOfBladeCenter) {
+			_powerOnCommand.add("bladecenter=true");
+			_powerOnCommand.add("blade_number=" + _bladeNumber);
+		}
 
 		_powerOffCommand = new Script2(pythonPath, s_logger);
 		_powerOffCommand.add(scriptPath);
@@ -238,6 +270,10 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_powerOffCommand.add("usrname=" + _username);
 		_powerOffCommand.add("password=" + _password, ParamType.PASSWORD);
 		_powerOffCommand.add("action=soft");
+		if (_isPartOfBladeCenter) {
+			_powerOffCommand.add("bladecenter=true");
+			_powerOffCommand.add("blade_number=" + _bladeNumber);
+		}
 
 		_forcePowerOffCommand = new Script2(pythonPath, s_logger);
 		_forcePowerOffCommand.add(scriptPath);
@@ -247,6 +283,10 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_forcePowerOffCommand.add("usrname=" + _username);
 		_forcePowerOffCommand.add("password=" + _password, ParamType.PASSWORD);
 		_forcePowerOffCommand.add("action=off");
+		if (_isPartOfBladeCenter) {
+			_forcePowerOffCommand.add("bladecenter=true");
+			_forcePowerOffCommand.add("blade_number=" + _bladeNumber);
+		}
 
 		_bootOrRebootCommand = new Script2(pythonPath, s_logger);
 		_bootOrRebootCommand.add(scriptPath);
@@ -255,6 +295,11 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		_bootOrRebootCommand.add("hostname=" + _ip);
 		_bootOrRebootCommand.add("usrname=" + _username);
 		_bootOrRebootCommand.add("password=" + _password, ParamType.PASSWORD);
+		if (_isPartOfBladeCenter) {
+			_bootOrRebootCommand.add("bladecenter=true");
+			_bootOrRebootCommand.add("blade_number=" + _bladeNumber);
+		}
+
 
 		return true;
 	}
@@ -366,6 +411,11 @@ public class BareMetalResourceBase extends ManagerBase implements ServerResource
 		cmd.setPrivateMacAddress(_mac);
 		cmd.setPublicMacAddress(_mac);
 		cmd.setStateChanges(fullSync());
+
+		if (_isPartOfBladeCenter) {
+			cmd.setName(String.format("%s:%d", _ip, _bladeNumber));
+		}
+
 		return new StartupCommand[] { cmd };
 	}
 
