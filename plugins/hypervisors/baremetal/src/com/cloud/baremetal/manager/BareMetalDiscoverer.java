@@ -183,6 +183,7 @@ public class BareMetalDiscoverer extends DiscovererBase implements Discoverer, R
 			// part of an IBM blade center.
 			if (url.getPort() != -1) {
 				params.put("BladeNumber", String.valueOf(url.getPort()));
+				details.put("BladeNumber", String.valueOf(url.getPort()));
 			}
 
 			String resourceClassName = _configDao.getValue(Config.ExternalBaremetalResourceClassName.key());
