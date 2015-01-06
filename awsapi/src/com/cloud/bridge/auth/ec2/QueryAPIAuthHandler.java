@@ -119,7 +119,7 @@ public class QueryAPIAuthHandler {
 		String authHeader = request.getHeader("Authorization");
 
 		for (SupportedAuthSchemes supportedAuthScheme : SupportedAuthSchemes.values()) {
-			if (authHeader.startsWith(supportedAuthScheme.getName())) {
+			if (StringUtils.isNotEmpty(authHeader) && authHeader.startsWith(supportedAuthScheme.getName())) {
 				this.authScheme = supportedAuthScheme;
 				return true;
 			}
