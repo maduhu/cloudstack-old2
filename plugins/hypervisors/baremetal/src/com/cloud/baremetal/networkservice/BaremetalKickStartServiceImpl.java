@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import javax.ejb.Local;
 import javax.inject.Inject;
@@ -141,6 +144,26 @@ public class BaremetalKickStartServiceImpl extends BareMetalPxeServiceBase imple
             if (!aws.getResult()) {
                 s_logger.warn("Unable to set host: " + dest.getHost().getId() + " to PXE boot because " + aws.getDetails());
             }
+
+            // BladeCenters do not support configuring a one off PXE boot, so we revert
+            // the setting back to disk boot manually after 5 minutes, just in case.
+            final long hostId = dest.getHost().getId();
+            new Timer(true).schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    IpmISetBootDevCommand request = new IpmISetBootDevCommand(BootDev.disk);
+
+                    try {
+                        Answer response = _agentMgr.send(hostId, request);
+
+                        if (!response.getResult()) {
+                            s_logger.warn("Unable to set host: " + hostId + " to disk boot because " + response.getDetails());
+                        }
+                    } catch (Exception e) {
+                        s_logger.warn("Unable to revert back to disk boot for host: " + hostId, e);
+                    }
+                }
+            }, TimeUnit.MINUTES.toMillis(5));
 
             return aws.getResult();
         } catch (Exception e) {
