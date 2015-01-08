@@ -31,59 +31,58 @@ function usage() {
 }
 
 function packaging() {
-	 
-CWD=`pwd`
-RPMDIR=$CWD/../../dist/rpmbuild
-PACK_PROJECT=cloudstack
-if [ -n "$1" ] ; then
-  DEFOSSNOSS="-D_ossnoss nonoss"
-fi
+    CWD=`pwd`
+    RPMDIR=$CWD/../../dist/rpmbuild
+    PACK_PROJECT=cloudstack
+    if [ -n "$1" ] ; then
+      DEFOSSNOSS="-D_ossnoss nonoss"
+    fi
 
-VERSION=`(cd ../../; mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version) | grep '^[0-9]\.'`
-RELEASE_REVISION="14.09.15"
-GQREL=$RELEASE_REVISION
+    VERSION=`(cd ../../; mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version) | grep '^[0-9]\.'`
+    RELEASE_REVISION="14.09.15"
+    GQREL=$RELEASE_REVISION
 
-# determine whether or not we are building a "snapshot" package, which
-# means not an officially tagged release.
-output=$(git describe --long --tags)
-version=$(echo $output | awk -F'-' '{print $1}')
-commits=$(echo $output | awk -F'-' '{print $2}')
-object=$(echo $output | awk -F'-' '{print $3}' | awk '{print substr($0, 2)}')
+    # determine whether or not we are building a "snapshot" package, which
+    # means not an officially tagged release.
+    output=$(git describe --long --tags)
+    version=$(echo $output | awk -F'-' '{print $1}')
+    commits=$(echo $output | awk -F'-' '{print $2}')
+    object=$(echo $output | awk -F'-' '{print $3}' | awk '{print substr($0, 2)}')
 
-if [ "$commits" -ne "0" ]; then
-  # this is a snapshot version and we need to mark it as 'nextver',
-  # which means this is for the next version to be released. rather
-  # than actually calculate the next version it is simpler (lazier) to
-  # just put nextver on the line.
-  GQREL="${GQREL}+nextver"
-fi
+    if [ "$commits" -ne "0" ]; then
+      # this is a snapshot version and we need to mark it as 'nextver',
+      # which means this is for the next version to be released. rather
+      # than actually calculate the next version it is simpler (lazier) to
+      # just put nextver on the line.
+      GQREL="${GQREL}+nextver"
+    fi
 
-if echo $VERSION | grep SNAPSHOT ; then
-  REALVER=`echo $VERSION | cut -d '-' -f 1`
-  DEFVER="-D_ver $REALVER"
-  DEFPRE="-D_prerelease 1"
-  DEFREL="-D_rel SNAPSHOT"
-else
-  REALVER=`echo $VERSION`
-  DEFVER="-D_ver $REALVER"
-  DEFREL="-D_rel $GQREL"
-fi
+    if echo $VERSION | grep SNAPSHOT ; then
+      REALVER=`echo $VERSION | cut -d '-' -f 1`
+      DEFVER="-D_ver $REALVER"
+      DEFPRE="-D_prerelease 1"
+      DEFREL="-D_rel SNAPSHOT"
+    else
+      REALVER=`echo $VERSION`
+      DEFVER="-D_ver $REALVER"
+      DEFREL="-D_rel $GQREL"
+    fi
 
-mkdir -p $RPMDIR/SPECS
-mkdir -p $RPMDIR/BUILD
-mkdir -p $RPMDIR/RPMS
-mkdir -p $RPMDIR/SRPMS
-mkdir -p $RPMDIR/SOURCES/$PACK_PROJECT-$VERSION
+    mkdir -p $RPMDIR/SPECS
+    mkdir -p $RPMDIR/BUILD
+    mkdir -p $RPMDIR/RPMS
+    mkdir -p $RPMDIR/SRPMS
+    mkdir -p $RPMDIR/SOURCES/$PACK_PROJECT-$VERSION
 
 
-(cd ../../; tar -c --exclude .git --exclude dist  .  | tar -C $RPMDIR/SOURCES/$PACK_PROJECT-$VERSION -x )
-(cd $RPMDIR/SOURCES/; tar -czf $PACK_PROJECT-$VERSION.tgz $PACK_PROJECT-$VERSION)
+    (cd ../../; tar -c --exclude .git --exclude dist  .  | tar -C $RPMDIR/SOURCES/$PACK_PROJECT-$VERSION -x )
+    (cd $RPMDIR/SOURCES/; tar -czf $PACK_PROJECT-$VERSION.tgz $PACK_PROJECT-$VERSION)
 
-cp cloud.spec $RPMDIR/SPECS
+    cp cloud.spec $RPMDIR/SPECS
 
-(cd $RPMDIR; rpmbuild --define "_topdir $RPMDIR" "${DEFVER}" "${DEFREL}" ${DEFPRE+"${DEFPRE}"} ${DEFOSSNOSS+"$DEFOSSNOSS"} -bb SPECS/cloud.spec)
+    (cd $RPMDIR; rpmbuild --define "_topdir $RPMDIR" "${DEFVER}" "${DEFREL}" ${DEFPRE+"${DEFPRE}"} ${DEFOSSNOSS+"$DEFOSSNOSS"} -bb SPECS/cloud.spec)
 
-exit
+    exit
 }
 
 
