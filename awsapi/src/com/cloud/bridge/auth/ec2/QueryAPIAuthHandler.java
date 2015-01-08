@@ -42,7 +42,7 @@ public class QueryAPIAuthHandler {
 	protected String scopeRegion;
 	protected String scopeService;
 	protected String signature;
-	protected String requestBody;
+	protected String requestBody = StringUtils.EMPTY;
 	protected String[] signedHeaders;
 	protected HttpServletRequest request;
 	protected SupportedAuthSchemes authScheme;
@@ -344,13 +344,18 @@ public class QueryAPIAuthHandler {
 		return req.toString();
 	}
 
+	
 	public String getPayload() {
-		if (StringUtils.isEmpty(requestBody)) {
+		if (StringUtils.isEmpty(requestBody) && isPostOrPutRequest()) {
 		    if (!readInputStream()) {
 			    reconstructPayload();
 		    }
 		}
 		return requestBody;
+	}
+	
+	private boolean isPostOrPutRequest() {
+		return ("POST").equals(request.getMethod()) || ("PUT").equals(request.getMethod());
 	}
 	
 	// Return true if the entire request stream is successfully read, OW false, e.g. if the input stream has already been read.
