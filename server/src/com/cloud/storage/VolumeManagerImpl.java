@@ -651,8 +651,11 @@ public class VolumeManagerImpl extends ManagerBase implements VolumeManager {
             DiskOfferingVO diskOffering, List<StoragePool> avoids,
             long size, HypervisorType hyperType) {
         StoragePool pool = null;
-
+        long sizeBefore = 0;
+        
+        
         if (diskOffering != null && diskOffering.isCustomized()) {
+        	sizeBefore = diskOffering.getDiskSize();
             diskOffering.setDiskSize(size);
         }
 
@@ -665,6 +668,11 @@ public class VolumeManagerImpl extends ManagerBase implements VolumeManager {
                     diskOffering);
         }
 
+        //Setting size back to what it was initially. Otherwise the cached version of the diskoffering will retain the value it was set to earlier.
+        if (diskOffering != null && diskOffering.isCustomized()) {
+            diskOffering.setDiskSize(sizeBefore);
+        }
+        
         dskCh.setHyperType(hyperType);
 
         final HashSet<StoragePool> avoidPools = new HashSet<StoragePool>(

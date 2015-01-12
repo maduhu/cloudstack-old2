@@ -765,8 +765,10 @@ public class EC2RestServlet extends HttpServlet {
             mCount = 1;
             do {
                 String[] ranges = request.getParameterValues( "IpPermissions." + nCount + ".IpRanges." + mCount + ".CidrIp" );
-        if ( null != ranges && 0 < ranges.length) 
+        if ( null != ranges && 0 < ranges.length) { 
                     perm.addIpRange( ranges[0]);
+                    perm.setCIDR(ranges[0]);
+        }
                 else break;
                 mCount++;
             } while( true );
