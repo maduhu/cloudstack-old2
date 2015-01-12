@@ -39,7 +39,7 @@ function packaging() {
     fi
 
     VERSION=`(cd ../../; mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version) | grep '^[0-9]\.'`
-    RELEASE_REVISION="14.09.16"
+    RELEASE_REVISION="14.09.17"
     GQREL=$RELEASE_REVISION
 
     # determine whether or not we are building a "snapshot" package, which
