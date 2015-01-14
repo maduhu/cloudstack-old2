@@ -1594,11 +1594,24 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 				param7.setRootDeviceName( "" );
 			}
 
+			//This is another set of security groups, which according to older versions of Cloudstack
+			//have to deal with VPC security groups, but modern EC2 seems to return the groups here.
+			//Not returning them also breaks stuff like euca2ools.
 			GroupSetType param14 = new GroupSetType();
-			GroupItemType param15 = new GroupItemType(); // VPC security group
-			param15.setGroupName("");
-			param15.setGroupName("");
-			param14.addItem(param15);
+			if (null == groups || 0 == groups.length) {
+                GroupItemType param15 = new GroupItemType();
+                param15.setGroupId("");
+                param15.setGroupName("");
+                param14.addItem( param15 );
+            } else {
+                for (EC2SecurityGroup group : groups) {
+                    GroupItemType param15 = new GroupItemType();
+                    param15.setGroupId(group.getId());
+                    param15.setGroupName(group.getName() == null ? "" : group.getName());
+                    param14.addItem( param15 );
+                }
+            }
+
 			param7.setGroupSet(param14);
 
 			param7.setInstanceLifecycle( "" );
