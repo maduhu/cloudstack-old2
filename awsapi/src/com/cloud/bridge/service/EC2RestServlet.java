@@ -1691,7 +1691,10 @@ public class EC2RestServlet extends HttpServlet {
             if (key.startsWith("GroupName")) {
                 String[] value = request.getParameterValues( key );
                 if (null != value && 0 < value.length) EC2request.addGroupName( value[0] );
-            }
+            } else if (key.startsWith("GroupId")) {
+                String[] value = request.getParameterValues( key );
+                if (null != value && 0 < value.length) EC2request.addGroupIDs( value[0] );
+            }            
         }	
 
         // -> are there any filters with this request?

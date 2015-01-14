@@ -278,7 +278,7 @@ public class EC2Engine extends ManagerBase {
     public EC2DescribeSecurityGroupsResponse describeSecurityGroups(EC2DescribeSecurityGroups request) {
         EC2DescribeSecurityGroupsResponse response = new EC2DescribeSecurityGroupsResponse();
         try {
-            response = listSecurityGroups( request.getGroupSet());
+            response = listSecurityGroups( request.getGroupSet(), request.getIdSet());
             EC2GroupFilterSet gfs = request.getFilterSet();
             if ( gfs != null ) {
             response = gfs.evaluate( response );
@@ -306,7 +306,7 @@ public class EC2Engine extends ManagerBase {
 
             EC2IpPermission[] items = request.getIpPermissionSet();
 
-            EC2DescribeSecurityGroupsResponse response = listSecurityGroups( groupSet );
+            EC2DescribeSecurityGroupsResponse response = listSecurityGroups( groupSet, null );
             EC2SecurityGroup[] groups = response.getGroupSet();
             if ( groups.length == 0 ) {
                 throw new Exception("Unable to find security group name");
@@ -2039,7 +2039,7 @@ public class EC2Engine extends ManagerBase {
      * @throws ParserConfigurationException
      * @throws ParseException
      */
-    private EC2DescribeSecurityGroupsResponse listSecurityGroups( String[] interestedGroups ) throws Exception {
+    private EC2DescribeSecurityGroupsResponse listSecurityGroups( String[] interestedGroups, String[] interestedIDs ) throws Exception {
         try {
             EC2DescribeSecurityGroupsResponse groupSet = new EC2DescribeSecurityGroupsResponse();
 
@@ -2050,6 +2050,13 @@ public class EC2Engine extends ManagerBase {
                     if (interestedGroups.length > 0) {
                         for (String groupName :interestedGroups) {
                             if (groupName.equalsIgnoreCase(group.getName())) {
+                                matched = true;
+                                break;
+                            }
+                        }
+                    } else if (interestedIDs.length > 0) {
+                        for (String groupId :interestedIDs) {
+                            if (groupId.equalsIgnoreCase(group.getId())) {
                                 matched = true;
                                 break;
                             }
