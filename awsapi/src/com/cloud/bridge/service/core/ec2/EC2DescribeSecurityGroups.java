@@ -37,11 +37,11 @@ public class EC2DescribeSecurityGroups {
 	}
 	
 	public String[] getGroupSet() {
-		return (String[]) groupSet.toArray();
+		return groupSet.toArray(new String[0]);
 	}
 	
 	public String[] getIdSet() {
-		return (String[]) groupIDs.toArray();
+		return groupIDs.toArray(new String[0]);
 	}
 	
 	public EC2GroupFilterSet getFilterSet() {

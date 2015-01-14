@@ -306,7 +306,7 @@ public class EC2Engine extends ManagerBase {
 
             EC2IpPermission[] items = request.getIpPermissionSet();
 
-            EC2DescribeSecurityGroupsResponse response = listSecurityGroups( groupSet, null );
+            EC2DescribeSecurityGroupsResponse response = listSecurityGroups( groupSet, new String[0] );
             EC2SecurityGroup[] groups = response.getGroupSet();
             if ( groups.length == 0 ) {
                 throw new Exception("Unable to find security group name");
