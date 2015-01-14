@@ -1549,10 +1549,6 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 			param7.setInstanceType( inst.getServiceOffering());
 
 			ProductCodesSetType param9 = new ProductCodesSetType();
-			ProductCodesSetItemType param10 = new ProductCodesSetItemType();
-			param10.setProductCode( "" );
-			param10.setType("");
-			param9.addItem( param10 );
 			param7.setProductCodes( param9 );
 
 			Calendar cal = inst.getCreated();
@@ -1571,7 +1567,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 			param7.setPlatform( "" );
 
 			InstanceMonitoringStateType param12 = new InstanceMonitoringStateType();
-			param12.setState( "" );
+			param12.setState( "disabled" );
 			param7.setMonitoring( param12 );
 			param7.setSubnetId( "" );
 			param7.setVpcId( "" );
