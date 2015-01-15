@@ -21,7 +21,8 @@ import java.util.List;
 
 public class EC2DescribeSecurityGroups {
 	
-	private List<String> groupSet = new ArrayList<String>();    // a list of strings identifying each group
+	private List<String> groupSet = new ArrayList<String>();    // a list of group names
+	private List<String> groupIDs = new ArrayList<String>();    // a list of group IDs
 	private EC2GroupFilterSet gfs = null;
 
 	public EC2DescribeSecurityGroups() {
@@ -31,8 +32,16 @@ public class EC2DescribeSecurityGroups {
 		groupSet.add( param );
 	}
 	
+	public void addGroupIDs( String param ) {
+		groupIDs.add( param );
+	}
+	
 	public String[] getGroupSet() {
 		return groupSet.toArray(new String[0]);
+	}
+	
+	public String[] getIdSet() {
+		return groupIDs.toArray(new String[0]);
 	}
 	
 	public EC2GroupFilterSet getFilterSet() {

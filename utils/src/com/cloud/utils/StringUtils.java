@@ -164,7 +164,31 @@ public class StringUtils {
     }
 
     public static String stripControlCharacters(String s) {
-        return StringUtilities.stripControls(s);
+        //Found on stack overflow
+        //http://stackoverflow.com/questions/6198986/how-can-i-replace-non-printable-unicode-characters-in-java
+        StringBuilder newString = new StringBuilder(s.length());
+        for (int offset = 0; offset < s.length();)
+        {
+            int codePoint = s.codePointAt(offset);
+            offset += Character.charCount(codePoint);
+
+            // Replace invisible control characters and unused code points
+            switch (Character.getType(codePoint))
+            {
+                case Character.CONTROL:     // \p{Cc}
+                case Character.FORMAT:      // \p{Cf}
+                case Character.PRIVATE_USE: // \p{Co}
+                case Character.SURROGATE:   // \p{Cs}
+                case Character.UNASSIGNED:  // \p{Cn}
+                    newString.append('?');
+                    break;
+                default:
+                    newString.append(Character.toChars(codePoint));
+                    break;
+            }
+        }
+        
+        return newString.toString();
     }
 
     public static int formatForOutput(String text, int start, int columns, char separator) {

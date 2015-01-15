@@ -1549,10 +1549,6 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 			param7.setInstanceType( inst.getServiceOffering());
 
 			ProductCodesSetType param9 = new ProductCodesSetType();
-			ProductCodesSetItemType param10 = new ProductCodesSetItemType();
-			param10.setProductCode( "" );
-			param10.setType("");
-			param9.addItem( param10 );
 			param7.setProductCodes( param9 );
 
 			Calendar cal = inst.getCreated();
@@ -1571,7 +1567,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 			param7.setPlatform( "" );
 
 			InstanceMonitoringStateType param12 = new InstanceMonitoringStateType();
-			param12.setState( "" );
+			param12.setState( "disabled" );
 			param7.setMonitoring( param12 );
 			param7.setSubnetId( "" );
 			param7.setVpcId( "" );
@@ -1594,11 +1590,24 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 				param7.setRootDeviceName( "" );
 			}
 
+			//This is another set of security groups, which according to older versions of Cloudstack
+			//have to deal with VPC security groups, but modern EC2 seems to return the groups here.
+			//Not returning them also breaks stuff like euca2ools.
 			GroupSetType param14 = new GroupSetType();
-			GroupItemType param15 = new GroupItemType(); // VPC security group
-			param15.setGroupName("");
-			param15.setGroupName("");
-			param14.addItem(param15);
+			if (null == groups || 0 == groups.length) {
+                GroupItemType param15 = new GroupItemType();
+                param15.setGroupId("");
+                param15.setGroupName("");
+                param14.addItem( param15 );
+            } else {
+                for (EC2SecurityGroup group : groups) {
+                    GroupItemType param15 = new GroupItemType();
+                    param15.setGroupId(group.getId());
+                    param15.setGroupName(group.getName() == null ? "" : group.getName());
+                    param14.addItem( param15 );
+                }
+            }
+
 			param7.setGroupSet(param14);
 
 			param7.setInstanceLifecycle( "" );
@@ -2065,6 +2074,9 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 			} else if (snap.getState().equalsIgnoreCase("backingup")) {
 				param3.setStatus("pending");
 				param3.setProgress("66%");
+			} else if (snap.getState().equalsIgnoreCase("allocated")) {
+				param3.setStatus("pending");
+				param3.setProgress("0%");
 			} else {
 				// if we see anything besides: backedup/creating/backingup, we assume error
 				param3.setStatus("error");
