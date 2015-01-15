@@ -51,7 +51,9 @@ public enum Namespace {
     }
 
     public static Namespace getCurrent() {
-        return Namespace.values()[0];
+    	// TODO: We accept requests from all (above) defined versions of the tools, however the back end is based upon the EC2_2014_06_15 version. 
+    	// Please revise, e.g. should we really be using Axis for XML generation, etc
+    	return EC2_2014_06_15;
     }
 
     public boolean isAtLeast(Namespace targetNamespace) {
