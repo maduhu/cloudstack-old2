@@ -23,11 +23,11 @@ function usage() {
  echo "The commonly used Arguments are:"
  echo "oss|OSS         To package with only redistributable libraries (default)"
  echo "nonoss|NONOSS   To package with non-redistributable libraries"
- echo "rc              Build a release candidate number" 
+ echo "rc              Build a release candidate number; place before -p" 
  echo ""
  echo "Examples: ./package.sh -p|--pack oss|OSS"
  echo "          ./package.sh -p|--pack nonoss|NONOSS"
- echo "          ./package.sh -p|--pack nonoss|NONOSS -r 1"
+ echo "          ./package.sh -r 1 -p|--pack nonoss|NONOSS"
  echo "          ./package.sh (Default OSS)"
  exit 1
 }
