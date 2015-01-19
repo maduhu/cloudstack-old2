@@ -46,7 +46,7 @@ function packaging() {
     RELEASE_REVISION="14.09.17"
     GQREL=$RELEASE_REVISION
 
-    if [ $RC != "" ]; then
+    if [ "$RC" != "" ]; then
 	GQREL="${GQREL}+rc${RC}"
     else
 	# determine whether or not we are building a "snapshot" package, which
