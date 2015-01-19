@@ -18,18 +18,22 @@
 
 function usage() {
  echo ""
- echo "usage: ./package.sh [-p|--pack] [-h|--help] [ARGS]"
+ echo "usage: ./package.sh [-p|--pack] [-r|--rc] [-h|--help] [ARGS]"
  echo ""
  echo "The commonly used Arguments are:"
- echo "oss|OSS             To package with only redistributable libraries (default)"
+ echo "oss|OSS         To package with only redistributable libraries (default)"
  echo "nonoss|NONOSS   To package with non-redistributable libraries"
+ echo "rc              Build a release candidate number" 
  echo ""
  echo "Examples: ./package.sh -p|--pack oss|OSS"
  echo "          ./package.sh -p|--pack nonoss|NONOSS"
+ echo "          ./package.sh -p|--pack nonoss|NONOSS -r 1"
  echo "          ./package.sh (Default OSS)"
  exit 1
 }
 
+# RC is in case we want a release candidate
+RC=""
 function packaging() {
     CWD=`pwd`
     RPMDIR=$CWD/../../dist/rpmbuild
@@ -42,19 +46,23 @@ function packaging() {
     RELEASE_REVISION="14.09.17"
     GQREL=$RELEASE_REVISION
 
-    # determine whether or not we are building a "snapshot" package, which
-    # means not an officially tagged release.
-    output=$(git describe --long --tags)
-    version=$(echo $output | awk -F'-' '{print $1}')
-    commits=$(echo $output | awk -F'-' '{print $2}')
-    object=$(echo $output | awk -F'-' '{print $3}' | awk '{print substr($0, 2)}')
+    if [ $RC != "" ]; then
+	GQREL="${GQREL}+rc${RC}"
+    else
+	# determine whether or not we are building a "snapshot" package, which
+	# means not an officially tagged release.
+	output=$(git describe --long --tags)
+	version=$(echo $output | awk -F'-' '{print $1}')
+	commits=$(echo $output | awk -F'-' '{print $2}')
+	object=$(echo $output | awk -F'-' '{print $3}' | awk '{print substr($0, 2)}')
 
-    if [ "$commits" -ne "0" ]; then
-      # this is a snapshot version and we need to mark it as 'nextver',
-      # which means this is for the next version to be released. rather
-      # than actually calculate the next version it is simpler (lazier) to
-      # just put nextver on the line.
-      GQREL="${GQREL}+nextver"
+	if [ "$commits" -ne "0" ]; then
+	    # this is a snapshot version and we need to mark it as 'nextver',
+	    # which means this is for the next version to be released. rather
+	    # than actually calculate the next version it is simpler (lazier) to
+	    # just put nextver on the line.
+	    GQREL="${GQREL}+nextver"
+	fi
     fi
 
     if echo $VERSION | grep SNAPSHOT ; then
@@ -91,9 +99,8 @@ if [ $# -lt 1 ] ; then
 	packaging
 
 elif [ $# -gt 0 ] ; then
-
-	SHORTOPTS="hp:"
-	LONGOPTS="help,pack:"
+	SHORTOPTS="hp:r:"
+	LONGOPTS="help,pack:,rc:"
 
 	ARGS=$(getopt -s bash -u -a --options $SHORTOPTS  --longoptions $LONGOPTS --name $0 -- "$@" )
 	eval set -- "$ARGS"
@@ -103,6 +110,11 @@ elif [ $# -gt 0 ] ; then
 	-h | --help)
 		usage
 		exit 0
+		;;
+	-r | --rc)
+		echo "Setting RC to $2"
+		RC=$2
+		shift
 		;;
 	-p | --pack)
 		echo "Doing CloudStack Packaging ....."
