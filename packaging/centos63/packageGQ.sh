@@ -76,6 +76,8 @@ function packaging() {
       DEFREL="-D_rel $GQREL"
     fi
 
+    echo "Building ${DEFREL}"
+
     mkdir -p $RPMDIR/SPECS
     mkdir -p $RPMDIR/BUILD
     mkdir -p $RPMDIR/RPMS
