@@ -4920,6 +4920,7 @@ ServerResource {
                         / ((double) elapsedTime * 1000000);
 
                 NodeInfo node = conn.nodeInfo();
+                stats.setHypervisorCPUs(node.cpus);
                 utilization = utilization / node.cpus;
                 if(utilization > 0){
                     stats.setCPUUtilization(utilization * 100);

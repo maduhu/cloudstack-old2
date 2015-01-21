@@ -28,6 +28,7 @@ public class VmStatsEntry implements VmStats {
     double diskReadKBs;
     double diskWriteKBs;
 	int numCPUs;
+	private int hypervisorCPUs;
 	String entityType;
 
     public VmStatsEntry() {
@@ -124,6 +125,14 @@ public class VmStatsEntry implements VmStats {
 
     public void setEntityType(String entityType){
     	this.entityType = entityType;
+    }
+
+    public int getHypervisorCPUs() {
+        return hypervisorCPUs;
+    }
+
+    public void setHypervisorCPUs(int hypervisorCPUs) {
+        this.hypervisorCPUs = hypervisorCPUs;
     }
 
 
