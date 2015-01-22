@@ -2770,13 +2770,15 @@ public class EC2Engine extends ManagerBase {
             }
             else if (errorCode == 535 || errorCode == 532) {
             	if (errorMessage.contains("Maximum number of resources of type")) {
-            		try {
-            			throw new EC2ServiceException( ClientError.ResourceLimitExceeded,
-            					errorMessage.replaceAll("^(.{38}.*?)\\b.*$", "$1' has been exceeded."));
-            		} catch (PatternSyntaxException ex) {
-                        throw new EC2ServiceException( ClientError.ResourceLimitExceeded,
-                                errorMessage);            			
-            		}
+                    //try to sanitize the error message by removing UUIDs of accounts etc.
+                    //but if it fails just throw the whole error.
+                    String sanitized = errorMessage.replaceAll("^(.{38}.*?)\\b.*$", "$1' has been exceeded.");
+                    if (!sanitized.equals(errorMessage)) {
+                        throw new EC2ServiceException(ClientError.ResourceLimitExceeded, sanitized);
+                    }
+                    else {
+                        throw new EC2ServiceException(ClientError.ResourceLimitExceeded, errorMessage);
+                    }
             	} else {
                     throw new EC2ServiceException( ClientError.ResourceLimitExceeded,
                             errorMessage);
