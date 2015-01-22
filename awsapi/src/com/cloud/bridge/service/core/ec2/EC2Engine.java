@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.regex.PatternSyntaxException;
 
 import javax.inject.Inject;
 import javax.naming.ConfigurationException;
@@ -2766,6 +2767,20 @@ public class EC2Engine extends ManagerBase {
                        throw new EC2ServiceException( ClientError.DependencyViolation,
                             "Specified resource is in use");
                 }
+            }
+            else if (errorCode == 535 || errorCode == 532) {
+            	if (errorMessage.contains("Maximum number of resources of type")) {
+            		try {
+            			throw new EC2ServiceException( ClientError.ResourceLimitExceeded,
+            					errorMessage.replaceAll("^(.{38}.*?)\\b.*$", "$1' has been exceeded."));
+            		} catch (PatternSyntaxException ex) {
+                        throw new EC2ServiceException( ClientError.ResourceLimitExceeded,
+                                errorMessage);            			
+            		}
+            	} else {
+                    throw new EC2ServiceException( ClientError.ResourceLimitExceeded,
+                            errorMessage);
+            	}            	
             }
             else if (errorCode == 531) {
                 if ( errorMessage.contains("Acct") && errorMessage.contains("does not have permission to launch" +
