@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import javax.ejb.Local;
 import javax.inject.Inject;
@@ -64,6 +66,7 @@ import com.cloud.user.Account;
 import com.cloud.user.AccountManager;
 import com.cloud.user.DomainManager;
 import com.cloud.user.UserContext;
+import com.cloud.user.dao.AccountDao;
 import com.cloud.uservm.UserVm;
 import com.cloud.utils.Pair;
 import com.cloud.utils.Ternary;
@@ -78,6 +81,7 @@ import com.cloud.utils.db.Transaction;
 import com.cloud.utils.exception.CloudRuntimeException;
 import com.cloud.utils.net.Ip;
 import com.cloud.utils.net.NetUtils;
+import com.cloud.utils.threading.TaskManager;
 import com.cloud.vm.Nic;
 import com.cloud.vm.NicSecondaryIp;
 import com.cloud.vm.UserVmVO;
@@ -109,6 +113,8 @@ public class RulesManagerImpl extends ManagerBase implements RulesManager, Rules
     VMInstanceDao _vmInstanceDao;
     @Inject
     AccountManager _accountMgr;
+    @Inject
+    AccountDao _accountDao;
     @Inject
     NetworkManager _networkMgr;
     @Inject
@@ -1222,55 +1228,74 @@ public class RulesManagerImpl extends ManagerBase implements RulesManager, Rules
     }
 
     @Override
-    public boolean disableStaticNat(long ipId, Account caller, long callerUserId, boolean releaseIpIfElastic) throws ResourceUnavailableException {
-        boolean success = true;
+    public boolean disableStaticNat(final long ipId, final Account caller, final long callerUserId, final boolean releaseIpIfElastic) throws ResourceUnavailableException {
+        Callable<Boolean> task = new Callable<Boolean>() {
+            @Override public Boolean call() throws Exception {
+                boolean success = true;
 
-        IPAddressVO ipAddress = _ipAddressDao.findById(ipId);
-        checkIpAndUserVm(ipAddress, null, caller, false);
-        long networkId = ipAddress.getAssociatedWithNetworkId();
+                IPAddressVO ipAddress = _ipAddressDao.findById(ipId);
+                checkIpAndUserVm(ipAddress, null, caller, false);
+                long networkId = ipAddress.getAssociatedWithNetworkId();
 
-        if (!ipAddress.isOneToOneNat()) {
-            InvalidParameterValueException ex = new InvalidParameterValueException("One to one nat is not enabled for the specified ip id");
-            ex.addProxyObject(ipAddress.getUuid(), "ipId");            
-            throw ex;
-        }
+                if (!ipAddress.isOneToOneNat()) {
+                    InvalidParameterValueException ex = new InvalidParameterValueException("One to one nat is not enabled for the specified ip id");
+                    ex.addProxyObject(ipAddress.getUuid(), "ipId");            
+                    throw ex;
+                }
 
-        // Revoke all firewall rules for the ip
+                // Revoke all firewall rules for the ip
+                try {
+                    s_logger.debug("Revoking all " + Purpose.Firewall + "rules as a part of disabling static nat for public IP id=" + ipId);
+                    if (!_firewallMgr.revokeFirewallRulesForIp(ipId, callerUserId, caller)) {
+                        s_logger.warn("Unable to revoke all the firewall rules for ip id=" + ipId + " as a part of disable statis nat");
+                        success = false;
+                    }
+                } catch (ResourceUnavailableException e) {
+                    s_logger.warn("Unable to revoke all firewall rules for ip id=" + ipId + " as a part of ip release", e);
+                    success = false;
+                }
+
+                if (!revokeAllPFAndStaticNatRulesForIp(ipId, callerUserId, caller)) {
+                    s_logger.warn("Unable to revoke all static nat rules for ip " + ipAddress);
+                    success = false;
+                }
+
+                if (success) {
+                    boolean isIpSystem = ipAddress.getSystem();
+                    ipAddress.setOneToOneNat(false);
+                    ipAddress.setAssociatedWithVmId(null);
+                    ipAddress.setVmIp(null);
+                    if (isIpSystem && !releaseIpIfElastic) {
+                        ipAddress.setSystem(false);
+                    }
+                    _ipAddressDao.update(ipAddress.getId(), ipAddress);
+                    _vpcMgr.unassignIPFromVpcNetwork(ipAddress.getId(), networkId);
+
+                    if (isIpSystem && releaseIpIfElastic && !_networkMgr.handleSystemIpRelease(ipAddress)) {
+                        s_logger.warn("Failed to release system ip address " + ipAddress);
+                        success = false;
+                    }
+
+                    return true;
+                } else {
+                    s_logger.warn("Failed to disable one to one nat for the ip address id" + ipId);
+                    return false;
+                }        
+            }
+        };
+        
         try {
-            s_logger.debug("Revoking all " + Purpose.Firewall + "rules as a part of disabling static nat for public IP id=" + ipId);
-            if (!_firewallMgr.revokeFirewallRulesForIp(ipId, callerUserId, caller)) {
-                s_logger.warn("Unable to revoke all the firewall rules for ip id=" + ipId + " as a part of disable statis nat");
-                success = false;
-            }
-        } catch (ResourceUnavailableException e) {
-            s_logger.warn("Unable to revoke all firewall rules for ip id=" + ipId + " as a part of ip release", e);
-            success = false;
+            //We want to synchronize on the owner of the IP, not the caller.
+            IPAddressVO ip = _ipAddressDao.findById(ipId);
+            Account acct = _accountDao.findById(ip.getAccountId());
+            return TaskManager.submit(acct.getUuid(), task).get();
         }
-
-        if (!revokeAllPFAndStaticNatRulesForIp(ipId, callerUserId, caller)) {
-            s_logger.warn("Unable to revoke all static nat rules for ip " + ipAddress);
-            success = false;
+        catch (InterruptedException e) {
+            s_logger.error(e);
+            return false;
         }
-
-        if (success) {
-            boolean isIpSystem = ipAddress.getSystem();
-            ipAddress.setOneToOneNat(false);
-            ipAddress.setAssociatedWithVmId(null);
-            ipAddress.setVmIp(null);
-            if (isIpSystem && !releaseIpIfElastic) {
-                ipAddress.setSystem(false);
-            }
-            _ipAddressDao.update(ipAddress.getId(), ipAddress);
-            _vpcMgr.unassignIPFromVpcNetwork(ipAddress.getId(), networkId);
-
-            if (isIpSystem && releaseIpIfElastic && !_networkMgr.handleSystemIpRelease(ipAddress)) {
-                s_logger.warn("Failed to release system ip address " + ipAddress);
-                success = false;
-            }
-
-            return true;
-        } else {
-            s_logger.warn("Failed to disable one to one nat for the ip address id" + ipId);
+        catch (ExecutionException e) {
+            s_logger.error("Task execution failed", e);
             return false;
         }
     }
