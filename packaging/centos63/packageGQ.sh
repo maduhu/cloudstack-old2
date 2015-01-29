@@ -43,7 +43,7 @@ function packaging() {
     fi
 
     VERSION=`(cd ../../; mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version) | grep '^[0-9]\.'`
-    RELEASE_REVISION="14.09.18"
+    RELEASE_REVISION="14.09.19"
     GQREL=$RELEASE_REVISION
 
     if [ "$RC" != "" ]; then
