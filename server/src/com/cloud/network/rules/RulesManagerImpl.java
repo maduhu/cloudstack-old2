@@ -1236,7 +1236,8 @@ public class RulesManagerImpl extends ManagerBase implements RulesManager, Rules
         
         //5 minute timeout
         if (!lock.lock(300)) {
-            throw new CloudRuntimeException("Could not acquire disable static NAT lock for user " + acct + " after 5 minutes");
+            s_logger.error("Could not acquire disable static NAT lock for user " + acct + " after 5 minutes. Aborting.");
+            return false;
         }
         
         try {

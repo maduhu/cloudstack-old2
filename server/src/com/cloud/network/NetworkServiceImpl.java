@@ -859,7 +859,8 @@ public class NetworkServiceImpl extends ManagerBase implements  NetworkService {
         
         //5 minute timeout
         if (!lock.lock(300)) {
-            throw new CloudRuntimeException("Could not acquire release IP lock for user " + acct + " after 5 minutes");
+            s_logger.error("Could not acquire release IP lock for user " + acct + " after 5 minutes. Aborting.");
+            return false;
         }
         
         try {
