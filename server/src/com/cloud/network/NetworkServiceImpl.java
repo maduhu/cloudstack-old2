@@ -155,6 +155,7 @@ import com.cloud.utils.Pair;
 import com.cloud.utils.component.ManagerBase;
 import com.cloud.utils.db.DB;
 import com.cloud.utils.db.Filter;
+import com.cloud.utils.db.GlobalLock;
 import com.cloud.utils.db.JoinBuilder;
 import com.cloud.utils.db.SearchBuilder;
 import com.cloud.utils.db.SearchCriteria;
@@ -852,76 +853,73 @@ public class NetworkServiceImpl extends ManagerBase implements  NetworkService {
 
     @DB
     private boolean releaseIpAddressInternal(final long ipAddressId) throws InsufficientAddressCapacityException {
-        Callable<Boolean> task = new Callable<Boolean>() {
-            @Override public Boolean call() throws Exception {
-                Long userId = UserContext.current().getCallerUserId();
-                Account caller = UserContext.current().getCaller();
-
-                // Verify input parameters
-                IPAddressVO ipVO = _ipAddressDao.findById(ipAddressId);
-                if (ipVO == null) {
-                    throw new InvalidParameterValueException("Unable to find ip address by id");
-                }
-
-                if (ipVO.getAllocatedTime() == null) {
-                    s_logger.debug("Ip Address id= " + ipAddressId + " is not allocated, so do nothing.");
-                    return true;
-                }
-
-                // verify permissions
-                if (ipVO.getAllocatedToAccountId() != null) {
-                    _accountMgr.checkAccess(caller, null, true, ipVO);
-                }
-
-                if (ipVO.isSourceNat()) {
-                    throw new IllegalArgumentException("ip address is used for source nat purposes and can not be disassociated.");
-                }
-
-                VlanVO vlan = _vlanDao.findById(ipVO.getVlanId());
-                if (!vlan.getVlanType().equals(VlanType.VirtualNetwork)) {
-                    throw new IllegalArgumentException("only ip addresses that belong to a virtual network may be disassociated.");
-                }
-
-                // don't allow releasing system ip address
-                if (ipVO.getSystem()) {
-                    InvalidParameterValueException ex = new InvalidParameterValueException("Can't release system IP address with specified id");
-                    ex.addProxyObject(ipVO.getUuid(), "systemIpAddrId");
-                    throw ex;
-                }
-
-                boolean success = _networkMgr.disassociatePublicIpAddress(ipAddressId, userId, caller);
-
-                if (success) {
-                    Long networkId = ipVO.getAssociatedWithNetworkId();
-                    if (networkId != null) {
-                        Network guestNetwork = getNetwork(networkId);
-                        NetworkOffering offering = _configMgr.getNetworkOffering(guestNetwork.getNetworkOfferingId());
-                        Long vmId = ipVO.getAssociatedWithVmId();
-                        if (offering.getElasticIp() && vmId != null) {
-                            _rulesMgr.getSystemIpAndEnableStaticNatForVm(_userVmDao.findById(vmId), true);
-                            return true;
-                        }
-                    }
-                } else {
-                    s_logger.warn("Failed to release public ip address id=" + ipAddressId);
-                }
-                
-                return success;
-            }
-        };
+        IPAddressVO ip = _ipAddressDao.findById(ipAddressId);
+        Account acct = _accountDao.findById(ip.getAccountId());
+        GlobalLock lock = GlobalLock.getInternLock(acct.getUuid());
+        
+        //5 minute timeout
+        if (!lock.lock(300)) {
+            throw new CloudRuntimeException("Could not acquire release IP lock for user " + acct + " after 5 minutes");
+        }
         
         try {
-            IPAddressVO ip = _ipAddressDao.findById(ipAddressId);
-            Account acct = _accountDao.findById(ip.getAccountId());
-            return TaskManager.submit(acct.getUuid(), task).get();
-        } 
-        catch (InterruptedException e) {
-            s_logger.error(e);
-            return false;
-        } 
-        catch (ExecutionException e) {
-            s_logger.error("Task execution failed", e);
-            return false;
+            Long userId = UserContext.current().getCallerUserId();
+            Account caller = UserContext.current().getCaller();
+    
+            // Verify input parameters
+            IPAddressVO ipVO = _ipAddressDao.findById(ipAddressId);
+            if (ipVO == null) {
+                throw new InvalidParameterValueException("Unable to find ip address by id");
+            }
+    
+            if (ipVO.getAllocatedTime() == null) {
+                s_logger.debug("Ip Address id= " + ipAddressId + " is not allocated, so do nothing.");
+                return true;
+            }
+    
+            // verify permissions
+            if (ipVO.getAllocatedToAccountId() != null) {
+                _accountMgr.checkAccess(caller, null, true, ipVO);
+            }
+    
+            if (ipVO.isSourceNat()) {
+                throw new IllegalArgumentException("ip address is used for source nat purposes and can not be disassociated.");
+            }
+    
+            VlanVO vlan = _vlanDao.findById(ipVO.getVlanId());
+            if (!vlan.getVlanType().equals(VlanType.VirtualNetwork)) {
+                throw new IllegalArgumentException("only ip addresses that belong to a virtual network may be disassociated.");
+            }
+    
+            // don't allow releasing system ip address
+            if (ipVO.getSystem()) {
+                InvalidParameterValueException ex = new InvalidParameterValueException("Can't release system IP address with specified id");
+                ex.addProxyObject(ipVO.getUuid(), "systemIpAddrId");
+                throw ex;
+            }
+    
+            boolean success = _networkMgr.disassociatePublicIpAddress(ipAddressId, userId, caller);
+    
+            if (success) {
+                Long networkId = ipVO.getAssociatedWithNetworkId();
+                if (networkId != null) {
+                    Network guestNetwork = getNetwork(networkId);
+                    NetworkOffering offering = _configMgr.getNetworkOffering(guestNetwork.getNetworkOfferingId());
+                    Long vmId = ipVO.getAssociatedWithVmId();
+                    if (offering.getElasticIp() && vmId != null) {
+                        _rulesMgr.getSystemIpAndEnableStaticNatForVm(_userVmDao.findById(vmId), true);
+                        return true;
+                    }
+                }
+            } else {
+                s_logger.warn("Failed to release public ip address id=" + ipAddressId);
+            }
+            
+            return success;
+        }
+        finally {
+            lock.unlock();
+            lock.releaseRef();
         }
     }
 
