@@ -3067,7 +3067,7 @@ ServerResource {
         if (topVersion != null) {
             if (topVersion.equals("3.3.3")) {
                 //More reliable way to find the values for top 3.3.3--also doesn't rely on cut.
-                command += "| grep Cpu\\(s\\): | awk '{ print $8 }'";
+                command += "| grep Cpu\\(s\\): | awk -F'id,' '{print $1}' | awk '{print $NF}'";
             }
             else {
                 //Original 4.2 command, updated to allow method "current" querying (sed is an addition).
