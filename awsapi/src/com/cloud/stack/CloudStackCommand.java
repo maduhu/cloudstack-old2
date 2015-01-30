@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -133,17 +134,52 @@ public class CloudStackCommand {
    	    }
    	    return result.trim();
     }
+
+
+    private static final List VALID_CHARACTERS = Arrays.asList(
+            '%'
+    );
+    private static boolean needsUrlEncode(final String decode) {
+        boolean needs=false;
+        for (char c : decode.toCharArray()) {
+            if (VALID_CHARACTERS.indexOf(c) != -1 || Character.isLetterOrDigit(c)) {
+            } else {
+                needs=true;
+            }
+        }
+        return needs;
+    }
    
     private String urlSafe(String value) {
     	try {
-    		if (value != null)
-    			return URLEncoder.encode(value, "UTF-8").replaceAll("\\+", "%20");
-    		else 
+    		if (value != null){
+                        String out = null;
+                        if (needsUrlEncode(value)){
+                                out=URLEncoder.encode(value, "UTF-8");
+                        }
+                        else{
+                                out=value;
+                        }
+                        return out.replaceAll("\\+", "%20");
+    		} else {
     			return null;
+                }
 		} catch (UnsupportedEncodingException e) {
 			assert(false);
 		}
 		
 		return value;
     }
+
+    public static void main(String[] args){
+         CloudStackCommand test = new CloudStackCommand("");
+         String[] testArr=new String[]{"test", "test=","test%3D","test+test","test test"};
+         for (int i=0; i<testArr.length; i++) {
+             String value=testArr[i];
+             String output=test.urlSafe(value);
+             System.out.println("String value: "+value+" , output: "+output);
+        }
+
+    }
+
 }
