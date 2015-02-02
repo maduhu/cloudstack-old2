@@ -1881,8 +1881,14 @@ public class EC2Engine extends ManagerBase {
                     throws Exception {
 
         String instId = instanceId != null ? instanceId : null;
+        
+        
         List<CloudStackUserVm> vms = getApi().listVirtualMachines(null, null, true, null, null, null, null,
                 instId, null, null, null, null, null, null, null, null, resourceTagSet);
+        
+        //terminated machines.
+        vms.addAll(getApi().listVirtualMachines(null, null, true, null, null, null, null,
+                instId, null, null, null, null, null, "Destroyed", null, null, resourceTagSet));
 
         Collection<String> noDups = new HashSet<String>();
         
@@ -1897,7 +1903,14 @@ public class EC2Engine extends ManagerBase {
 	                ec2Vm.setZoneName(cloudVm.getZoneName());
 	                ec2Vm.setTemplateId(cloudVm.getTemplateId().toString());
 	                ec2Vm.setGroup(cloudVm.getGroup());
-	                ec2Vm.setState(cloudVm.getState());
+	                
+	                if (cloudVm.getState().equalsIgnoreCase("Destroyed")) {
+	                    ec2Vm.setState("terminated");
+	                }
+	                else {
+	                    ec2Vm.setState(cloudVm.getState());
+	                }
+	                
 	                ec2Vm.setCreated(cloudVm.getCreated());
 	                ec2Vm.setIpAddress(cloudVm.getIpAddress());
 	                ec2Vm.setAccountName(cloudVm.getAccountName());
