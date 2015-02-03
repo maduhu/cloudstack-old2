@@ -183,4 +183,7 @@ public interface NetworkService {
     List<? extends Nic> listNics(ListNicsCmd listNicsCmd);
 
     Map<Network.Capability, String> getNetworkOfferingServiceCapabilities(NetworkOffering offering, Service service);
+    
+    boolean checkHealth(Long networkId);
+    boolean checkHealth(Network network);
 }

@@ -3938,4 +3938,22 @@ public class NetworkServiceImpl extends ManagerBase implements  NetworkService {
         return _networkMgr.listVmNics(vmId, nicId);
     }
 
+    @Override
+    public boolean checkHealth(Long networkId) {
+        Network network = _networksDao.findById(networkId);
+        return checkHealth(network);
+    }
+
+    @Override
+    public boolean checkHealth(Network network) {
+        try {
+            Account caller = UserContext.current().getCaller();
+            _accountMgr.checkAccess(caller, null, true, network);
+            return _networkMgr.resyncIps(network);
+        }
+        catch (ResourceUnavailableException e) {
+            s_logger.error(e);
+            return false;
+        }
+    }
 }

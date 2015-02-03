@@ -74,6 +74,8 @@ import com.cloud.agent.api.routing.DhcpEntryCommand;
 import com.cloud.agent.api.routing.DnsMasqConfigCommand;
 import com.cloud.agent.api.routing.IpAliasTO;
 import com.cloud.agent.api.routing.IpAssocCommand;
+import com.cloud.agent.api.routing.IpListAnswer;
+import com.cloud.agent.api.routing.IpListCommand;
 import com.cloud.agent.api.routing.LoadBalancerConfigCommand;
 import com.cloud.agent.api.routing.NetworkElementCommand;
 import com.cloud.agent.api.routing.RemoteAccessVpnCfgCommand;
@@ -3189,7 +3191,7 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
         }
         return virtualRouter;
     }
-
+    
     private void createAssociateIPCommands(final VirtualRouter router, final List<? extends PublicIpAddress> ips, Commands cmds, long vmId) {
 
         // Ensure that in multiple vlans case we first send all ip addresses of vlan1, then all ip addresses of vlan2, etc..
@@ -3211,11 +3213,11 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
         List<NicVO> nics = _nicDao.listByVmId(router.getId());
         String baseMac = null;
         for (NicVO nic : nics) {
-        	NetworkVO nw = _networkDao.findById(nic.getNetworkId());
-        	if (nw.getTrafficType() == TrafficType.Public) {
-        		baseMac = nic.getMacAddress();
-        		break;
-        	}
+            NetworkVO nw = _networkDao.findById(nic.getNetworkId());
+            if (nw.getTrafficType() == TrafficType.Public) {
+                baseMac = nic.getMacAddress();
+                break;
+            }
         }
 
         for (Map.Entry<String, ArrayList<PublicIpAddress>> vlanAndIp : vlanIpMap.entrySet()) {
@@ -3253,9 +3255,9 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
                 // For non-source nat IP, set the mac to be something based on first public nic's MAC
                 // We cannot depends on first ip because we need to deal with first ip of other nics
                 if (!ipAddr.isSourceNat() && ipAddr.getVlanId() != 0) {
-                	vifMacAddress = NetUtils.generateMacOnIncrease(baseMac, ipAddr.getVlanId());
+                    vifMacAddress = NetUtils.generateMacOnIncrease(baseMac, ipAddr.getVlanId());
                 } else {
-                	vifMacAddress = ipAddr.getMacAddress();
+                    vifMacAddress = ipAddr.getMacAddress();
                 }
 
                 IpAddressTO ip = new IpAddressTO(ipAddr.getAccountId(), ipAddr.getAddress().addr(), add, firstIP, 
@@ -3278,6 +3280,133 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
 
             cmds.addCommand("IPAssocCommand", cmd);
         }
+    }
+    
+    /**
+     * Same as {@link #createAssociateIPCommands(VirtualRouter, List, Commands, long)}, but specifically for the resync
+     * IPs functionality.
+     * @param router
+     * @param additions
+     * @param removals
+     * @param cmds
+     * @param vmId
+     */
+    private void createAssociateIPCommandsResync(final VirtualRouter router, final List<PublicIpAddress> additions,
+            final List<PublicIpAddress> removals, PublicIpAddress sourceNatIp, Commands cmds) {
+
+        //Put everything in one big list of IPs for processing.
+        //The difference from the other method is that we check presence in the
+        //additions or removals list to determine if we add or remove an ip.
+        List<PublicIpAddress> ips = new ArrayList<PublicIpAddress>();
+        if (additions != null) ips.addAll(additions);
+        if (removals != null) ips.addAll(removals);
+        
+        // Ensure that in multiple vlans case we first send all ip addresses of vlan1, then all ip addresses o vlan2, etc..
+        Map<String, ArrayList<PublicIpAddress>> vlanIpMap = new HashMap<String, ArrayList<PublicIpAddress>>();
+        for (final PublicIpAddress ipAddress : ips) {
+            String vlanTag = ipAddress.getVlanTag();
+            ArrayList<PublicIpAddress> ipList = vlanIpMap.get(vlanTag);
+            if (ipList == null) {
+                ipList = new ArrayList<PublicIpAddress>();
+            }
+            
+            //domR doesn't support release for sourceNat IP address; so reset the state
+            if (ipAddress.isSourceNat() && ipAddress.getState() == IpAddress.State.Releasing) {
+                ipAddress.setState(IpAddress.State.Allocated);
+                removals.remove(ipAddress);
+                additions.add(ipAddress);
+            }
+            ipList.add(ipAddress);
+            vlanIpMap.put(vlanTag, ipList);
+        }
+
+        List<NicVO> nics = _nicDao.listByVmId(router.getId());
+        String baseMac = null;
+        for (NicVO nic : nics) {
+            NetworkVO nw = _networkDao.findById(nic.getNetworkId());
+            if (nw.getTrafficType() == TrafficType.Public) {
+                baseMac = nic.getMacAddress();
+                break;
+            }
+        }
+
+        for (Map.Entry<String, ArrayList<PublicIpAddress>> vlanAndIp : vlanIpMap.entrySet()) {
+            List<PublicIpAddress> ipAddrList = vlanAndIp.getValue();
+            // Source nat ip address should always be sent first
+            Collections.sort(ipAddrList, new Comparator<PublicIpAddress>() {
+                @Override
+                public int compare(PublicIpAddress o1, PublicIpAddress o2) {
+                    boolean s1 = o1.isSourceNat();
+                    boolean s2 = o2.isSourceNat();
+                    return (s1 ^ s2) ? ((s1 ^ true) ? 1 : -1) : 0;
+                }
+            });
+
+            // Get network rate - required for IpAssoc
+            Integer networkRate = _networkModel.getNetworkRate(ipAddrList.get(0).getNetworkId(), router.getId());
+            Network network = _networkModel.getNetwork(ipAddrList.get(0).getNetworkId());
+
+            IpAddressTO[] ipsToSend = new IpAddressTO[ipAddrList.size()];
+            int i = 0;
+            boolean firstIP = true;
+
+            for (final PublicIpAddress ipAddr : ipAddrList) {
+
+                boolean add = (additions.contains(ipAddr) ? true : false);
+                boolean sourceNat = ipAddr.isSourceNat();
+                /* enable sourceNAT for the first ip of the public interface */
+                if (firstIP) {
+                    sourceNat = true;
+                }
+                String vlanId = ipAddr.getVlanTag();
+                String vlanGateway = ipAddr.getGateway();
+                String vlanNetmask = ipAddr.getNetmask();
+                String vifMacAddress = null;
+                // For non-source nat IP, set the mac to be something based on first public nic's MAC
+                // We cannot depends on first ip because we need to deal with first ip of other nics
+                if (!ipAddr.isSourceNat() && ipAddr.getVlanId() != 0) {
+                    vifMacAddress = NetUtils.generateMacOnIncrease(baseMac, ipAddr.getVlanId());
+                } else {
+                    vifMacAddress = ipAddr.getMacAddress();
+                }
+
+                IpAddressTO ip = new IpAddressTO(ipAddr.getAccountId(), ipAddr.getAddress().addr(), add, firstIP, 
+                        sourceNat, vlanId, vlanGateway, vlanNetmask, vifMacAddress, networkRate, ipAddr.isOneToOneNat());
+
+                ip.setTrafficType(network.getTrafficType());
+                ip.setNetworkName(_networkModel.getNetworkTag(router.getHypervisorType(), network));
+                ipsToSend[i++] = ip;
+                /* send the firstIP = true for the first Add, this is to create primary on interface*/
+                if (!firstIP || add)  {
+                    firstIP = false;
+                }
+            }
+            
+            IpAssocCommand cmd = new IpAssocCommand(ipsToSend);
+            cmd.setAccessDetail(NetworkElementCommand.ROUTER_IP, getRouterControlIp(router.getId()));
+            cmd.setAccessDetail(NetworkElementCommand.ROUTER_GUEST_IP, getRouterIpInNetwork(sourceNatIp.getAssociatedWithNetworkId(), router.getId()));
+            cmd.setAccessDetail(NetworkElementCommand.ROUTER_NAME, router.getInstanceName());
+            DataCenterVO dcVo = _dcDao.findById(router.getDataCenterId());
+            cmd.setAccessDetail(NetworkElementCommand.ZONE_NETWORK_TYPE, dcVo.getNetworkType().toString());
+
+            cmds.addCommand("IPAssocCommand", cmd);
+        }
+    }
+    
+    private void createIpListCommands(List<? extends PublicIpAddress> knownIps, VirtualRouter router, Commands cmds) {
+        List<NicVO> nics = _nicDao.listByVmId(router.getId());
+        Set<String> vifMacAddresses = new HashSet<String>();
+        
+        for (NicVO nic : nics) {
+            NetworkVO nw = _networkDao.findById(nic.getNetworkId());
+            if (nw.getTrafficType() == TrafficType.Public) {
+                vifMacAddresses.add(nic.getMacAddress());
+            }
+        }
+        
+        IpListCommand cmd = new IpListCommand(vifMacAddresses.toArray(new String[vifMacAddresses.size()]));
+        cmd.setAccessDetail(NetworkElementCommand.ROUTER_IP, getRouterControlIp(router.getId()));
+        cmds.addCommand("IPListCommand", cmd);
     }
 
     private void createApplyPortForwardingRulesCommands(List<? extends PortForwardingRule> rules, VirtualRouter router, Commands cmds, long guestNetworkId) {
@@ -4166,10 +4295,152 @@ public class VirtualNetworkApplianceManagerImpl extends ManagerBase implements V
         }
     }
 
-
-
     @Override
     public VirtualRouter findRouter(long routerId) {
         return _routerDao.findById(routerId);
+    }
+    
+    protected Set<String> listIps(List<? extends PublicIpAddress> knownIps, VirtualRouter router) throws AgentUnavailableException, OperationTimedoutException {
+        Commands cmds = new Commands(OnError.Continue);
+        createIpListCommands(knownIps, router, cmds);
+        
+        if (router.getState() == State.Running) {
+            Set<String> ips = new HashSet<String>();
+            Answer[] answers = _agentMgr.send(router.getHostId(), cmds);
+            
+            for (Answer answer : answers) {
+                if (answer instanceof IpListAnswer) {
+                    for (String ip : ((IpListAnswer)answer).getIps()) {
+                        ips.add(ip);
+                    }
+                }
+                else {
+                    s_logger.warn("Tried to process unrecognized answer for list IPs: " + answer.getClass().getSimpleName());
+                }
+            }
+            
+            return ips;
+        }
+        else {
+            s_logger.warn("Unable to list IPs on router " + router.getUuid() + " because it is in state " + router.getState());
+        }
+        
+        return null;
+    }
+    
+    protected Pair<List<PublicIpAddress>, List<PublicIpAddress>> compareForIpResync(Network network, VirtualRouter router, 
+            Set<String> routerIPs, Set<String> knownIpsSet) {
+        
+        List<PublicIpAddress> additions = new ArrayList<PublicIpAddress>();
+        List<PublicIpAddress> removals = new ArrayList<PublicIpAddress>();
+        
+        //if IP on router but not in known IPs, mark for removal.
+        for (String ip : routerIPs) {
+            if (!knownIpsSet.contains(ip)) {
+                IPAddressVO ipvo = _ipAddressDao.findByIpAndDcId(network.getDataCenterId(), ip);
+                PublicIp pubip = PublicIp.createFromAddrAndVlan(ipvo, _vlanDao.findById(ipvo.getVlanId()));
+                removals.add(pubip);
+            }
+        }
+        
+        //if IP in known list but not on router, mark for addition.
+        for (String knownIP : knownIpsSet) {
+            if (!routerIPs.contains(knownIP)) {
+                IPAddressVO ipvo = _ipAddressDao.findByIpAndDcId(network.getDataCenterId(), knownIP);
+                PublicIp pubip = PublicIp.createFromAddrAndVlan(ipvo, _vlanDao.findById(ipvo.getVlanId()));
+                additions.add(pubip);
+            }
+        }
+   
+        return new Pair<List<PublicIpAddress>, List<PublicIpAddress>>(additions, removals); 
+    }
+
+    @Override
+    public boolean resyncIPs(Network network, List<? extends PublicIpAddress> knownIps, List<? extends VirtualRouter> routers)
+            throws ResourceUnavailableException {
+                
+        //translate PublicIpAddress list to strings for easy comparison.
+        Set<String> knownIpsSet = new HashSet<String>();
+        for (PublicIpAddress ip : knownIps) knownIpsSet.add(ip.getAddress().addr());
+        
+        //get list of IPs from routers
+        Map<VirtualRouter, Set<String>> routersAndIps = new HashMap<VirtualRouter, Set<String>>();
+        
+        if (routers == null || routers.isEmpty()) {
+            s_logger.error("No routers to resync provided!");
+            return false;
+        }
+        
+        for (VirtualRouter router : routers) {
+            Set<String> ips = null; 
+            try {
+                ips = listIps(knownIps, router);
+            }
+            catch (AgentUnavailableException e) {
+                s_logger.error("Agent unavailable, so cannot resync IPs", e);
+                return false;
+            }
+            catch (OperationTimedoutException e) {
+                s_logger.error("Agent operation timed out, so cannot resync IPs", e);
+                return false;
+            }
+            
+            if (ips != null) {
+                routersAndIps.put(router, ips);
+            }
+            else {
+                s_logger.warn("Could not get IPs for router " + router.getUuid());
+                return false;
+            }
+        }
+        
+        boolean success = true;
+
+        for (VirtualRouter router : routers) {
+            Pair<List<PublicIpAddress>, List<PublicIpAddress>> pair = compareForIpResync(network, router, routersAndIps.get(router), knownIpsSet);
+            List<PublicIpAddress> additions = pair.first();
+            List<PublicIpAddress> removals = pair.second();
+            
+            if (additions.size() > 0 || removals.size() > 0) {
+                s_logger.info("Resyncing IPs for network " + network.getUuid());
+                s_logger.info("Fixing " + (additions.size() + removals.size()) + " broken IPs on router " + router.getUuid() + 
+                        " (" + additions.size() + " additions, " + removals.size() + " removals)");
+                
+                //Find source NAT IP for router guest IP.
+                PublicIpAddress sourceNatIp = null;
+                for (PublicIpAddress ip : knownIps) {
+                    if (ip.isSourceNat()) {
+                        sourceNatIp = ip;
+                        break;
+                    }
+                }
+                
+                if (sourceNatIp == null) {
+                    s_logger.error("Could not find source NAT IP for IP resync!");
+                    return false;
+                }
+                          
+                //add the known IPs to the additions, in order to emulate the behavior of the regular IPAssoc command.
+                for (PublicIpAddress knownIp : knownIps) {
+                    if (!additions.contains(knownIp)) {
+                        additions.add(knownIp);
+                    }
+                }
+
+                Commands cmds = new Commands(OnError.Stop);
+                createAssociateIPCommandsResync(router, additions, removals, sourceNatIp, cmds);
+                boolean syncSuccessful = sendCommandsToRouter(router, cmds);
+                
+                if (!syncSuccessful) {
+                    s_logger.warn("Could not resync IPs on router " + router.getUuid());
+                }
+                
+                //Once there is one failure, we want to record that the overall process failed.
+                //But let all of them go.
+                if (success) success = syncSuccessful;
+            }
+        }
+               
+        return success;
     }
 }

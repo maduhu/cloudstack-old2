@@ -113,4 +113,7 @@ public interface VirtualNetworkApplianceManager extends Manager, VirtualNetworkA
     boolean removeDhcpSupportForSubnet(Network network, List<DomainRouterVO> routers) throws ResourceUnavailableException;
 
     boolean setupDhcpForPvlan(boolean add, DomainRouterVO router, Long hostId, NicProfile nic);
+    
+    boolean resyncIPs (Network network, final List<? extends PublicIpAddress> knownIps, 
+            List<? extends VirtualRouter> routers) throws ResourceUnavailableException;
 }

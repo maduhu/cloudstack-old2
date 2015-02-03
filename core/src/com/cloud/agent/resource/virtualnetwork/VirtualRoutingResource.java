@@ -17,7 +17,6 @@
 package com.cloud.agent.resource.virtualnetwork;
 
 import com.google.gson.Gson;
-
 import com.cloud.agent.api.Answer;
 import com.cloud.agent.api.BumpUpPriorityCommand;
 import com.cloud.agent.api.CheckRouterAnswer;
@@ -37,6 +36,8 @@ import com.cloud.agent.api.routing.DnsMasqConfigCommand;
 import com.cloud.agent.api.routing.IpAliasTO;
 import com.cloud.agent.api.routing.IpAssocAnswer;
 import com.cloud.agent.api.routing.IpAssocCommand;
+import com.cloud.agent.api.routing.IpListAnswer;
+import com.cloud.agent.api.routing.IpListCommand;
 import com.cloud.agent.api.routing.LoadBalancerConfigCommand;
 import com.cloud.agent.api.routing.NetworkElementCommand;
 import com.cloud.agent.api.routing.RemoteAccessVpnCfgCommand;
@@ -58,22 +59,26 @@ import com.cloud.agent.api.to.FirewallRuleTO;
 import com.cloud.agent.api.to.IpAddressTO;
 import com.cloud.agent.api.to.PortForwardingRuleTO;
 import com.cloud.agent.api.to.StaticNatRuleTO;
+import com.cloud.dc.Vlan;
 import com.cloud.exception.InternalErrorException;
 import com.cloud.network.HAProxyConfigurator;
 import com.cloud.network.LoadBalancerConfigurator;
 import com.cloud.network.rules.FirewallRule;
 import com.cloud.utils.NumbersUtil;
+import com.cloud.utils.Pair;
 import com.cloud.utils.component.ComponentLifecycle;
 import com.cloud.utils.component.Manager;
 import com.cloud.utils.net.NetUtils;
 import com.cloud.utils.script.OutputInterpreter;
 import com.cloud.utils.script.Script;
 import com.cloud.utils.ssh.SshHelper;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
 import javax.ejb.Local;
 import javax.naming.ConfigurationException;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -87,9 +92,12 @@ import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * VirtualNetworkResource controls and configures virtual networking
@@ -170,6 +178,8 @@ public class VirtualRoutingResource implements Manager {
                 return execute((Site2SiteVpnCfgCommand)cmd);
             } else if (cmd instanceof CheckS2SVpnConnectionsCommand) {
                 return execute((CheckS2SVpnConnectionsCommand)cmd);
+            } else if (cmd instanceof IpListCommand) {
+                return execute((IpListCommand)cmd);
             }
             else {
                 return Answer.createUnsupportedCommandAnswer(cmd);
@@ -730,6 +740,78 @@ public class VirtualRoutingResource implements Manager {
 
     protected Answer execute(final WatchConsoleProxyLoadCommand cmd) {
         return executeProxyLoadScan(cmd, cmd.getProxyVmId(), cmd.getProxyVmName(), cmd.getProxyManagementIp(), cmd.getProxyCmdPort());
+    }
+    
+    protected Answer execute(final IpListCommand cmd) {
+        //we need to know the nics for the IpListCommand...
+        //can do this by getting all public IPs on the router and mapping their nics.
+        //back to mgmt server!
+        
+        //libvirt computing resource uses the libvirt connection to get list of nics...
+        //then given the vlans it figures that out...
+        //we are interested only in the public interfaces.
+        //it is actually using two loops to set up its vlan to interface map.
+        //it does it once for the nics it finds, and then also adds ip vlans if necessary
+        //
+        
+        //or we can use this...
+        //ip link show | grep -B 1 c4:85:08:a3:2e:83 | head -n 1 | awk '{print $2}' | tr -d ':$'
+        //get interface names from this, then execute ip addr show on the interfaces.
+        //an alternative is using libvirt connection and get the nics.
+        //we don't need to actually plug in vifs, and we only care about going from mac addr -> iface name.
+
+        String routerIp = cmd.getAccessDetail(NetworkElementCommand.ROUTER_IP);
+        File permKey = new File("/root/.ssh/id_rsa.cloud");
+        
+        //First acquire a list of network interface names from their mac addresses.
+        //This is only the public interfaces.
+        List<String> interfaces = new ArrayList<String>();
+        
+        for (String mac : cmd.getVifMacAddresses()) {
+            String command = "(set -o pipefail && ip link show | grep -B 1 " + mac + " | head -n 1 | awk '{print $2}' | tr -d ':$')";
+            Pair<Boolean, String> result = null;
+            try {
+                result = SshHelper.sshExecute(routerIp, 3922, "root", permKey, null, command);
+            }
+            catch (Exception e) {
+                s_logger.error(e);
+                return new Answer(cmd, false, e.getMessage().toString());
+            }
+                        
+            if (result.first()) {
+                interfaces.add(result.second().trim());
+            }
+            else {
+                s_logger.error("Could not find interface name because " + result.second());
+                return new Answer(cmd, false, result.second());
+            }
+        }
+        
+        //Then find the ips currently on the public interface.
+        Set<String> ips = new HashSet<String>();
+        for (String iface : interfaces) {
+            String command = "(set -o pipefail && ip addr show " + iface + " | grep 'inet ' | awk '{print $2}' | sed 's/\\/.*$//')";
+            Pair<Boolean, String> result = null;
+            try {
+                result = SshHelper.sshExecute(routerIp, 3922, "root", permKey, null, command);
+            }
+            catch (Exception e) {
+                s_logger.error(e);
+                return new Answer(cmd, false, e.getMessage().toString());
+            }
+            
+            if (result.first()) {
+                String[] ipsOnInterface = result.second().split("\n");
+                for (String ip : ipsOnInterface) ips.add(ip.trim());
+            }
+            else {
+                s_logger.error("Could not list IPs due to " + result.second());
+            }
+        }
+        
+        String[] foundIps = ips.toArray(new String[ips.size()]);
+        IpListAnswer ans = new IpListAnswer(cmd, foundIps);
+        return ans;
     }
     
     protected Answer execute(Site2SiteVpnCfgCommand cmd) {

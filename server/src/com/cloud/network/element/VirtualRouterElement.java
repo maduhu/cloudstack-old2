@@ -1083,6 +1083,7 @@ public class VirtualRouterElement extends AdapterBase implements VirtualRouterEl
 		if (vm.getType() == Type.DomainRouter) {
 			assert vm instanceof DomainRouterVO;
 			DomainRouterVO router = (DomainRouterVO)vm.getVirtualMachine();
+	        //Compare
 			_routerMgr.setupDhcpForPvlan(true, router, router.getHostId(), nic);
 		} else if (vm.getType() == Type.User){
 			assert vm instanceof UserVmVO;
@@ -1090,4 +1091,29 @@ public class VirtualRouterElement extends AdapterBase implements VirtualRouterEl
 			_userVmMgr.setupVmForPvlan(true, userVm.getHostId(), nic);
 		}
 	}
+
+    @Override
+    public boolean resyncIps(Network network, List<? extends PublicIpAddress> knownIps, Set<Service> services)
+            throws ResourceUnavailableException {
+        boolean canHandle = true;
+        for (Service service : services) {
+            if (!canHandle(network, service)) {
+                canHandle = false;
+                break;
+            }
+        }
+        if (canHandle) {
+            s_logger.info("Let " + getProvider().getName() + " handle resync IPs for network " + network.getUuid());
+            List<DomainRouterVO> routers = _routerDao.listByNetworkAndRole(network.getId(), Role.VIRTUAL_ROUTER);
+            if (routers == null || routers.isEmpty()) {
+                s_logger.debug("Virtual router elemnt doesn't need to associate ip addresses on the backend; virtual " +
+                        "router doesn't exist in the network " + network.getId());
+                return true;
+            }
+
+            return _routerMgr.resyncIPs(network, knownIps, routers);
+        } else {
+            return false;
+        }
+    }
 }

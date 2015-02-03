@@ -54,6 +54,7 @@ import com.cloud.vm.ReservationContext;
 import com.cloud.vm.VirtualMachine;
 import com.cloud.vm.VirtualMachineProfile;
 import com.cloud.vm.dao.NicDao;
+
 import org.midonet.client.MidonetApi;
 import org.midonet.client.exception.HttpInternalServerError;
 import org.midonet.client.dto.DtoRule;
@@ -69,7 +70,9 @@ import org.midonet.client.resource.Router;
 import org.midonet.client.resource.RouterPort;
 import org.midonet.client.resource.Rule;
 import org.midonet.client.resource.RuleChain;
+
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -77,6 +80,7 @@ import javax.ejb.Local;
 import javax.inject.Inject;
 import javax.naming.ConfigurationException;
 import javax.ws.rs.core.MultivaluedMap;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1740,5 +1744,13 @@ public class MidoNetElement extends AdapterBase implements
     public List<Class<?>> getCommands() {
         // MidoNet does not implement any commands, so we return an empty list.
         return new ArrayList<Class<?>>();
+    }
+    
+    @Override
+    public boolean resyncIps(Network network,
+            List<? extends PublicIpAddress> ipAddress, Set<Service> services)
+            throws ResourceUnavailableException {
+        s_logger.error("Cannot resync IPs with " + this.getClass().getName());
+        return false;
     }
 }
