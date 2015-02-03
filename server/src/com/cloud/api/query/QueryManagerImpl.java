@@ -892,9 +892,9 @@ public class QueryManagerImpl extends ManagerBase implements QueryService {
             sc.setParameters("hypervisorType", hypervisor);
         }
 
-        // Don't show Destroyed and Expunging vms to the end user
+        // Don't show Expunging vms to the end user
         if ((isAdmin != null) && ((Boolean) isAdmin != true)) {
-            sc.setParameters("stateNIN", "Destroyed", "Expunging");
+            sc.setParameters("stateNIN", "Expunging");
         }
 
         if (zoneId != null) {
