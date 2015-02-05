@@ -89,7 +89,7 @@ public class NetworkHealthCheckCmd extends BaseAsyncCmd{
 
     @Override
     public String getEventType() {
-        return EventTypes.EVENT_NETWORK_DELETE;
+        return EventTypes.EVENT_NETWORK_HEALTH_CHECK;
     }
 
     @Override

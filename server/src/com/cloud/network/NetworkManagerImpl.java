@@ -3268,7 +3268,7 @@ public class NetworkManagerImpl extends ManagerBase implements NetworkManager, L
                 }
                 
                 try {
-                    deployer.resyncIps(network, ips, services);
+                    success = deployer.resyncIps(network, ips, services);
                 }
                 finally {
                     lock.unlock();

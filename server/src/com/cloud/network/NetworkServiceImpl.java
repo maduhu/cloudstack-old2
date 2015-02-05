@@ -3939,6 +3939,7 @@ public class NetworkServiceImpl extends ManagerBase implements  NetworkService {
     }
 
     @Override
+    @ActionEvent(eventType = EventTypes.EVENT_NETWORK_HEALTH_CHECK, eventDescription = "checking network health", async = true)
     public boolean checkHealth(Long networkId) {
         Network network = _networksDao.findById(networkId);
         return checkHealth(network);

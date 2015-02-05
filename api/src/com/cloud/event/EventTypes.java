@@ -108,6 +108,7 @@ public class EventTypes {
     public static final String EVENT_NET_RULE_MODIFY = "NET.RULEMODIFY";
     public static final String EVENT_NETWORK_CREATE = "NETWORK.CREATE";
     public static final String EVENT_NETWORK_DELETE = "NETWORK.DELETE";
+    public static final String EVENT_NETWORK_HEALTH_CHECK = "NETWORK.HEALTHCHECK";
     public static final String EVENT_NETWORK_UPDATE = "NETWORK.UPDATE";
     public static final String EVENT_FIREWALL_OPEN = "FIREWALL.OPEN";
     public static final String EVENT_FIREWALL_CLOSE = "FIREWALL.CLOSE";
