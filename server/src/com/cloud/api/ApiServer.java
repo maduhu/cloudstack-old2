@@ -661,9 +661,9 @@ public class ApiServer extends ManagerBase implements HttpRequestHandler, ApiSer
                     }
 
                     if (unsignedRequest == null) {
-                        unsignedRequest = paramName + "=" + URLEncoder.encode(paramValue, "UTF-8").replaceAll("\\+", "%20");
+                        unsignedRequest = paramName + "=" + urlEncode(paramValue, true).replaceAll("\\+", "%20");
                     } else {
-                        unsignedRequest = unsignedRequest + "&" + paramName + "=" + URLEncoder.encode(paramValue, "UTF-8").replaceAll("\\+", "%20");
+                        unsignedRequest = unsignedRequest + "&" + paramName + "=" + urlEncode(paramValue, true).replaceAll("\\+", "%20");
                     }
                 }
             }
@@ -754,6 +754,21 @@ public class ApiServer extends ManagerBase implements HttpRequestHandler, ApiSer
         return false;
     }
 
+    private static boolean needsUrlEncode(final String decode) {
+    	return decode.indexOf("%") < 0;
+    }
+    
+	private String urlEncode(String item, boolean encode) {
+		if (encode) {
+            try {
+            	if (needsUrlEncode(item)) {
+            		item = URLEncoder.encode(item, "UTF-8");
+            	}
+            } catch(Exception e) {}
+		}
+		return item;
+	}
+    
     @Override
     public Long fetchDomainId(String domainUUID) {
         return _domainMgr.getDomain(domainUUID).getId();
