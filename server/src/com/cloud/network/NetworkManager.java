@@ -390,4 +390,6 @@ public interface NetworkManager  {
     void prepareAllNicsForMigration(VirtualMachineProfile<? extends VMInstanceVO> vm, DeployDestination dest);
 
     void removeDhcpServiceInSubnet(NicVO nic);
+    
+    boolean resyncIps(Network network) throws ResourceUnavailableException;
 }

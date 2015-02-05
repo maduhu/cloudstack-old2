@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import javax.naming.ConfigurationException;
 
 import com.cloud.vm.*;
+
 import org.apache.cloudstack.acl.ControlledEntity.ACLType;
 import org.apache.cloudstack.api.command.admin.network.DedicateGuestVlanRangeCmd;
 import org.apache.cloudstack.api.command.admin.network.ListDedicatedGuestVlanRangesCmd;
@@ -81,7 +82,6 @@ import com.cloud.user.User;
 import com.cloud.utils.Pair;
 import com.cloud.utils.component.ManagerBase;
 import com.cloud.vm.VirtualMachine.Type;
-
 import com.cloud.vm.VirtualMachineProfile;
 
 import org.apache.cloudstack.acl.ControlledEntity.ACLType;
@@ -1454,6 +1454,37 @@ public class MockNetworkManagerImpl extends ManagerBase implements NetworkManage
 		// TODO Auto-generated method stub
 		
 	}
+
+
+
+
+
+    @Override
+    public boolean resyncIps(Network network)
+            throws ResourceUnavailableException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+
+
+
+
+    @Override
+    public boolean checkHealth(Long networkId) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+
+
+
+
+    @Override
+    public boolean checkHealth(Network network) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
 
 }

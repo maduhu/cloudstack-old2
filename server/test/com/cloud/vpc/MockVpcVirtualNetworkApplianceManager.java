@@ -426,4 +426,15 @@ VpcVirtualNetworkApplianceService {
         // TODO Auto-generated method stub
         return false;
     }
+
+    @Override
+    public boolean resyncIPs(Network network,
+            List<? extends PublicIpAddress> knownIps,
+            List<? extends VirtualRouter> routers)
+            throws ResourceUnavailableException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+    
+    
 }

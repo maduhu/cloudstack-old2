@@ -961,4 +961,12 @@ public class CiscoVnmcElement extends AdapterBase implements SourceNatServicePro
             _networkAsa1000vMapDao.remove(networkAsaMap.getId());
         }
     }
+    
+    @Override
+    public boolean resyncIps(Network network,
+            List<? extends PublicIpAddress> ipAddress, Set<Service> services)
+            throws ResourceUnavailableException {
+        s_logger.error("Cannot resync IPs with " + this.getClass().getName());
+        return false;
+    }
 }
