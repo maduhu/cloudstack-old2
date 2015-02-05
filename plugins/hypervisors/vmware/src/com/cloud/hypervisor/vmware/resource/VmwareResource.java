@@ -158,6 +158,8 @@ import com.cloud.agent.api.routing.IpAliasTO;
 import com.cloud.agent.api.routing.IpAssocAnswer;
 import com.cloud.agent.api.routing.IpAssocCommand;
 import com.cloud.agent.api.routing.IpAssocVpcCommand;
+import com.cloud.agent.api.routing.IpListAnswer;
+import com.cloud.agent.api.routing.IpListCommand;
 import com.cloud.agent.api.routing.LoadBalancerConfigCommand;
 import com.cloud.agent.api.routing.NetworkElementCommand;
 import com.cloud.agent.api.routing.RemoteAccessVpnCfgCommand;
@@ -531,6 +533,8 @@ public class VmwareResource implements StoragePoolResource, ServerResource, Vmwa
                 answer = execute((SetupGuestNetworkCommand) cmd);
             } else if (clz == IpAssocVpcCommand.class) {
                 answer = execute((IpAssocVpcCommand) cmd);
+            } else if (clz == IpListCommand.class) {
+                answer = execute((IpListCommand) cmd);
             } else if (clz == PlugNicCommand.class) {
                 answer = execute((PlugNicCommand) cmd);
             } else if (clz == UnPlugNicCommand.class) {
@@ -2067,6 +2071,118 @@ public class VmwareResource implements StoragePoolResource, ServerResource, Vmwa
         }
 
         return new IpAssocAnswer(cmd, results);
+    }
+    
+    protected Answer execute(IpListCommand cmd) {
+        if (s_logger.isInfoEnabled()) {
+            s_logger.info("Executing resource IpListCommand: " + _gson.toJson(cmd));
+        }
+
+        VmwareContext context = getServiceContext();
+        try {
+            VmwareHypervisorHost hyperHost = getHyperHost(context);
+
+            String[] vifMacAddresses = cmd.getVifMacAddresses();
+            String routerName = cmd.getAccessDetail(NetworkElementCommand.ROUTER_NAME);
+            String controlIp = VmwareResource.getRouterSshControlIp(cmd);
+
+            VirtualMachineMO vmMo = hyperHost.findVmOnHyperHost(routerName);
+
+            // command may sometimes be redirect to a wrong host, we relax
+            // the check and will try to find it within cluster
+            if(vmMo == null) {
+                if(hyperHost instanceof HostMO) {
+                    ClusterMO clusterMo = new ClusterMO(hyperHost.getContext(),
+                            ((HostMO)hyperHost).getParentMor());
+                    vmMo = clusterMo.findVmOnHyperHost(routerName);
+                }
+            }
+
+            if (vmMo == null) {
+                String msg = "Router " + routerName + " no longer exists to execute IPList command";
+                s_logger.error(msg);
+                throw new Exception(msg);
+            }
+            
+            VmwareManager mgr = getServiceContext().getStockObject(VmwareManager.CONTEXT_STOCK_NAME);
+            
+            List<String> interfaces = listInterfacesOnRouter(controlIp, mgr, vifMacAddresses);                
+            Set<String> ips = listIpsOnRouter(controlIp, mgr, interfaces);
+            
+            String[] foundIps = ips.toArray(new String[ips.size()]);
+            IpListAnswer ans = new IpListAnswer(cmd, foundIps);
+            return ans;
+        } 
+        catch (Throwable e) {
+            s_logger.error("Unexpected exception: " + e.toString() + " will shortcut rest of IPList commands", e);
+            return new Answer(cmd, false, e.toString());
+        }
+    }
+    
+    /**
+     * Lists public interfaces on router based on mac address.
+     * @param controlIp
+     * @param mgr
+     * @param vifMacAddresses
+     * @return
+     */
+    protected List<String> listInterfacesOnRouter(String controlIp, VmwareManager mgr, String[] vifMacAddresses) {
+        List<String> interfaces = new ArrayList<String>();
+
+        for (String mac : vifMacAddresses) {
+            String command = "(set -o pipefail && ip link show | grep -B 1 " + mac + " | head -n 1 | awk '{print $2}' | tr -d ':$')";
+            Pair<Boolean, String> result = null;
+            try {
+                result = SshHelper.sshExecute(controlIp, DEFAULT_DOMR_SSHPORT, "root", mgr.getSystemVMKeyFile(), null, command);
+            }
+            catch (Exception e) {
+                s_logger.error(e);
+                return null;
+            }
+                        
+            if (result.first()) {
+                interfaces.add(result.second().trim());
+            }
+            else {
+                s_logger.error("Could not find interface name because " + result.second());
+                return null;
+            }                
+        }
+        
+        return interfaces;
+    }
+    
+    /**
+     * Lists ips on the given interface names on the virtual router.
+     * @param controlIp
+     * @param mgr
+     * @param interfaces
+     * @return
+     */
+    protected Set<String> listIpsOnRouter(String controlIp, VmwareManager mgr, List<String> interfaces) {
+        Set<String> ips = new HashSet<String>();
+        
+        for (String iface : interfaces) {
+            String command = "(set -o pipefail && ip addr show " + iface + " | grep 'inet ' | awk '{print $2}' | sed 's/\\/.*$//')";
+            Pair<Boolean, String> result = null;
+            try {
+                result = SshHelper.sshExecute(controlIp, DEFAULT_DOMR_SSHPORT, "root", mgr.getSystemVMKeyFile(), null, command);
+            }
+            catch (Exception e) {
+                s_logger.error(e);
+                return null;
+            }
+            
+            if (result.first()) {
+                String[] ipsOnInterface = result.second().split("\n");
+                for (String ip : ipsOnInterface) ips.add(ip.trim());
+            }
+            else {
+                s_logger.error("Could not list IPs due to " + result.second());
+            }
+        }
+        
+        return ips;
     }
 
     protected Answer execute(SavePasswordCommand cmd) {
