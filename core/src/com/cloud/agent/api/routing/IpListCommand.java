@@ -5,12 +5,12 @@ package com.cloud.agent.api.routing;
  *
  */
 public class IpListCommand extends NetworkElementCommand {
-    String[] vifMacAddresses;
+    String[] vlanIds;
     
     public IpListCommand() {}
     
     public IpListCommand(String ... macAddresses) {
-        this.vifMacAddresses = macAddresses;
+        this.vlanIds = macAddresses;
     }
     
     @Override
@@ -18,11 +18,11 @@ public class IpListCommand extends NetworkElementCommand {
         return false;
     }
     
-    public String[] getVifMacAddresses() {
-        return vifMacAddresses;
+    public String[] getVlanIds() {
+        return vlanIds;
     }
     
-    public void setVifMacAddresses(String[] vifMacAddresses) {
-        this.vifMacAddresses = vifMacAddresses;
+    public void setVlanIds(String[] vifMacAddresses) {
+        this.vlanIds = vifMacAddresses;
     }
 }

@@ -2082,7 +2082,7 @@ public class VmwareResource implements StoragePoolResource, ServerResource, Vmwa
         try {
             VmwareHypervisorHost hyperHost = getHyperHost(context);
 
-            String[] vifMacAddresses = cmd.getVifMacAddresses();
+            String[] vifMacAddresses = cmd.getVlanIds();
             String routerName = cmd.getAccessDetail(NetworkElementCommand.ROUTER_NAME);
             String controlIp = VmwareResource.getRouterSshControlIp(cmd);
 
