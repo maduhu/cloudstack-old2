@@ -19,139 +19,152 @@ package com.cloud.bridge.service.core.ec2;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ *
+ * @author
+ */
 public class EC2RunInstances {
 
-	private String instanceType;
-	private String zoneName;
-	private String templateId;
-	private String groupId;
-	private String userData;
-	private String keyName;
-	private String ipAddress;
-	private int    maxCount;
-	private int    minCount;
-    private Integer    size;  		// <- in gigs
+    private String instanceType;
+    private String zoneName;
+    private String templateId;
+    private String groupId;
+    private String userData;
+    private String keyName;
+    private String ipAddress;
+    private int    maxCount;
+    private int    minCount;
+    private Integer    size;            // <- in gigs
     private List<String>  groupIdSet;
     private List<String>  groupNameSet;
-	private boolean associateIp;
-	private String subnetId;
-	
-	public EC2RunInstances() {
-		instanceType = null;
-		zoneName     = null;
-		templateId   = null;
-		groupId      = null;
-		userData     = null;
-		keyName      = null;
-		ipAddress    = null;
-		maxCount     = 0;
-		minCount     = 0;
-		size		 = 0;
+    private Boolean associateIp;
+    private String subnetId;
+        
+    public EC2RunInstances() {
+	instanceType = null;
+	zoneName     = null;
+	templateId   = null;
+	groupId      = null;
+	userData     = null;
+	keyName      = null;
+	ipAddress    = null;
+	maxCount     = 0;
+	minCount     = 0;
+	size             = 0;
         groupIdSet   = new ArrayList<String>();
         groupNameSet = new ArrayList<String>();
-		associateIp	 = true;
-	}
-	
-	public void setInstanceType( String instanceType ) {
-		this.instanceType = instanceType;
-	}
-	
-	public String getInstanceType() {
-		return this.instanceType;
-	}
+	associateIp      = true;
+    }
+        
+    public void setInstanceType( String instanceType ) {
+	this.instanceType = instanceType;
+    }
+        
+    public String getInstanceType() {
+	return this.instanceType;
+    }
 
-	public void setZoneName( String zoneName ) {
-		this.zoneName = zoneName;
-	}
-	
-	public String getZoneName() {
-		return this.zoneName;
-	}
+    public void setZoneName( String zoneName ) {
+	this.zoneName = zoneName;
+    }
+        
+    public String getZoneName() {
+	return this.zoneName;
+    }
 
-	public void setTemplateId( String templateId ) {
-		this.templateId = templateId;
-	}
-	
-	public String getTemplateId() {
-		return this.templateId;
-	}	
+    public void setTemplateId( String templateId ) {
+	this.templateId = templateId;
+    }
+        
+    public String getTemplateId() {
+	return this.templateId;
+    }       
 
-	public void setGroupId( String groupId ) {
-		this.groupId = groupId;
-	}
-	
-	public String getGroupId() {
-		return this.groupId;
-	}	
+    public void setGroupId( String groupId ) {
+	this.groupId = groupId;
+    }
+        
+    public String getGroupId() {
+	return this.groupId;
+    }       
 
-	public void setUserData( String userData ) {
-		this.userData = userData;
-	}
-	
-	public String getUserData() {
-		return this.userData;
-	}	
-	
-	public String getKeyName() {
-		return keyName;
-	}
+    public void setUserData( String userData ) {
+	this.userData = userData;
+    }
+        
+    public String getUserData() {
+	return this.userData;
+    }       
+        
+    public String getKeyName() {
+	return keyName;
+    }
 
-	public void setKeyName(String publicKeyName) {
-		this.keyName = publicKeyName;
-	}
+    public void setKeyName(String publicKeyName) {
+	this.keyName = publicKeyName;
+    }
 
-	public String getIpAddress() {
-		return ipAddress;
-	}
+    public String getIpAddress() {
+	return ipAddress;
+    }
 
-	public void setIpAddress(String privateIpAddress) {
-		this.ipAddress = privateIpAddress;
-	}
+    public void setIpAddress(String privateIpAddress) {
+	this.ipAddress = privateIpAddress;
+    }
 
-	public boolean associatePublicIp() {
-		return associateIp;
-	}
+    /**
+     * Whether or not we are requesting a public IP with our run
+     * instances request. This has 3 behaviors: if true, we are
+     * requesting a reserved IP. If false, we are requesting a private
+     * IP. If null, we are requesting a dynamic IP.
+     *
+     * @return true, false, or null.
+     */
+    public Boolean associatePublicIp() {
+	return associateIp;
+    }
 
-	public void setAssociatePublicIp(boolean associateIp) {
-		this.associateIp = associateIp;
-	}
+    public void setAssociatePublicIp(boolean associateIp) {
+	this.associateIp = associateIp;
+    }
 
-	public void setMaxCount( int maxCount ) {
-		this.maxCount = maxCount;
-	}
-	
-	public int getMaxCount() {
-		return this.maxCount;
-	}
-	
-	public void setMinCount( int minCount ) {
-		this.minCount = minCount;
-	}
-	
-	public int getMinCount() {
-		return this.minCount;
-	}
+    public void setMaxCount( int maxCount ) {
+	this.maxCount = maxCount;
+    }
+        
+    public int getMaxCount() {
+	return this.maxCount;
+    }
+        
+    public void setMinCount( int minCount ) {
+	this.minCount = minCount;
+    }
+        
+    public int getMinCount() {
+	return this.minCount;
+    }
 
-	public Integer getSize() {
-		return size;
-	}
+    public Integer getSize() {
+	return size;
+    }
 
-	public void setSize(Integer size) {
-		this.size = size;
-	}
+    public void setSize(Integer size) {
+	this.size = size;
+    }
 
     public void addSecuritGroupId( String param ) {
         groupIdSet.add( param );
     }
-		
+                
     public String[] getSecurityGroupIdSet() {
         return groupIdSet.toArray(new String[0]);
     }
 
-	public void addSecuritGroupName( String param ) {
+    public void addSecuritGroupName( String param ) {
         groupNameSet.add( param );
     }
-		
+                
     public String[] getSecurityGroupNameSet() {
         return groupNameSet.toArray(new String[0]);
     }
