@@ -2364,7 +2364,7 @@ public class EC2RestServlet extends HttpServlet {
         // Write the response
         response.setContentType("text/xml; charset=UTF-8");
         xmlResponse = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+xmlResponse;
-        int contentLength = xmlResponse.length();
+        int contentLength = xmlResponse.getBytes("UTF-8").length;
         response.setContentLength(contentLength);
         response.getWriter().write(xmlResponse);
         response.getWriter().flush();
