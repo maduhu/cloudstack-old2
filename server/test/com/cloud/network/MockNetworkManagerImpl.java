@@ -68,6 +68,7 @@ import com.cloud.utils.Pair;
 import com.cloud.utils.component.ManagerBase;
 import com.cloud.vm.*;
 import com.cloud.vm.VirtualMachine.Type;
+
 import org.apache.cloudstack.api.command.admin.network.DedicateGuestVlanRangeCmd;
 import org.apache.cloudstack.api.command.admin.network.ListDedicatedGuestVlanRangesCmd;
 import org.apache.cloudstack.api.command.admin.usage.ListTrafficTypeImplementorsCmd;
@@ -77,6 +78,7 @@ import org.springframework.stereotype.Component;
 
 import javax.ejb.Local;
 import javax.naming.ConfigurationException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -969,4 +971,23 @@ public class MockNetworkManagerImpl extends ManagerBase implements NetworkManage
             VirtualMachineProfile<? extends VMInstanceVO> dst) {
         // TODO Auto-generated method stub
             }
+
+    @Override
+    public boolean resyncIps(Network network)
+            throws ResourceUnavailableException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean checkHealth(Long networkId) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean checkHealth(Network network) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }

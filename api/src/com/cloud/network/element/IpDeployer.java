@@ -39,6 +39,8 @@ public interface IpDeployer extends Adapter{
      * @throws ResourceUnavailableException
      */
     boolean applyIps(Network network, List<? extends PublicIpAddress> ipAddress, Set<Service> services) throws ResourceUnavailableException;
+    
+    boolean resyncIps(Network network, List<? extends PublicIpAddress> ipAddress, Set<Service> services) throws ResourceUnavailableException;
 
     Provider getProvider();
 }

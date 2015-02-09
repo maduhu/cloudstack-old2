@@ -955,4 +955,12 @@ NiciraNvpElementService, ResourceStateAdapter, IpDeployer {
         return answer.getResult();
     }
 
+    @Override
+    public boolean resyncIps(Network network,
+            List<? extends PublicIpAddress> ipAddress, Set<Service> services)
+            throws ResourceUnavailableException {
+        s_logger.error("Cannot resync IPs with " + this.getClass().getName());
+        return false;
+    }
+
 }

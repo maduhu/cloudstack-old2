@@ -528,5 +528,13 @@ public class InternalLoadBalancerElement extends AdapterBase implements LoadBala
         //as the LB service implements IPDeployerRequester
         return true;
     }
+    
+    @Override
+    public boolean resyncIps(Network network,
+            List<? extends PublicIpAddress> ipAddress, Set<Service> services)
+            throws ResourceUnavailableException {
+        //nothing to do here. we just extend IPDeployerRequester.
+        return true;
+    }
 
 }

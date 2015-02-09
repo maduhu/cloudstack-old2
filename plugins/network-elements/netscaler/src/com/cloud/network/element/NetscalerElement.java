@@ -1020,5 +1020,13 @@ public class NetscalerElement extends ExternalLoadBalancerDeviceManagerImpl impl
         }
         return true;
     }
+    
+    @Override
+    public boolean resyncIps(Network network,
+            List<? extends PublicIpAddress> ipAddress, Set<Service> services)
+            throws ResourceUnavailableException {
+        s_logger.error("Cannot resync IPs with " + this.getClass().getName());
+        return false;
+    }
 
 }

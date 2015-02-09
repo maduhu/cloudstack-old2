@@ -5,7 +5,7 @@
 // to you under the Apache License, Version 2.0 (the
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
-// 
+//
 //   http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
@@ -17,7 +17,6 @@
 package com.cloud.agent.resource.virtualnetwork;
 
 import com.google.gson.Gson;
-
 import com.cloud.agent.api.Answer;
 import com.cloud.agent.api.BumpUpPriorityCommand;
 import com.cloud.agent.api.CheckRouterAnswer;
@@ -37,6 +36,8 @@ import com.cloud.agent.api.routing.DnsMasqConfigCommand;
 import com.cloud.agent.api.routing.IpAliasTO;
 import com.cloud.agent.api.routing.IpAssocAnswer;
 import com.cloud.agent.api.routing.IpAssocCommand;
+import com.cloud.agent.api.routing.IpListAnswer;
+import com.cloud.agent.api.routing.IpListCommand;
 import com.cloud.agent.api.routing.LoadBalancerConfigCommand;
 import com.cloud.agent.api.routing.NetworkElementCommand;
 import com.cloud.agent.api.routing.RemoteAccessVpnCfgCommand;
@@ -58,22 +59,26 @@ import com.cloud.agent.api.to.FirewallRuleTO;
 import com.cloud.agent.api.to.IpAddressTO;
 import com.cloud.agent.api.to.PortForwardingRuleTO;
 import com.cloud.agent.api.to.StaticNatRuleTO;
+import com.cloud.dc.Vlan;
 import com.cloud.exception.InternalErrorException;
 import com.cloud.network.HAProxyConfigurator;
 import com.cloud.network.LoadBalancerConfigurator;
 import com.cloud.network.rules.FirewallRule;
 import com.cloud.utils.NumbersUtil;
+import com.cloud.utils.Pair;
 import com.cloud.utils.component.ComponentLifecycle;
 import com.cloud.utils.component.Manager;
 import com.cloud.utils.net.NetUtils;
 import com.cloud.utils.script.OutputInterpreter;
 import com.cloud.utils.script.Script;
 import com.cloud.utils.ssh.SshHelper;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
 import javax.ejb.Local;
 import javax.naming.ConfigurationException;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -87,9 +92,12 @@ import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * VirtualNetworkResource controls and configures virtual networking
@@ -180,7 +188,7 @@ public class VirtualRoutingResource implements Manager {
     }
 
     private Answer execute(VpnUsersCfgCommand cmd) {
-        for (VpnUsersCfgCommand.UsernamePassword userpwd: cmd.getUserpwds()) {         
+        for (VpnUsersCfgCommand.UsernamePassword userpwd: cmd.getUserpwds()) {
             String args = "";
             if (!userpwd.isAdd()) {
                 args +="-U ";
@@ -193,7 +201,7 @@ public class VirtualRoutingResource implements Manager {
             if (result != null) {
                 return new Answer(cmd, false, "Configure VPN user failed for user " + userpwd.getUsername());
             }
-        }       
+        }
         return new Answer(cmd);
     }
 
@@ -240,7 +248,7 @@ public class VirtualRoutingResource implements Manager {
         final Script command = new Script(_firewallPath, _timeout, s_logger);
         command.add(routerIp);
         command.add("-F");
-        
+
         if (trafficType == FirewallRule.TrafficType.Egress){
             command.add("-E");
             if (egressDefault.equals("true")) {
@@ -260,14 +268,14 @@ public class VirtualRoutingResource implements Manager {
             }
             command.add("-a", sb.toString());
         }
-       
+
         String result = command.execute();
         if (result != null) {
             return new SetFirewallRulesAnswer(cmd, false, results);
         }
         return new SetFirewallRulesAnswer(cmd, true, null);
-        
-        
+
+
     }
 
     private Answer execute(SetPortForwardingRulesCommand cmd) {
@@ -310,7 +318,7 @@ public class VirtualRoutingResource implements Manager {
             args += " -r " + rule.getDstIp();
 
             String result = routerProxy("vpc_staticnat.sh", routerIp, args);
-            
+
             if(result == null) {
                 results[i++] = null;
             } else {
@@ -321,7 +329,7 @@ public class VirtualRoutingResource implements Manager {
         return new SetStaticNatRulesAnswer(cmd, results, endResult);
 
     }
-    
+
     private Answer execute(SetStaticNatRulesCommand cmd) {
         if ( cmd.getVpcId() != null ) {
             return SetVPCStaticNatRules(cmd);
@@ -335,18 +343,18 @@ public class VirtualRoutingResource implements Manager {
             final Script command = new Script(_firewallPath, _timeout, s_logger);
             command.add(routerIp);
             command.add(rule.revoked() ? "-D" : "-A");
-            
+
             //1:1 NAT needs instanceip;publicip;domrip;op
             command.add(" -l ", rule.getSrcIp());
             command.add(" -r ", rule.getDstIp());
-            
-            if (rule.getProtocol() != null) { 
+
+            if (rule.getProtocol() != null) {
                 command.add(" -P ", rule.getProtocol().toLowerCase());
             }
-            
+
             command.add(" -d ", rule.getStringSrcPortRange());
             command.add(" -G ") ;
-            
+
             result = command.execute();
             if (result == null) {
                 results[i++] = null;
@@ -358,7 +366,7 @@ public class VirtualRoutingResource implements Manager {
 
         return new SetStaticNatRulesAnswer(cmd, results, endResult);
     }
-    
+
     protected Answer VPCLoadBalancerConfig(final LoadBalancerConfigCommand cmd) {
         String routerIp = cmd.getAccessDetail(NetworkElementCommand.ROUTER_IP);
 
@@ -374,7 +382,7 @@ public class VirtualRoutingResource implements Manager {
             tmpCfgFileContents += "\n";
         }
         File permKey = new File("/root/.ssh/id_rsa.cloud");
-       
+
         try {
         	SshHelper.scpTo(routerIp, 3922, "root", permKey, null, "/etc/haproxy/", tmpCfgFileContents.getBytes(), "haproxy.cfg.new", null);
 
@@ -429,7 +437,7 @@ public class VirtualRoutingResource implements Manager {
         if ( cmd.getVpcId() != null ) {
             return VPCLoadBalancerConfig(cmd);
         }
-        
+
         String routerIp = cmd.getAccessDetail(NetworkElementCommand.ROUTER_IP);
         File tmpCfgFile = null;
         try {
@@ -468,7 +476,7 @@ public class VirtualRoutingResource implements Manager {
         String routerIp = cmd.getAccessDetail(NetworkElementCommand.ROUTER_IP);
         Map<String, List<String[]>> data = new HashMap<String, List<String[]>>();
         data.put(cmd.getVmIpAddress(), cmd.getVmData());
- 
+
         String json = new Gson().toJson(data);
         s_logger.debug("JSON IS:" + json);
 
@@ -491,7 +499,7 @@ public class VirtualRoutingResource implements Manager {
         String routerName = cmd.getAccessDetail(NetworkElementCommand.ROUTER_NAME);
         String routerIp = cmd.getAccessDetail(NetworkElementCommand.ROUTER_IP);
         for (IpAddressTO ip : ips) {
-            result = assignPublicIpAddress(routerName, routerIp, ip.getPublicIp(), ip.isAdd(), 
+            result = assignPublicIpAddress(routerName, routerIp, ip.getPublicIp(), ip.isAdd(),
                      ip.isFirstIP(), ip.isSourceNat(), ip.getVlanId(), ip.getVlanGateway(), ip.getVlanNetmask(),
                      ip.getVifMacAddress(), 2, false);
             if (result != null) {
@@ -538,7 +546,7 @@ public class VirtualRoutingResource implements Manager {
             }
             command.add("-s", sb.toString());
         }
-        
+
         return command.execute();
     }
 
@@ -551,7 +559,7 @@ public class VirtualRoutingResource implements Manager {
 
         String args = "-v " + vmIpAddress;
         args += " -p " + password;
-        
+
         String result = routerProxy("savepassword.sh", routerPrivateIPAddress, args);
         if (result != null) {
             return new Answer(cmd, false, "Unable to save password to DomR.");
@@ -567,14 +575,14 @@ public class VirtualRoutingResource implements Manager {
         }
         command.add("-m", cmd.getVmMac());
         command.add("-n", cmd.getVmName());
-        
+
         if (cmd.getDefaultRouter() != null) {
             command.add("-d", cmd.getDefaultRouter());
         }
         if (cmd.getStaticRoutes() != null) {
         	command.add("-s", cmd.getStaticRoutes());
         }
-        
+
         if (cmd.getDefaultDns() != null) {
         	command.add("-N", cmd.getDefaultDns());
         }
@@ -583,7 +591,7 @@ public class VirtualRoutingResource implements Manager {
         	command.add("-6", cmd.getVmIp6Address());
         	command.add("-u", cmd.getDuid());
         }
-        
+
         if (!cmd.isDefault()) {
         	command.add("-z");
         }
@@ -642,8 +650,8 @@ public class VirtualRoutingResource implements Manager {
     public String getRouterStatus(String routerIP) {
         return routerProxyWithParser("checkrouter.sh", routerIP, null);
     }
-    
-    
+
+
     public String routerProxyWithParser(String script, String routerIP, String args) {
         final Script command  = new Script(_routerProxyPath, _timeout, s_logger);
         final OutputInterpreter.OneLineParser parser = new OutputInterpreter.OneLineParser();
@@ -661,19 +669,19 @@ public class VirtualRoutingResource implements Manager {
 
     private CheckS2SVpnConnectionsAnswer execute(CheckS2SVpnConnectionsCommand cmd) {
         final String routerIP = cmd.getAccessDetail(NetworkElementCommand.ROUTER_IP);
-    
+
         String args = "";
         for (String ip : cmd.getVpnIps()) {
             args += " " + ip;
         }
-        
+
         final String result = routerProxy("checkbatchs2svpn.sh", routerIP, args);
         if (result == null || result.isEmpty()) {
             return new CheckS2SVpnConnectionsAnswer(cmd, false, "CheckS2SVpnConneciontsCommand failed");
         }
         return new CheckS2SVpnConnectionsAnswer(cmd, true, result);
     }
-    
+
     public String routerProxy(String script, String routerIP, String args) {
         final Script command  = new Script(_routerProxyPath, _timeout, s_logger);
         command.add(script);
@@ -686,7 +694,7 @@ public class VirtualRoutingResource implements Manager {
 
     protected Answer execute(CheckRouterCommand cmd) {
         final String routerPrivateIPAddress = cmd.getAccessDetail(NetworkElementCommand.ROUTER_IP);
-    
+
         final String result = getRouterStatus(routerPrivateIPAddress);
         if (result == null || result.isEmpty()) {
             return new CheckRouterAnswer(cmd, "CheckRouterCommand failed");
@@ -712,7 +720,7 @@ public class VirtualRoutingResource implements Manager {
 
     protected Answer execute(GetDomRVersionCmd cmd) {
         final String routerPrivateIPAddress = cmd.getAccessDetail(NetworkElementCommand.ROUTER_IP);
-    
+
         final String result = getDomRVersion(routerPrivateIPAddress);
         if (result == null || result.isEmpty()) {
             return new GetDomRVersionAnswer(cmd, "GetDomRVersionCmd failed");
@@ -731,7 +739,37 @@ public class VirtualRoutingResource implements Manager {
     protected Answer execute(final WatchConsoleProxyLoadCommand cmd) {
         return executeProxyLoadScan(cmd, cmd.getProxyVmId(), cmd.getProxyVmName(), cmd.getProxyManagementIp(), cmd.getProxyCmdPort());
     }
-    
+
+    public Answer listIps(IpListCommand cmd, List<String> interfaces) {
+        String routerIp = cmd.getAccessDetail(NetworkElementCommand.ROUTER_IP);
+        File permKey = new File("/root/.ssh/id_rsa.cloud");
+
+        Set<String> ips = new HashSet<String>();
+        for (String iface : interfaces) {
+            String command = "(set -o pipefail && ip addr show " + iface + " | grep 'inet ' | awk '{print $2}' | sed 's/\\/.*$//')";
+            Pair<Boolean, String> result = null;
+            try {
+                result = SshHelper.sshExecute(routerIp, 3922, "root", permKey, null, command);
+            }
+            catch (Exception e) {
+                s_logger.error(e);
+                return new Answer(cmd, false, e.getMessage().toString());
+            }
+
+            if (result.first()) {
+                String[] ipsOnInterface = result.second().split("\n");
+                for (String ip : ipsOnInterface) ips.add(ip.trim());
+            }
+            else {
+                s_logger.error("Could not list IPs due to " + result.second());
+            }
+        }
+
+        String[] foundIps = ips.toArray(new String[ips.size()]);
+        IpListAnswer ans = new IpListAnswer(cmd, foundIps);
+        return ans;
+    }
+
     protected Answer execute(Site2SiteVpnCfgCommand cmd) {
         String args;
         if (cmd.isCreate()) {
@@ -1038,7 +1076,7 @@ public class VirtualRoutingResource implements Manager {
         return routerProxy("ipassoc.sh", privateIpAddress, args);
 
     }
-    
+
     private void deleteBridge(String brName) {
         Script cmd = new Script("/bin/sh", _timeout);
         cmd.add("-c");
@@ -1191,7 +1229,7 @@ public class VirtualRoutingResource implements Manager {
         if(_bumpUpPriorityPath == null) {
             throw new ConfigurationException("Unable to find bumpUpPriority.sh");
         }
-        
+
         _routerProxyPath = findScript("router_proxy.sh");
         if (_routerProxyPath == null) {
             throw new ConfigurationException("Unable to find router_proxy.sh");
@@ -1208,7 +1246,7 @@ public class VirtualRoutingResource implements Manager {
         if (_callDnsMasqPath == null) {
             throw  new ConfigurationException("unable to find call_dnsmasq.sh");
         }
-        
+
         return true;
     }
 
@@ -1292,7 +1330,7 @@ public class VirtualRoutingResource implements Manager {
     public String getName() {
         return _name;
     }
-    
+
     @Override
     public void setName(String name) {
     	_name = name;
@@ -1313,14 +1351,14 @@ public class VirtualRoutingResource implements Manager {
     public int getRunLevel() {
     	return ComponentLifecycle.RUN_LEVEL_COMPONENT;
     }
-    
+
     public void setRunLevel() {
     }
 
 	@Override
 	public void setConfigParams(Map<String, Object> params) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -1332,8 +1370,6 @@ public class VirtualRoutingResource implements Manager {
 	@Override
 	public void setRunLevel(int level) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }
-
-

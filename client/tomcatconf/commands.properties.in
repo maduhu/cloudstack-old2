@@ -355,6 +355,7 @@ deleteNetwork=15
 listNetworks=15
 restartNetwork=15
 updateNetwork=15
+networkHealthCheck=7
 
 #### nic commands ####
 addNicToVirtualMachine=15

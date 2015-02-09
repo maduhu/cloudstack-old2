@@ -219,5 +219,13 @@ public class ElasticLoadBalancerElement extends AdapterBase implements LoadBalan
     public List<LoadBalancerTO> updateHealthChecks(Network network, List<LoadBalancingRule> lbrules) {
         return null;
     }
+    
+    @Override
+    public boolean resyncIps(Network network,
+            List<? extends PublicIpAddress> ipAddress, Set<Service> services)
+            throws ResourceUnavailableException {
+        s_logger.error("Cannot resync IPs with " + this.getClass().getName());
+        return false;
+    }
 
 }

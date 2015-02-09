@@ -3205,6 +3205,84 @@ public class NetworkManagerImpl extends ManagerBase implements NetworkManager, L
         }
         return result;
     }
+    
+    public boolean resyncIps(Network network) throws ResourceUnavailableException {
+        //the list of IPs that SHOULD be on the network.
+        List<PublicIp> knownIps = new ArrayList<PublicIp>();
+        
+        // get the list of public ip's owned by the network
+        List<IPAddressVO> userIps = _ipAddressDao.listByAssociatedNetwork(network.getId(), null);
+        if (userIps != null && !userIps.isEmpty()) {
+            for (IPAddressVO userIp : userIps) {
+                PublicIp publicIp = PublicIp.createFromAddrAndVlan(userIp, _vlanDao.findById(userIp.getVlanId()));
+                knownIps.add(publicIp);
+            }
+        }
+        
+        //send this to the IP deployer.
+        boolean success = true;
+        
+        //Note on this code: The VirtualRouterSG runs through this due to the way NetworkModel calculates
+        //the providerToIpList. The output of it with VirtualRouterSG is invalid. Namely it gives back a list
+        //consisting of the source NAT IP. But the DB reports only that VirtualRouterSG provides only SecurityGroups.
+        //This will cause the canHandle check in VirtualRouterElement to fail for VirtualRouterSG, so we only get one
+        //iteration of IP resyncing...
+
+        Map<PublicIpAddress, Set<Service>> ipToServices = _networkModel.getIpToServices(knownIps, false, true);
+        Map<Provider, ArrayList<PublicIpAddress>> providerToIpList = _networkModel.getProviderToIpList(network, ipToServices);
+
+        for (Provider provider : providerToIpList.keySet()) {
+            try {
+                ArrayList<PublicIpAddress> ips = providerToIpList.get(provider);
+                if (ips == null || ips.isEmpty()) {
+                    continue;
+                }
+                
+                IpDeployer deployer = null;
+                NetworkElement element = _networkModel.getElementImplementingProvider(provider.getName());
+                
+                if (!(element instanceof IpDeployingRequester)) {
+                    throw new CloudRuntimeException("Element " + element + " is not a IpDeployingRequester!");
+                }
+                
+                deployer = ((IpDeployingRequester)element).getIpDeployer(network);
+                
+                if (deployer == null) {
+                    throw new CloudRuntimeException("Fail to get ip deployer for element: " + element);
+                }
+                
+                Set<Service> services = new HashSet<Service>();
+                for (PublicIpAddress ip : ips) {
+                    if (!ipToServices.containsKey(ip)) {
+                        continue;
+                    }
+                    services.addAll(ipToServices.get(ip));
+                }
+                
+                Account owner = _accountDao.findById(network.getAccountId());
+                GlobalLock lock = GlobalLock.getInternLock(owner.getUuid());
+                
+                if (!lock.lock(30)) {
+                    s_logger.warn("Could not acquire user global lock for IP resync. Try again later.");
+                    return false;
+                }
+                
+                try {
+                    success = deployer.resyncIps(network, ips, services);
+                }
+                finally {
+                    lock.unlock();
+                    lock.releaseRef();
+                }
+            }
+            catch (ResourceUnavailableException e) {
+                success = false;
+                throw e;
+            }
+        }
+
+        return success;
+    }
 
     @Override
     public boolean applyRules(List<? extends FirewallRule> rules, FirewallRule.Purpose purpose,

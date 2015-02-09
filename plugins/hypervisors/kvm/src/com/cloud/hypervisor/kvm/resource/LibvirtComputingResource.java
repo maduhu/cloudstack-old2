@@ -58,6 +58,7 @@ import javax.ejb.Local;
 import javax.naming.ConfigurationException;
 
 import com.cloud.agent.api.CheckOnHostCommand;
+
 import org.apache.cloudstack.storage.command.StorageSubSystemCommand;
 import org.apache.cloudstack.storage.to.PrimaryDataStoreTO;
 import org.apache.cloudstack.storage.to.VolumeObjectTO;
@@ -161,6 +162,8 @@ import com.cloud.agent.api.proxy.WatchConsoleProxyLoadCommand;
 import com.cloud.agent.api.routing.IpAssocAnswer;
 import com.cloud.agent.api.routing.IpAssocCommand;
 import com.cloud.agent.api.routing.IpAssocVpcCommand;
+import com.cloud.agent.api.routing.IpListAnswer;
+import com.cloud.agent.api.routing.IpListCommand;
 import com.cloud.agent.api.routing.NetworkElementCommand;
 import com.cloud.agent.api.routing.SetNetworkACLAnswer;
 import com.cloud.agent.api.routing.SetNetworkACLCommand;
@@ -246,7 +249,6 @@ import com.cloud.vm.DiskProfile;
 import com.cloud.vm.VirtualMachine;
 import com.cloud.vm.VirtualMachine.State;
 import com.cloud.vm.VirtualMachineName;
-
 import com.ceph.rados.Rados;
 import com.ceph.rados.RadosException;
 import com.ceph.rados.IoCTX;
@@ -316,7 +318,7 @@ ServerResource {
     private Map<TrafficType, VifDriver> _trafficTypeVifDrivers;
     protected static final String DEFAULT_OVS_VIF_DRIVER_CLASS_NAME = "com.cloud.hypervisor.kvm.resource.OvsVifDriver";
     protected static final String DEFAULT_BRIDGE_VIF_DRIVER_CLASS_NAME = "com.cloud.hypervisor.kvm.resource.BridgeVifDriver";
-    
+
     private boolean hostStatsSinceBoot;
 
     private static final class KeyValueInterpreter extends OutputInterpreter {
@@ -506,7 +508,7 @@ ServerResource {
 
         _storage = new JavaStorageLayer();
         _storage.configure("StorageLayer", params);
-        
+
         //Host stats measurement method: since boot (default) or current (measure at this very moment).
         hostStatsSinceBoot = true;
         String hostStatsMethod = (String) params.get("host.stats.method");
@@ -1275,6 +1277,8 @@ ServerResource {
                 return execute((IpAssocVpcCommand) cmd);
             } else if (cmd instanceof IpAssocCommand) {
                 return execute((IpAssocCommand) cmd);
+	    } else if (cmd instanceof IpListCommand) {
+		return execute((IpListCommand) cmd);
             } else if (cmd instanceof NetworkElementCommand) {
                 return _virtRouterResource.executeRequest(cmd);
             } else if (cmd instanceof CheckSshCommand) {
@@ -1597,12 +1601,12 @@ ServerResource {
                     Rbd rbd = new Rbd(io);
                     RbdImage image = rbd.open(vol.getName());
 
-                    s_logger.debug("Resizing RBD volume " + vol.getName() +  " to " + newSize + " bytes"); 
+                    s_logger.debug("Resizing RBD volume " + vol.getName() +  " to " + newSize + " bytes");
                     image.resize(newSize);
                     rbd.close(image);
 
                     r.ioCtxDestroy(io);
-                    s_logger.debug("Succesfully resized RBD volume " + vol.getName() +  " to " + newSize + " bytes"); 
+                    s_logger.debug("Succesfully resized RBD volume " + vol.getName() +  " to " + newSize + " bytes");
                 } catch (RadosException e) {
                     return new ResizeVolumeAnswer(cmd, false, e.toString());
                 } catch (RbdException e) {
@@ -1974,6 +1978,50 @@ ServerResource {
         }
     }
 
+    protected Answer execute(IpListCommand cmd) {
+	String routerName = cmd.getAccessDetail(NetworkElementCommand.ROUTER_NAME);
+	try {
+	    //acquire the interfaces from the vlan IDs.
+	    Connect conn;
+            conn = LibvirtConnection.getConnectionByVmName(routerName);
+            List<InterfaceDef> nics = getInterfaces(conn, routerName);
+            Map<String, Integer> vlanToInterface = new HashMap<String, Integer>();
+            Integer nicPos = 0;
+
+            for (InterfaceDef nic : nics) {
+                if (nic.getBrName().equalsIgnoreCase(_linkLocalBridgeName)) {
+                    vlanToInterface.put("LinkLocal", nicPos);
+                } else {
+                    if (nic.getBrName().equalsIgnoreCase(_publicBridgeName)
+			|| nic.getBrName().equalsIgnoreCase(_privBridgeName)
+			|| nic.getBrName().equalsIgnoreCase(_guestBridgeName)) {
+                        vlanToInterface.put(Vlan.UNTAGGED, nicPos);
+                    } else {
+                        String vlanId = getVlanIdFromBridge(nic.getBrName());
+                        vlanToInterface.put(vlanId, nicPos);
+                    }
+                }
+                nicPos++;
+            }
+
+	    //then filter down to the interfaces we care about
+	    List<String> ifaces = new ArrayList<String>();
+	    List<String> publicVlans = Arrays.asList(cmd.getVlanIds());
+
+	    for (String vlanId : vlanToInterface.keySet()) {
+		if (publicVlans.contains(vlanId)) {
+		    ifaces.add("eth" + vlanToInterface.get(vlanId));
+		}
+	    }
+
+	    return _virtRouterResource.listIps(cmd, ifaces);
+	}
+	catch (LibvirtException e) {
+	    s_logger.error(e);
+	    return new Answer(cmd, false, e.toString());
+	}
+    }
+
     protected IpAssocAnswer execute(IpAssocVpcCommand cmd) {
         Connect conn;
         String[] results = new String[cmd.getIpAddresses().length];
@@ -2249,7 +2297,7 @@ ServerResource {
              *
              * These bindings will read the snapshot and write the contents to
              * the secondary storage directly
-             * 
+             *
              * It will stop doing so if the amount of time spend is longer then
              * cmds.timeout
              */
@@ -3014,25 +3062,25 @@ ServerResource {
     private Answer execute(CheckHealthCommand cmd) {
         return new CheckHealthAnswer(cmd, true);
     }
-    
+
     protected String getTopVersion() {
         final Script cpuScript = new Script("/bin/bash", s_logger);
         cpuScript.add("-c");
         cpuScript
         .add("top -help | awk -F'version' 'NR==1{print $2}' | sed 's/[[:space:]]//g'");
-        
+
         final OutputInterpreter.OneLineParser parser = new OutputInterpreter.OneLineParser();
         String result = cpuScript.execute(parser);
-        
+
         if (result == null) {
             String version = parser.getLine();
-            
+
             //The versions we have seen are for example 3.2.8 or 3.3.3
             Pattern majorMinorBugfix = Pattern.compile("\\d\\.\\d\\.\\d");
             Matcher majorMinorBugfixMatcher = majorMinorBugfix.matcher(version);
-            
+
             if (majorMinorBugfixMatcher.matches()) {
-                return version; 
+                return version;
             }
             else {
                 //Maybe it is in the format x.y, e.g. 3.2
@@ -3048,26 +3096,26 @@ ServerResource {
             }
         }
         else {
-            s_logger.warn("Unable to determine top version: " + result);   
+            s_logger.warn("Unable to determine top version: " + result);
             return null;
         }
     }
-    
+
     protected double getCpuUtilForHostStats(String topVersion, boolean useHostStatsSinceBoot) {
         //This is the default command which works for top 3.2.8
         String command = "";
-        
+
         if (useHostStatsSinceBoot) {
             command += "top -b -n 1";
         }
         else {
             command += "top -b -d 1 -n 4";
         }
-        
+
         if (topVersion != null) {
             if (topVersion.equals("3.3.3")) {
                 //More reliable way to find the values for top 3.3.3--also doesn't rely on cut.
-                command += "| grep Cpu\\(s\\): | awk '{ print $8 }'";
+                command += "| grep Cpu\\(s\\): | awk -F'id,' '{print $1}' | awk '{print $NF}'";
             }
             else {
                 //Original 4.2 command, updated to allow method "current" querying (sed is an addition).
@@ -3077,7 +3125,7 @@ ServerResource {
         else {
             throw new IllegalStateException("Unable to determine top version.");
         }
-        
+
         final Script cpuScript = new Script("/bin/bash", s_logger);
         cpuScript.add("-c");
         cpuScript
@@ -3090,7 +3138,7 @@ ServerResource {
             if (result != null) {
                 throw new IllegalStateException(result);
             }
-            
+
             return (100.0D - Double.parseDouble(parser.getLine()));
         }
         else {
@@ -3100,9 +3148,9 @@ ServerResource {
             if (result != null) {
                 throw new IllegalStateException(result);
             }
-            
+
             String[] cpuLoads = parser.getLines().split("\n");
-            
+
             //We need to skip the first number from top, as it's always the load since boot.
             //So we take the next 3 samples and average them together. These numbers are the
             //current load.
@@ -3110,9 +3158,9 @@ ServerResource {
             for (int c = 1; c < cpuLoads.length; c++) {
                 averageLoad += Double.parseDouble(cpuLoads[c]);
             }
-            
+
             averageLoad /= (double)(cpuLoads.length - 1);
-            
+
             return (100.0D - averageLoad);
         }
     }
@@ -3120,7 +3168,7 @@ ServerResource {
     private Answer execute(GetHostStatsCommand cmd) {
         String version = getTopVersion();
         double cpuUtil;
-        
+
         try {
             cpuUtil = getCpuUtilForHostStats(version, hostStatsSinceBoot);
         }
@@ -3128,7 +3176,7 @@ ServerResource {
             s_logger.debug("Unable to get the host CPU state: " + e.getMessage());
             return new Answer(cmd, false, e.getMessage());
         }
-        
+
         String result = null;
         long freeMem = 0;
         final Script memScript = new Script("/bin/bash", s_logger);
@@ -3652,14 +3700,14 @@ ServerResource {
 
             s_logger.debug("starting " + vmName + ": " + vm.toString());
             startVM(conn, vmName, vm.toString());
-            
+
             //Setting the default security group rules is optional, and is controlled by
-            //the network offering tag "disableDefaultRules". 
+            //the network offering tag "disableDefaultRules".
             String disableDefaultRules = cmd.getContextParam("disableDefaultRules");
             boolean disable = disableDefaultRules != null && disableDefaultRules.equals("true");
-            
+
             NicTO[] nics = vmSpec.getNics();
-            
+
             if (!disable) {
                 s_logger.info("Enabling default security group rules");
                 for (NicTO nic : nics) {
@@ -3680,7 +3728,7 @@ ServerResource {
                             } else {
                                 secIpsStr = "0:";
                             }
-                            
+
                             default_network_rules(conn, vmName, nic, vmSpec.getId(), secIpsStr);
                         }
                     }
@@ -4961,7 +5009,7 @@ ServerResource {
                 bytes_rd += blockStats.rd_bytes;
                 bytes_wr += blockStats.wr_bytes;
             }
-            
+
             if (oldStats != null) {
                 long deltaiord = io_rd - oldStats._io_rd;
                 if (deltaiord > 0)
@@ -4976,7 +5024,7 @@ ServerResource {
                 if (deltabyteswr > 0)
                     stats.setDiskWriteKBs(deltabyteswr / 1024);
             }
-            
+
             /* save to Hashmap */
             vmStats newStat = new vmStats();
             newStat._usedTime = info.cpuTime;
