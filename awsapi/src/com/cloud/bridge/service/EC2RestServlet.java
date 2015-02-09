@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.KeyStore;
 import java.security.SignatureException;
@@ -767,8 +766,8 @@ public class EC2RestServlet extends HttpServlet {
             do {
                 String[] ranges = request.getParameterValues( "IpPermissions." + nCount + ".IpRanges." + mCount + ".CidrIp" );
         if ( null != ranges && 0 < ranges.length) { 
-                    perm.addIpRange(URLDecoder.decode(ranges[0], "UTF-8"));
-                    perm.setCIDR(URLDecoder.decode(ranges[0], "UTF-8"));
+                    perm.addIpRange( ranges[0]);
+                    perm.setCIDR(ranges[0]);
         }
                 else break;
                 mCount++;
@@ -851,7 +850,7 @@ public class EC2RestServlet extends HttpServlet {
         do 
         {  String[] ranges = request.getParameterValues( "IpPermissions." + nCount + ".IpRanges." + mCount + ".CidrIp" );
         if ( null != ranges && 0 < ranges.length) 
-            perm.addIpRange( URLDecoder.decode(ranges[0], "UTF-8") );
+            perm.addIpRange( ranges[0] );
         else break;
         mCount++;
 
@@ -2024,7 +2023,7 @@ public class EC2RestServlet extends HttpServlet {
         do {
             String[] resourceIds = request.getParameterValues( "ResourceId." + nCount );
             if (resourceIds != null && resourceIds.length > 0)
-                resourceIdList.add(URLDecoder.decode(resourceIds[0], "UTF-8"));
+                resourceIdList.add(resourceIds[0]);
             else break;
             nCount++;
         } while (true);
