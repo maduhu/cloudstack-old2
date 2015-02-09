@@ -16,8 +16,6 @@
 // under the License.
 package com.cloud.bridge.service;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -281,10 +279,6 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 	public static EC2Tags toResourceTypeAndIds( EC2Tags request, ArrayList<String> resourceIdList ) {
 		List<String> resourceTypeList = new ArrayList<String>();
 		for (String resourceId : resourceIdList) {
-			try {
-				resourceId = URLDecoder.decode(resourceId, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-			}
 			if (!resourceId.contains(":") || resourceId.split(":").length != 2) {
 				throw new EC2ServiceException( ClientError.InvalidParameterValue,
 						"Invalid usage. ResourceId format is resource-type:resource-uuid");
@@ -308,10 +302,6 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 			EC2TagTypeId param1 = new EC2TagTypeId();
 			param1.setResourceType(resourceType);
 			for (String resourceId : resourceIdList) {
-				try {
-					resourceId = URLDecoder.decode(resourceId, "UTF-8");
-				} catch (UnsupportedEncodingException e) {
-				}
 				String[] resourceTag = resourceId.split(":");
 				if (resourceType.equals(resourceTag[0]))
 					param1.addResourceId(resourceTag[1]);
