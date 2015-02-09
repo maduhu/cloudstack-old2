@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.KeyStore;
 import java.security.SignatureException;
@@ -34,6 +33,7 @@ import java.security.cert.CertificateFactory;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
@@ -767,8 +767,8 @@ public class EC2RestServlet extends HttpServlet {
             do {
                 String[] ranges = request.getParameterValues( "IpPermissions." + nCount + ".IpRanges." + mCount + ".CidrIp" );
         if ( null != ranges && 0 < ranges.length) { 
-                    perm.addIpRange(URLDecoder.decode(ranges[0], "UTF-8"));
-                    perm.setCIDR(URLDecoder.decode(ranges[0], "UTF-8"));
+                    perm.addIpRange( ranges[0] );
+                    perm.setCIDR( ranges[0] );
         }
                 else break;
                 mCount++;
@@ -851,7 +851,7 @@ public class EC2RestServlet extends HttpServlet {
         do 
         {  String[] ranges = request.getParameterValues( "IpPermissions." + nCount + ".IpRanges." + mCount + ".CidrIp" );
         if ( null != ranges && 0 < ranges.length) 
-            perm.addIpRange( URLDecoder.decode(ranges[0], "UTF-8") );
+            perm.addIpRange( ranges[0] );
         else break;
         mCount++;
 
@@ -2024,7 +2024,7 @@ public class EC2RestServlet extends HttpServlet {
         do {
             String[] resourceIds = request.getParameterValues( "ResourceId." + nCount );
             if (resourceIds != null && resourceIds.length > 0)
-                resourceIdList.add(URLDecoder.decode(resourceIds[0], "UTF-8"));
+                resourceIdList.add( resourceIds[0] );
             else break;
             nCount++;
         } while (true);
@@ -2228,10 +2228,26 @@ public class EC2RestServlet extends HttpServlet {
                 "The request signature calculated does not match the signature provided by the user.");
     }
     
+    private static final List VALID_CHARACTERS = Arrays.asList(
+            '%'
+    );
+    private static boolean needsUrlEncode(final String decode) {
+        boolean needs=false;
+        for (char c : decode.toCharArray()) {
+            if (VALID_CHARACTERS.indexOf(c) != -1 || Character.isLetterOrDigit(c)) {
+            } else {
+                needs=true;
+            }
+        }
+        return needs;
+    }
+    
 	private String urlEncode(String item, boolean encode) {
 		if (encode) {
             try {
-            	item = URLEncoder.encode(item, "UTF-8");
+            	if (needsUrlEncode(item)) {
+            		item = URLEncoder.encode(item, "UTF-8");
+            	}
             } catch(Exception e) {}
 		}
 		return item;
