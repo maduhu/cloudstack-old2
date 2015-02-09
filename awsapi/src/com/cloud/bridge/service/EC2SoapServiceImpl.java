@@ -16,8 +16,6 @@
 // under the License.
 package com.cloud.bridge.service;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
@@ -104,7 +102,6 @@ import com.cloud.bridge.service.core.ec2.EC2VolumeFilterSet;
 import com.cloud.bridge.service.exception.EC2ServiceException;
 import com.cloud.bridge.service.exception.EC2ServiceException.ClientError;
 import com.cloud.bridge.util.EC2RestAuth;
-import com.cloud.utils.encoding.URLEncoder;
 
 
 public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
@@ -233,13 +230,8 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 
 		ResourceIdSetItemType[] resourceIdItems = resourceIds.getItem();
 		if (resourceIdItems != null) {
-			for( int i=0; i < resourceIdItems.length; i++ ) {
-				try {
-					resourceIdList.add(URLDecoder.decode(resourceIdItems[i].getResourceId(), "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					resourceIdList.add(resourceIdItems[i].getResourceId());
-				}
-			}
+			for( int i=0; i < resourceIdItems.length; i++ )
+				resourceIdList.add(resourceIdItems[i].getResourceId());
 		}
 		request = toResourceTypeAndIds(request, resourceIdList);
 
@@ -267,13 +259,8 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 		ResourceIdSetItemType[] resourceIdItems = resourceIds.getItem();
 
 		if (resourceIdItems != null) {
-			for( int i=0; i < resourceIdItems.length; i++ ) {
-				try {
-					resourceIdList.add(URLDecoder.decode(resourceIdItems[i].getResourceId(), "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					resourceIdList.add(resourceIdItems[i].getResourceId());
-				}
-			}
+			for( int i=0; i < resourceIdItems.length; i++ )
+				resourceIdList.add(resourceIdItems[i].getResourceId());
 		}
 		request = toResourceTypeAndIds(request, resourceIdList);
 
