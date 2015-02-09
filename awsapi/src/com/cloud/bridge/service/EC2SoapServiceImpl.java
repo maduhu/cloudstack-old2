@@ -16,8 +16,11 @@
 // under the License.
 package com.cloud.bridge.service;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,30 +34,37 @@ import com.cloud.bridge.service.core.ec2.EC2Address;
 import com.cloud.bridge.service.core.ec2.EC2AddressFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2AssociateAddress;
 import com.cloud.bridge.service.core.ec2.EC2AuthorizeRevokeSecurityGroup;
-import com.cloud.bridge.service.core.ec2.EC2AvailabilityZone;
 import com.cloud.bridge.service.core.ec2.EC2AvailabilityZonesFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2CreateImage;
 import com.cloud.bridge.service.core.ec2.EC2CreateImageResponse;
 import com.cloud.bridge.service.core.ec2.EC2CreateKeyPair;
 import com.cloud.bridge.service.core.ec2.EC2CreateVolume;
+import com.cloud.bridge.service.core.ec2.EC2DescribeSubnets;
+import com.cloud.bridge.service.core.ec2.EC2DescribeSubnetsResponse;
+import com.cloud.bridge.service.core.ec2.EC2Subnet;
+import com.cloud.bridge.service.core.ec2.EC2SubnetFilterSet;
+import com.cloud.bridge.service.core.ec2.EC2Tags;
 import com.cloud.bridge.service.core.ec2.EC2DeleteKeyPair;
 import com.cloud.bridge.service.core.ec2.EC2DescribeAddresses;
 import com.cloud.bridge.service.core.ec2.EC2DescribeAddressesResponse;
 import com.cloud.bridge.service.core.ec2.EC2DescribeAvailabilityZones;
 import com.cloud.bridge.service.core.ec2.EC2DescribeAvailabilityZonesResponse;
 import com.cloud.bridge.service.core.ec2.EC2DescribeImageAttribute;
+import com.cloud.bridge.service.core.ec2.EC2AvailabilityZone;
 import com.cloud.bridge.service.core.ec2.EC2DescribeImages;
 import com.cloud.bridge.service.core.ec2.EC2DescribeImagesResponse;
 import com.cloud.bridge.service.core.ec2.EC2DescribeInstances;
 import com.cloud.bridge.service.core.ec2.EC2DescribeInstancesResponse;
 import com.cloud.bridge.service.core.ec2.EC2DescribeKeyPairs;
 import com.cloud.bridge.service.core.ec2.EC2DescribeKeyPairsResponse;
+import com.cloud.bridge.service.core.ec2.EC2ImageFilterSet;
+import com.cloud.bridge.service.core.ec2.EC2ImageLaunchPermission;
+import com.cloud.bridge.service.core.ec2.EC2ModifyInstanceAttribute;
+import com.cloud.bridge.service.core.ec2.EC2ResourceTag;
 import com.cloud.bridge.service.core.ec2.EC2DescribeSecurityGroups;
 import com.cloud.bridge.service.core.ec2.EC2DescribeSecurityGroupsResponse;
 import com.cloud.bridge.service.core.ec2.EC2DescribeSnapshots;
 import com.cloud.bridge.service.core.ec2.EC2DescribeSnapshotsResponse;
-import com.cloud.bridge.service.core.ec2.EC2DescribeSubnets;
-import com.cloud.bridge.service.core.ec2.EC2DescribeSubnetsResponse;
 import com.cloud.bridge.service.core.ec2.EC2DescribeTags;
 import com.cloud.bridge.service.core.ec2.EC2DescribeTagsResponse;
 import com.cloud.bridge.service.core.ec2.EC2DescribeVolumes;
@@ -66,20 +76,18 @@ import com.cloud.bridge.service.core.ec2.EC2GroupFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2Image;
 import com.cloud.bridge.service.core.ec2.EC2ImageAttributes;
 import com.cloud.bridge.service.core.ec2.EC2ImageAttributes.ImageAttribute;
-import com.cloud.bridge.service.core.ec2.EC2ImageFilterSet;
-import com.cloud.bridge.service.core.ec2.EC2ImageLaunchPermission;
 import com.cloud.bridge.service.core.ec2.EC2ImportKeyPair;
 import com.cloud.bridge.service.core.ec2.EC2Instance;
 import com.cloud.bridge.service.core.ec2.EC2InstanceFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2IpPermission;
 import com.cloud.bridge.service.core.ec2.EC2KeyPairFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2ModifyImageAttribute;
-import com.cloud.bridge.service.core.ec2.EC2ModifyInstanceAttribute;
 import com.cloud.bridge.service.core.ec2.EC2PasswordData;
 import com.cloud.bridge.service.core.ec2.EC2RebootInstances;
 import com.cloud.bridge.service.core.ec2.EC2RegisterImage;
 import com.cloud.bridge.service.core.ec2.EC2ReleaseAddress;
-import com.cloud.bridge.service.core.ec2.EC2ResourceTag;
+import com.cloud.bridge.service.core.ec2.EC2TagKeyValue;
+import com.cloud.bridge.service.core.ec2.EC2TagTypeId;
 import com.cloud.bridge.service.core.ec2.EC2RunInstances;
 import com.cloud.bridge.service.core.ec2.EC2RunInstancesResponse;
 import com.cloud.bridge.service.core.ec2.EC2SSHKeyPair;
@@ -90,17 +98,13 @@ import com.cloud.bridge.service.core.ec2.EC2StartInstances;
 import com.cloud.bridge.service.core.ec2.EC2StartInstancesResponse;
 import com.cloud.bridge.service.core.ec2.EC2StopInstances;
 import com.cloud.bridge.service.core.ec2.EC2StopInstancesResponse;
-import com.cloud.bridge.service.core.ec2.EC2Subnet;
-import com.cloud.bridge.service.core.ec2.EC2SubnetFilterSet;
-import com.cloud.bridge.service.core.ec2.EC2TagKeyValue;
-import com.cloud.bridge.service.core.ec2.EC2TagTypeId;
-import com.cloud.bridge.service.core.ec2.EC2Tags;
 import com.cloud.bridge.service.core.ec2.EC2TagsFilterSet;
 import com.cloud.bridge.service.core.ec2.EC2Volume;
 import com.cloud.bridge.service.core.ec2.EC2VolumeFilterSet;
 import com.cloud.bridge.service.exception.EC2ServiceException;
 import com.cloud.bridge.service.exception.EC2ServiceException.ClientError;
 import com.cloud.bridge.util.EC2RestAuth;
+import com.cloud.utils.encoding.URLEncoder;
 
 
 public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
@@ -230,7 +234,11 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 		ResourceIdSetItemType[] resourceIdItems = resourceIds.getItem();
 		if (resourceIdItems != null) {
 			for( int i=0; i < resourceIdItems.length; i++ ) {
-				resourceIdList.add(resourceIdItems[i].getResourceId());
+				try {
+					resourceIdList.add(URLDecoder.decode(resourceIdItems[i].getResourceId(), "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					resourceIdList.add(resourceIdItems[i].getResourceId());
+				}
 			}
 		}
 		request = toResourceTypeAndIds(request, resourceIdList);
@@ -260,7 +268,11 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 
 		if (resourceIdItems != null) {
 			for( int i=0; i < resourceIdItems.length; i++ ) {
-				resourceIdList.add(resourceIdItems[i].getResourceId());
+				try {
+					resourceIdList.add(URLDecoder.decode(resourceIdItems[i].getResourceId(), "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					resourceIdList.add(resourceIdItems[i].getResourceId());
+				}
 			}
 		}
 		request = toResourceTypeAndIds(request, resourceIdList);
