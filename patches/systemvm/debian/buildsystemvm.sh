@@ -419,6 +419,12 @@ services() {
   chroot . chkconfig monit off
 }
 
+fix_conntrackd() {
+  sed -i '/Stats {/,/}/ s/LogFile on/LogFile off/' /etc/conntrackd/conntrackd.conf
+  /etc/init.d/conntrackd restart
+  rm -f /var/log/conntrackd-stats.log
+}
+
 dhcp_fix() {
   #deal with virtio DHCP issue, copy and install customized kernel module and iptables
   mkdir -p tmp
@@ -549,6 +555,9 @@ echo "*************FIX DHCP ISSUE********************"
 
 echo "*************INSTALL XS TOOLS********************"
 #install_xs_tool
+
+echo "*************FIX CONTRACKD ISSUE********************"
+fix_conntrackd
 
 echo "*************CLEANING UP********************"
 cleanup 
