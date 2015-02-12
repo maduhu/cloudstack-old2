@@ -40,77 +40,77 @@ public class EC2RunInstances {
     private List<String>  groupNameSet;
     private Boolean associateIp;
     private String subnetId;
-        
+
     public EC2RunInstances() {
-	instanceType = null;
-	zoneName     = null;
-	templateId   = null;
-	groupId      = null;
-	userData     = null;
-	keyName      = null;
-	ipAddress    = null;
-	maxCount     = 0;
-	minCount     = 0;
-	size             = 0;
+        instanceType = null;
+        zoneName     = null;
+        templateId   = null;
+        groupId      = null;
+        userData     = null;
+        keyName      = null;
+        ipAddress    = null;
+        maxCount     = 0;
+        minCount     = 0;
+        size         = 0;
         groupIdSet   = new ArrayList<String>();
         groupNameSet = new ArrayList<String>();
-	associateIp      = true;
+        associateIp  = null;
     }
-        
+
     public void setInstanceType( String instanceType ) {
-	this.instanceType = instanceType;
+        this.instanceType = instanceType;
     }
-        
+
     public String getInstanceType() {
-	return this.instanceType;
+        return this.instanceType;
     }
 
     public void setZoneName( String zoneName ) {
-	this.zoneName = zoneName;
+        this.zoneName = zoneName;
     }
-        
+
     public String getZoneName() {
-	return this.zoneName;
+        return this.zoneName;
     }
 
     public void setTemplateId( String templateId ) {
-	this.templateId = templateId;
+        this.templateId = templateId;
     }
-        
+
     public String getTemplateId() {
-	return this.templateId;
-    }       
+        return this.templateId;
+    }
 
     public void setGroupId( String groupId ) {
-	this.groupId = groupId;
+        this.groupId = groupId;
     }
-        
+
     public String getGroupId() {
-	return this.groupId;
-    }       
+        return this.groupId;
+    }
 
     public void setUserData( String userData ) {
-	this.userData = userData;
+        this.userData = userData;
     }
-        
+
     public String getUserData() {
-	return this.userData;
-    }       
-        
+        return this.userData;
+    }
+
     public String getKeyName() {
-	return keyName;
+        return keyName;
     }
 
     public void setKeyName(String publicKeyName) {
-	this.keyName = publicKeyName;
+        this.keyName = publicKeyName;
     }
 
     public String getIpAddress() {
-	return ipAddress;
+        return ipAddress;
     }
 
     public void setIpAddress(String privateIpAddress) {
-	this.ipAddress = privateIpAddress;
+        this.ipAddress = privateIpAddress;
     }
 
     /**
@@ -122,41 +122,41 @@ public class EC2RunInstances {
      * @return true, false, or null.
      */
     public Boolean associatePublicIp() {
-	return associateIp;
+        return associateIp;
     }
 
     public void setAssociatePublicIp(boolean associateIp) {
-	this.associateIp = associateIp;
+        this.associateIp = associateIp;
     }
 
     public void setMaxCount( int maxCount ) {
-	this.maxCount = maxCount;
+        this.maxCount = maxCount;
     }
-        
+
     public int getMaxCount() {
-	return this.maxCount;
+        return this.maxCount;
     }
-        
+
     public void setMinCount( int minCount ) {
-	this.minCount = minCount;
+        this.minCount = minCount;
     }
-        
+
     public int getMinCount() {
-	return this.minCount;
+        return this.minCount;
     }
 
     public Integer getSize() {
-	return size;
+        return size;
     }
 
     public void setSize(Integer size) {
-	this.size = size;
+        this.size = size;
     }
 
     public void addSecuritGroupId( String param ) {
         groupIdSet.add( param );
     }
-                
+
     public String[] getSecurityGroupIdSet() {
         return groupIdSet.toArray(new String[0]);
     }
@@ -164,7 +164,7 @@ public class EC2RunInstances {
     public void addSecuritGroupName( String param ) {
         groupNameSet.add( param );
     }
-                
+
     public String[] getSecurityGroupNameSet() {
         return groupNameSet.toArray(new String[0]);
     }
