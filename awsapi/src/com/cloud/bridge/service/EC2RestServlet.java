@@ -33,7 +33,6 @@ import java.security.cert.CertificateFactory;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
@@ -2204,7 +2203,7 @@ public class EC2RestServlet extends HttpServlet {
         // we need to construct queryString to avoid changing the auth code...
         if (queryString == null) {
             // construct our idea of a queryString with parameters!
-        	boolean encode = request.getContentType() != null && request.getContentType().equals("application/x-www-form-urlencoded");
+        	boolean encode = request.getContentType() != null && request.getContentType().toLowerCase().contains("application/x-www-form-urlencoded");
             Enumeration<?> params = request.getParameterNames();
             if (params != null) {
                 while(params.hasMoreElements()) {

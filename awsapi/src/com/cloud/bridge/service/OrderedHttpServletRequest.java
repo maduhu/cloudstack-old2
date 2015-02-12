@@ -60,7 +60,7 @@ public class OrderedHttpServletRequest extends HttpServletRequestWrapper {
 	        enc = "UTF-8";
 	    }
 	    String[] queries = (new String(requestPayload, enc)).split("&");
-	    boolean decode = getRequest().getContentType() != null && getRequest().getContentType().equals("application/x-www-form-urlencoded");
+	    boolean decode = getRequest().getContentType() != null && getRequest().getContentType().toLowerCase().contains("application/x-www-form-urlencoded");
 	    LinkedHashMap<String, LinkedList<String>> bufferMap = new LinkedHashMap<String, LinkedList<String>>();
 	    LinkedList<String> valuesList;		    
 	    for (String query : queries) {
