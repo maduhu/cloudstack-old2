@@ -86,6 +86,16 @@ public class EC2Engine extends ManagerBase {
 	String managementServer = null;
 	String cloudAPIPort = null;
 
+    /**
+     * Only one region is supported in QStack. However its name is configurable and needs to be provided.
+     * Strictly speaking it should be obtained via the usual command api channels. To avoid
+     * complications with the Region manager we simply read it from the ec2 properties file.
+     *
+     * @return The name of the one and only region.
+     */
+	String regionName;
+    public String getRegionName() { return regionName; }
+
 	@Inject OfferingDao ofDao;
 	@Inject CloudStackAccountDao accDao;
 
@@ -131,6 +141,7 @@ public class EC2Engine extends ManagerBase {
             }
             managementServer = EC2Prop.getProperty( "managementServer" );
             cloudAPIPort = EC2Prop.getProperty( "cloudAPIPort", null );
+            regionName = EC2Prop.getProperty("regionName", "Local");
 
             try {
                 if(ofDao.getOfferingCount() == 0) {

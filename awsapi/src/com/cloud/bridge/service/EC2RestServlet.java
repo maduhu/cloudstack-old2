@@ -1457,7 +1457,8 @@ public class EC2RestServlet extends HttpServlet {
 
         // -> execute the request
         DescribeAvailabilityZonesResponse EC2response = EC2SoapServiceImpl.toDescribeAvailabilityZonesResponse(
-                ServiceProvider.getInstance().getEC2Engine().describeAvailabilityZones( EC2request ));
+                ServiceProvider.getInstance().getEC2Engine().describeAvailabilityZones( EC2request ),
+                ServiceProvider.getInstance().getEC2Engine().getRegionName());
         serializeResponse(response, EC2response);
     }
 

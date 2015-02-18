@@ -373,7 +373,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 			request.setFilterSet( toAvailabiltyZonesFilterSet(fst));
 		}
 
-		return toDescribeAvailabilityZonesResponse( engine.describeAvailabilityZones( request ));
+		return toDescribeAvailabilityZonesResponse( engine.describeAvailabilityZones( request ), engine.getRegionName());
 	}
 
 	/**
@@ -1960,7 +1960,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 		return response;
 	}
 
-	public static DescribeAvailabilityZonesResponse toDescribeAvailabilityZonesResponse(EC2DescribeAvailabilityZonesResponse engineResponse) {
+	public static DescribeAvailabilityZonesResponse toDescribeAvailabilityZonesResponse(EC2DescribeAvailabilityZonesResponse engineResponse, String region) {
 		DescribeAvailabilityZonesResponse response = new DescribeAvailabilityZonesResponse();
 		DescribeAvailabilityZonesResponseType param1 = new DescribeAvailabilityZonesResponseType();
 		AvailabilityZoneSetType param2 = new AvailabilityZoneSetType();
@@ -1970,7 +1970,7 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 			AvailabilityZoneItemType param3 = new AvailabilityZoneItemType(); 
 			param3.setZoneName( zone.getName() );
 			param3.setZoneState( "available" );
-			param3.setRegionName( "" );
+			param3.setRegionName( region );
 
 			AvailabilityZoneMessageSetType param4 = new AvailabilityZoneMessageSetType();
 			AvailabilityZoneMessageType param5 = new AvailabilityZoneMessageType();
