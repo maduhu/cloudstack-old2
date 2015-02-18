@@ -2834,6 +2834,13 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
                 hostName, diskOfferingId);
         vm.setUuid(uuidName);
         vm.setDynamicallyScalable(template.isDynamicallyScalable());
+        
+
+        Map<String, String> details = template.getDetails();
+        if ( details != null && !details.isEmpty() ) {
+            vm.details.putAll(details);
+        }
+        
         if (sshPublicKey != null) {
             vm.setDetail("SSH.PublicKey", sshPublicKey);
         }
@@ -2882,10 +2889,6 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Use
             }
        }
 
-        Map<String, String> details = template.getDetails();
-        if ( details != null && !details.isEmpty() ) {
-            vm.details.putAll(details);
-        }
 
         _vmDao.persist(vm);
         _vmDao.saveDetails(vm);

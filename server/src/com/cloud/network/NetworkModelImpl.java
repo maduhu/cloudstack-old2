@@ -1882,7 +1882,7 @@ public class NetworkModelImpl extends ManagerBase implements NetworkModel {
     public boolean networkIsConfiguredForExternalNetworking(long zoneId, long networkId) {
         List<Provider> networkProviders = getNetworkProviders(networkId);
        for(Provider provider : networkProviders){
-           if(provider.isExternal()){
+           if(provider!= null && provider.isExternal()){
                return true;
            }
         }
