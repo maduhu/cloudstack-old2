@@ -23,7 +23,7 @@ function usage() {
  echo "The commonly used Arguments are:"
  echo "oss|OSS         To package with only redistributable libraries (default)"
  echo "nonoss|NONOSS   To package with non-redistributable libraries"
- echo "rc              Build a release candidate number; place before -p" 
+ echo "rc              Build a release candidate number; place before -p"
  echo ""
  echo "Examples: ./package.sh -p|--pack oss|OSS"
  echo "          ./package.sh -p|--pack nonoss|NONOSS"
@@ -43,7 +43,7 @@ function packaging() {
     fi
 
     VERSION=`(cd ../../; mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version) | grep '^[0-9]\.'`
-    RELEASE_REVISION="14.09.19"
+    RELEASE_REVISION="14.09.20"
     GQREL=$RELEASE_REVISION
 
     if [ "$RC" != "" ]; then
