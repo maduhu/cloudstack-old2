@@ -43,7 +43,7 @@ function packaging() {
     fi
 
     VERSION=`(cd ../../; mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version) | grep '^[0-9]\.'`
-    RELEASE_REVISION="14.09.21"
+    RELEASE_REVISION="14.09.20"
     GQREL=$RELEASE_REVISION
 
     if [ "$RC" != "" ]; then
@@ -61,7 +61,7 @@ function packaging() {
 	    # which means this is for the next version to be released. rather
 	    # than actually calculate the next version it is simpler (lazier) to
 	    # just put nextver on the line.
-	    GQREL="${GQREL}+nextver${commits}"
+	    GQREL="${GQREL}+nextver"
 	fi
     fi
 
