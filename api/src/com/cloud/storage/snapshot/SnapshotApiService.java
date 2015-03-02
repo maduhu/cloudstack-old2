@@ -106,4 +106,11 @@ public interface SnapshotApiService {
      * @return
      */
     Long getHostIdForSnapshotOperation(Volume vol);
+    
+    /**
+     * Force a snapshot into error state, regardless of what it's doing. Dangerous method.
+     * @param snapshotId
+     * @return The snapshot, which should have a changed state property.
+     */
+    Snapshot forceErrorState(Long snapshotId);
 }

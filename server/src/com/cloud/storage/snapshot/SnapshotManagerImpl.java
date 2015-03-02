@@ -26,7 +26,9 @@ import javax.ejb.Local;
 import javax.inject.Inject;
 import javax.naming.ConfigurationException;
 
+import com.amazonaws.services.ec2.model.SnapshotState;
 import com.cloud.storage.*;
+
 import org.apache.cloudstack.api.command.user.snapshot.CreateSnapshotPolicyCmd;
 import org.apache.cloudstack.api.command.user.snapshot.DeleteSnapshotPoliciesCmd;
 import org.apache.cloudstack.api.command.user.snapshot.ListSnapshotPoliciesCmd;
@@ -109,6 +111,7 @@ import com.cloud.utils.db.Filter;
 import com.cloud.utils.db.JoinBuilder;
 import com.cloud.utils.db.SearchBuilder;
 import com.cloud.utils.db.SearchCriteria;
+import com.cloud.utils.db.Transaction;
 import com.cloud.utils.exception.CloudRuntimeException;
 import com.cloud.vm.UserVmVO;
 import com.cloud.vm.VMInstanceVO;
@@ -1185,6 +1188,27 @@ public class SnapshotManagerImpl extends ManagerBase implements SnapshotManager,
             _resourceLimitMgr.incrementResourceCount(volume.getAccountId(), ResourceType.primary_storage,
                     new Long(volume.getSize()));
         }
+        return snapshot;
+    }
+
+    @Override
+    @DB
+    public Snapshot forceErrorState(Long snapshotId) {
+        Account caller = UserContext.current().getCaller();
+        Snapshot snap = _snapshotDao.findById(snapshotId);
+        _accountMgr.checkAccess(caller, null, true, snap);
+        
+        Transaction txn = Transaction.currentTxn();
+        txn.start();
+        SnapshotVO snapshot = _snapshotDao.lockRow(snapshotId, true);
+        
+        if (snapshot.getState() != Snapshot.State.Error) {
+            snapshot.setState(Snapshot.State.Error);
+            
+        }
+        
+        _snapshotDao.update(snapshotId, snapshot);
+        txn.commit();
         return snapshot;
     }
 }
