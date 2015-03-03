@@ -21,6 +21,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.cloud.bridge.axis.namespace.Namespace;
+import com.cloud.bridge.axis.namespace.RequestContext;
 import com.cloud.bridge.service.exception.EC2ServiceException;
 import com.cloud.bridge.service.exception.EC2ServiceException.ClientError;
 import com.cloud.bridge.service.exception.EC2ServiceException.ServerError;
@@ -329,7 +331,11 @@ public class QueryAPIAuthHandler {
 		case AWS4:
 			req.append(request.getMethod().toUpperCase());		// HTTPMethod
 			req.append("\n");
-			req.append(request.getPathInfo());					// CanonicalURI
+			if (RequestContext.current().getNamespace().isAtLeast(Namespace.EC2_2014_10_01)) {
+				req.append(request.getRequestURI());					// CanonicalURI
+			} else {
+				req.append(request.getPathInfo());					// CanonicalURI
+			}
 			req.append("\n");
 			req.append(getCanonicalQueryString());				// CanonicalQueryString
 			req.append("\n");

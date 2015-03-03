@@ -15,8 +15,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
+import org.junit.After;
 import org.junit.Test;
 
+import com.cloud.bridge.axis.namespace.Namespace;
+import com.cloud.bridge.axis.namespace.RequestContext;
 import com.cloud.bridge.persist.dao.CloudStackUserDao;
 
 public class QueryAPIAuthHandlerTest {
@@ -29,6 +32,11 @@ public class QueryAPIAuthHandlerTest {
 	String validAmzDateV4   = "20140925T151852Z";
 	String validUserAgentV4 = "ec2-api-tools 1.7.1.0, aws-sdk-java/unknown-version Mac_OS_X/10.9.4 Java_HotSpot(TM)_64-Bit_Server_VM/20.65-b04-462";
 	String validSecretKeyV4 = "YUhxWDJ5eXV1UGFidDdqMDB4UjBldGYwSFJEeHl4";
+
+	@After
+	public void afterEach() {
+		RequestContext.current().setNamespace(null);
+	}
 
 	@Test
 	public void testVerifyAuthScheme() {
@@ -171,12 +179,43 @@ public class QueryAPIAuthHandlerTest {
 
 	@Test
 	public void testGetCanonicalRequest() {
+		RequestContext.current().setNamespace(Namespace.EC2_2008_05_05);
+
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 		HttpServletRequest request = setupRequest(payload, validAuthHeader, "?Version=123&SomeParam=value", "header-value", validAmzDateV4, "", "");
 		ApiKeyStore keystore = new DaoApiKeyStore(mock(CloudStackUserDao.class));
 		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, keystore);
 		when(request.getPathInfo()).thenReturn("/");
 
+		assertTrue(authHandler.verifyAuthScheme());
+		assertTrue(authHandler.verifyAuthParams());
+
+		when(keystore.getSecretApiKey("ASDF1234ASDF1234ASDF")).thenReturn("1234ASDF1234ASDF1234");
+
+		String expected = StringUtils.join(new String[] {
+			"POST",
+			   "/",
+			   "SomeParam=value&Version=123",
+			   "date:header-value",
+			   "host:header-value",
+			   "x-amz-date:" + authHandler.amzDateTime + "\n",
+			   "date;host;x-amz-date",
+			   "6900a0715dc1ed4773bcce334638416cf1d3e596297292cc505bbdbc70b91a37"
+		}, "\n");
+		String provided = authHandler.getCanonicalRequest();
+
+		assertEquals(expected, provided);
+	}
+
+	@Test
+	public void testGetCanonicalRequestNewNamespace() {
+		RequestContext.current().setNamespace(Namespace.EC2_2014_10_01);
+
+		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
+		HttpServletRequest request = setupRequest(payload, validAuthHeader, "?Version=123&SomeParam=value", "header-value", validAmzDateV4, "", "");
+		ApiKeyStore keystore = new DaoApiKeyStore(mock(CloudStackUserDao.class));
+		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, keystore);
+		when(request.getRequestURI()).thenReturn("/");
 
 		assertTrue(authHandler.verifyAuthScheme());
 		assertTrue(authHandler.verifyAuthParams());
@@ -209,7 +248,7 @@ public class QueryAPIAuthHandlerTest {
 		when(request.getHeader("user-agent")).thenReturn(userAgent);
 		when(request.getHeader("content-type")).thenReturn(contentType);
 		when(request.getMethod()).thenReturn("POST");
-		when(request.getPathInfo()).thenReturn("/");
+		when(request.getRequestURI()).thenReturn("/");
 		when(request.getParameterMap()).thenReturn(getStringMapFromString("&", "=", ",", payload));
 		
 		// Default
@@ -234,6 +273,8 @@ public class QueryAPIAuthHandlerTest {
 	@Test
 	public void testVerifySignature() {
 		// Test 1
+		RequestContext.current().setNamespace(Namespace.EC2_2014_10_01);
+
 		String payload = "Action=DescribeImages&Version=2014-06-15&Owner.1=self";
 		HttpServletRequest request1 = setupRequest(payload, validAuthHeaderV4, "", validHostV4, validAmzDateV4, validUserAgentV4, "");
 		ApiKeyStore keystore = new DaoApiKeyStore(mock(CloudStackUserDao.class));
@@ -261,6 +302,8 @@ public class QueryAPIAuthHandlerTest {
 	
 	@Test
 	public void testGetStringToSign() {
+		RequestContext.current().setNamespace(Namespace.EC2_2014_10_01);
+
 		String payload = "Action=DescribeInstances&SignatureMethod=HmacSHA256&AWSAccessKeyId=T0lpem5EZnNtY05MbkNqZ2tmSmNhYTlONThVQW9Q&SignatureVersion=2&Version=2012-08-15&Signature=51g5Fvodli5fRT294iQ3rR7tw6OvYGHuLB5KROJbqYg%3D&Timestamp=2014-09-11T11%3A43%3A28.911Z";
 		HttpServletRequest request = setupRequest(payload, validAuthHeader, "?Version=123&SomeParam=value", "header-value", validAmzDateV4, "", "");
 		ApiKeyStore keystore = new DaoApiKeyStore(mock(CloudStackUserDao.class));

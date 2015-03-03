@@ -2088,12 +2088,7 @@ public class EC2RestServlet extends HttpServlet {
         // First, check if the version specified is one we can handle and save it for response generation
         String version = request.getParameter("Version");
         if (version != null) {
-            for (Namespace n : Namespace.values()) {
-                if (version.equals(n.getVersion())) {
-                    RequestContext.current().setNamespace(n);
-                    break;
-                }
-            }
+			RequestContext.current().setNamespaceVersion(version);
 
             if (RequestContext.current().getNamespace() == null) {
                 logger.debug("Unsupported Version");
