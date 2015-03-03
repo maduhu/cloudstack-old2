@@ -80,6 +80,7 @@ createSnapshotPolicy=15
 deleteSnapshotPolicies=15
 listSnapshotPolicies=15
 forceSnapshotError=7
+listSuspiciousSnapshots=7
 
 
 #### template commands

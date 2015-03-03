@@ -22,6 +22,7 @@ import org.apache.cloudstack.api.command.user.snapshot.CreateSnapshotPolicyCmd;
 import org.apache.cloudstack.api.command.user.snapshot.DeleteSnapshotPoliciesCmd;
 import org.apache.cloudstack.api.command.user.snapshot.ListSnapshotPoliciesCmd;
 import org.apache.cloudstack.api.command.user.snapshot.ListSnapshotsCmd;
+import org.apache.cloudstack.api.command.user.snapshot.ListSuspiciousSnapshotsCmd;
 
 import com.cloud.api.commands.ListRecurringSnapshotScheduleCmd;
 import com.cloud.exception.PermissionDeniedException;
@@ -42,6 +43,15 @@ public interface SnapshotApiService {
      * @throws PermissionDeniedException
      */
     Pair<List<? extends Snapshot>, Integer> listSnapshots(ListSnapshotsCmd cmd);
+    
+    /**
+     * List snapshots on the account that might be broken. The method returns snapshots that are older than 
+     * the specified time limit (default: 12 hours) and still not in a completed state. The snapshots returned 
+     * are not GUARANTEED to be broken, but most likely are if they haven't completed after a long time. 
+     * @param cmd
+     * @return A list of suspicious snapshots.
+     */
+    Pair<List<? extends Snapshot>, Integer> listSuspiciousSnapshots(ListSuspiciousSnapshotsCmd cmd);
 
     /**
      * Delete specified snapshot from the specified. If no other policies are assigned it calls destroy snapshot. This
