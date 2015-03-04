@@ -658,7 +658,7 @@ public class SnapshotManagerImpl extends ManagerBase implements SnapshotManager,
         List<SnapshotVO> suspiciousSnapshots = new ArrayList<SnapshotVO>();
         
         for (SnapshotVO snapshot : snapshots) {
-            if (snapshot.getCreated().before(cmd.getCreated())) {
+            if (snapshot.getCreated().before(cmd.getSince())) {
                 suspiciousSnapshots.add(snapshot);
             }
         }

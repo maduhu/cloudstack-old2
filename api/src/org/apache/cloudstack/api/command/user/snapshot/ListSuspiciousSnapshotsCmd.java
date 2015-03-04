@@ -43,17 +43,17 @@ public class ListSuspiciousSnapshotsCmd extends BaseListTaggedResourcesCmd {
     //////////////// API parameters /////////////////////
     /////////////////////////////////////////////////////
 
-    @Parameter(name = ApiConstants.CREATED, type = CommandType.DATE, required = false,
+    @Parameter(name = ApiConstants.SINCE, type = CommandType.DATE, required = false,
             description = "use this time as the cutoff limit for broken snapshots. default to 12 hours. "
                     + "(use format \"yyyy-MM-dd\" or the new format \"yyyy-MM-ddThh:mm:ss\")")
-    private Date created;
+    private Date since;
 
     /////////////////////////////////////////////////////
     /////////////////// Accessors ///////////////////////
     /////////////////////////////////////////////////////
 
-    public Date getCreated() {
-        return created;
+    public Date getSince() {
+        return since;
     }
 
     /////////////////////////////////////////////////////
@@ -71,11 +71,11 @@ public class ListSuspiciousSnapshotsCmd extends BaseListTaggedResourcesCmd {
 
     @Override
     public void execute() {
-        if (created == null) { 
+        if (since == null) { 
             Calendar cal = Calendar.getInstance();
             cal.setTime(new Date());
             cal.add(Calendar.HOUR_OF_DAY, -12);
-            created = cal.getTime();
+            since = cal.getTime();
         }
         
         Pair<List<? extends Snapshot>, Integer> result = _snapshotService.listSuspiciousSnapshots(this);
