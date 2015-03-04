@@ -71,4 +71,11 @@ public interface SnapshotManager {
 
 	SnapshotInfo takeSnapshot(VolumeInfo volume)
 			throws ResourceAllocationException;
+	
+	/**
+	 * Force a snapshot into error state, regardless of what it's doing. Dangerous method.
+	 * @param snapshotId
+	 * @return The snapshot, which should have a changed state property.
+	 */
+	Snapshot forceErrorState(Long snapshotId);
 }

@@ -26,11 +26,14 @@ import javax.ejb.Local;
 import javax.inject.Inject;
 import javax.naming.ConfigurationException;
 
+import com.amazonaws.services.ec2.model.SnapshotState;
 import com.cloud.storage.*;
+
 import org.apache.cloudstack.api.command.user.snapshot.CreateSnapshotPolicyCmd;
 import org.apache.cloudstack.api.command.user.snapshot.DeleteSnapshotPoliciesCmd;
 import org.apache.cloudstack.api.command.user.snapshot.ListSnapshotPoliciesCmd;
 import org.apache.cloudstack.api.command.user.snapshot.ListSnapshotsCmd;
+import org.apache.cloudstack.api.command.user.snapshot.ListSuspiciousSnapshotsCmd;
 import org.apache.cloudstack.engine.subsystem.api.storage.DataStore;
 import org.apache.cloudstack.engine.subsystem.api.storage.DataStoreManager;
 import org.apache.cloudstack.engine.subsystem.api.storage.EndPoint;
@@ -109,6 +112,7 @@ import com.cloud.utils.db.Filter;
 import com.cloud.utils.db.JoinBuilder;
 import com.cloud.utils.db.SearchBuilder;
 import com.cloud.utils.db.SearchCriteria;
+import com.cloud.utils.db.Transaction;
 import com.cloud.utils.exception.CloudRuntimeException;
 import com.cloud.vm.UserVmVO;
 import com.cloud.vm.VMInstanceVO;
@@ -626,7 +630,41 @@ public class SnapshotManagerImpl extends ManagerBase implements SnapshotManager,
         Pair<List<SnapshotVO>, Integer> result = _snapshotDao.searchAndCount(sc, searchFilter);
         return new Pair<List<? extends Snapshot>, Integer>(result.first(), result.second());
     }
+    
+    public Pair<List<? extends Snapshot>, Integer> listSuspiciousSnapshots(ListSuspiciousSnapshotsCmd cmd) {
+        Account caller = UserContext.current().getCaller();
+        List<Long> permittedAccounts = new ArrayList<Long>();
 
+        Ternary<Long, Boolean, ListProjectResourcesCriteria> domainIdRecursiveListProject = new Ternary<Long, Boolean, ListProjectResourcesCriteria>(cmd.getDomainId(), cmd.isRecursive(), null);
+        _accountMgr.buildACLSearchParameters(caller, null, cmd.getAccountName(), cmd.getProjectId(), permittedAccounts, domainIdRecursiveListProject, cmd.listAll(), false);
+        Long domainId = domainIdRecursiveListProject.first();
+        Boolean isRecursive = domainIdRecursiveListProject.second();
+        ListProjectResourcesCriteria listProjectResourcesCriteria = domainIdRecursiveListProject.third();
+
+        Filter searchFilter = new Filter(SnapshotVO.class, "created", false, cmd.getStartIndex(), cmd.getPageSizeVal());
+        SearchBuilder<SnapshotVO> sb = _snapshotDao.createSearchBuilder();
+        _accountMgr.buildACLSearchBuilder(sb, domainId, isRecursive, permittedAccounts, listProjectResourcesCriteria);
+
+        sb.and("statusNEQ", sb.entity().getState(), SearchCriteria.Op.NEQ);
+        sb.and("statusNEQ2", sb.entity().getState(), SearchCriteria.Op.NEQ);        
+
+        SearchCriteria<SnapshotVO> sc = sb.create();
+        _accountMgr.buildACLSearchCriteria(sc, domainId, isRecursive, permittedAccounts, listProjectResourcesCriteria);
+
+        sc.setParameters("statusNEQ", Snapshot.State.BackedUp);
+        sc.setParameters("statusNEQ2", Snapshot.State.Destroyed);
+
+        List<SnapshotVO> snapshots = _snapshotDao.search(sc, searchFilter);
+        List<SnapshotVO> suspiciousSnapshots = new ArrayList<SnapshotVO>();
+        
+        for (SnapshotVO snapshot : snapshots) {
+            if (snapshot.getCreated().before(cmd.getCreated())) {
+                suspiciousSnapshots.add(snapshot);
+            }
+        }
+        
+        return new Pair<List<? extends Snapshot>, Integer>(suspiciousSnapshots, suspiciousSnapshots.size());
+    }
 
     @Override
     public boolean deleteSnapshotDirsForAccount(long accountId) {
@@ -1185,6 +1223,27 @@ public class SnapshotManagerImpl extends ManagerBase implements SnapshotManager,
             _resourceLimitMgr.incrementResourceCount(volume.getAccountId(), ResourceType.primary_storage,
                     new Long(volume.getSize()));
         }
+        return snapshot;
+    }
+
+    @Override
+    @DB
+    public Snapshot forceErrorState(Long snapshotId) {
+        Account caller = UserContext.current().getCaller();
+        Snapshot snap = _snapshotDao.findById(snapshotId);
+        _accountMgr.checkAccess(caller, null, true, snap);
+        
+        Transaction txn = Transaction.currentTxn();
+        txn.start();
+        SnapshotVO snapshot = _snapshotDao.lockRow(snapshotId, true);
+        
+        if (snapshot.getState() != Snapshot.State.Error) {
+            snapshot.setState(Snapshot.State.Error);
+            
+        }
+        
+        _snapshotDao.update(snapshotId, snapshot);
+        txn.commit();
         return snapshot;
     }
 }
