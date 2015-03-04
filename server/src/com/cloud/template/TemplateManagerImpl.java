@@ -2164,6 +2164,7 @@ TemplateManager, TemplateApiService {
 				}
 			}
 			if (cmd.getDetails() != null) {
+				details.remove("Encrypted.Password");
 				details.putAll(cmd.getDetails());
 			}
 			if (!details.isEmpty()) {
