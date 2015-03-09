@@ -2038,6 +2038,13 @@ public class EC2Engine extends ManagerBase {
                             param.setValue(resourceTag.getValue());
                         ec2Image.addResourceTag(param);
                     }
+                    EC2TagKeyValue osTag = new EC2TagKeyValue();
+                    osTag.setKey("OSName");
+                    osTag.setValue(temp.getOsTypeName());
+                    EC2TagKeyValue minSize = new EC2TagKeyValue();
+                    osTag.setKey("MinSize");
+                    osTag.setValue(temp.getSize().toString());                    
+                    ec2Image.addResourceTag(osTag);
                     images.addImage(ec2Image);
                 }
             }
