@@ -42,6 +42,7 @@ public class KVMGuestOsMapper {
         s_mapper.put("CentOS 5.4 (64-bit)", "CentOS 5.4");
         s_mapper.put("CentOS 5.5 (32-bit)", "CentOS 5.5");
         s_mapper.put("CentOS 5.5 (64-bit)", "CentOS 5.5");
+        s_mapper.put("CoreOS", "CoreOS");
         s_mapper.put("Red Hat Enterprise Linux 2", "Red Hat Enterprise Linux 2");
         s_mapper.put("Red Hat Enterprise Linux 3 (32-bit)",
                 "Red Hat Enterprise Linux 3");
