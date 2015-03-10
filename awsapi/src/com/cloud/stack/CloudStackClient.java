@@ -19,6 +19,7 @@ package com.cloud.stack;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -90,7 +91,7 @@ public class CloudStackClient {
 		
 		assert(responseName != null);
 		
-		JsonAccessor json = execute(cmd, apiKey, secretKey);
+		JsonAccessor json = executePost(cmd, apiKey, secretKey);
 		if(followToAsyncResult && json.tryEval(responseName + ".jobid") != null) {
 			long startMs = System.currentTimeMillis();
 	        while(System.currentTimeMillis() -  startMs < _pollTimeoutMs) {
@@ -142,7 +143,7 @@ public class CloudStackClient {
 		
 		assert(responseName != null);
 		
-		JsonAccessor json = execute(cmd, apiKey, secretKey);
+		JsonAccessor json = executePost(cmd, apiKey, secretKey);
 		
 		
 
@@ -196,4 +197,52 @@ public class CloudStackClient {
 			logger.debug("Cloud API call + [" + url.toString() + "] returned: " + jsonElement.toString());
 		return new JsonAccessor(jsonElement);
 	}
+	
+    public JsonAccessor executePost(CloudStackCommand cmd, String apiKey, String secretKey) throws Exception {
+        JsonParser parser = new JsonParser();
+        URL url = new URL(_serviceUrl);
+        
+        String encodedData = cmd.signCommand(apiKey, secretKey);
+        
+        if(logger.isDebugEnabled())
+            logger.debug("Cloud API POST call + [" + url.toString() + "]: " + encodedData);
+        
+        HttpURLConnection connect = (HttpURLConnection)url.openConnection();
+        connect.setDoOutput(true);
+        connect.setRequestMethod("POST");
+        connect.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        connect.setRequestProperty("Content-Length", String.valueOf(encodedData.length()));
+        
+        OutputStream stream = connect.getOutputStream();
+        stream.write(encodedData.getBytes());
+        
+        int statusCode;
+        statusCode = connect.getResponseCode();
+        if(statusCode >= 400) {
+            logger.error("Cloud API POST call + [" + url.toString() + "] failed with status code: " + statusCode);
+            String errorMessage = ((HttpURLConnection)connect).getResponseMessage();
+            if(errorMessage == null){
+                errorMessage = connect.getHeaderField("X-Description");
+            }
+            
+            if(errorMessage == null){
+                errorMessage = "CloudStack API call HTTP response error, HTTP status code: " + statusCode;
+            }
+            errorMessage = errorMessage.concat(" Error Code - " + Integer.toString(statusCode));
+
+            throw new IOException(errorMessage);
+        }
+        
+        InputStream inputStream = connect.getInputStream(); 
+        JsonElement jsonElement = parser.parse(new InputStreamReader(inputStream));
+        if(jsonElement == null) {
+            logger.error("Cloud API POST call + [" + url.toString() + "] failed: unable to parse expected JSON response");
+            
+            throw new IOException("CloudStack API call error : invalid JSON response");
+        }
+        
+        if(logger.isDebugEnabled())
+            logger.debug("Cloud API POST call + [" + url.toString() + "] returned: " + jsonElement.toString());
+        return new JsonAccessor(jsonElement);
+    }
 }

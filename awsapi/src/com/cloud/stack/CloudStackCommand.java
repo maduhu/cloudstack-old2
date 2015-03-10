@@ -136,8 +136,18 @@ public class CloudStackCommand {
     }
 
 
+    private static final List VALID_CHARACTERS = Arrays.asList(
+            '%'
+    );
     private static boolean needsUrlEncode(final String decode) {
-    	return decode.indexOf("%") < 0;
+        boolean needs=false;
+        for (char c : decode.toCharArray()) {
+            if (VALID_CHARACTERS.indexOf(c) != -1 || Character.isLetterOrDigit(c)) {
+            } else {
+                needs=true;
+            }
+        }
+        return needs;
     }
    
     private String urlSafe(String value) {
