@@ -352,7 +352,7 @@ public class QueryAPIAuthHandler {
 
 	// There was a change in behavior of the tools starting with EC2_2014_10_01
 	private boolean isPost2014_06_15() {
-		return RequestContext.current().getNamespace() != null || RequestContext.current().getNamespace().isAtLeast(Namespace.EC2_2014_10_01);
+		return RequestContext.current().getNamespace() != null && RequestContext.current().getNamespace().isAtLeast(Namespace.EC2_2014_10_01);
 	}
 
 	public String getPayload() {
