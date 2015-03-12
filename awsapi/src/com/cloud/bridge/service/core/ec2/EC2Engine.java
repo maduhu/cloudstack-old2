@@ -38,6 +38,7 @@ import javax.inject.Inject;
 import javax.naming.ConfigurationException;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 import org.xml.sax.SAXException;
@@ -2022,14 +2023,8 @@ public class EC2Engine extends ManagerBase {
                     ec2Image.setState( temp.getIsReady() ? "available" : "pending");
                     ec2Image.setDomainId(temp.getDomainId());
                     ec2Image.setHypervisor(mapToAmazonHypervisorType(temp.getHyperVisor()));
-                    if (temp.getDisplayText() == null)
-                        ec2Image.setArchitecture("");
-                    else if (temp.getDisplayText().indexOf( "x86_64" ) != -1)
-                        ec2Image.setArchitecture("x86_64");
-                    else if (temp.getDisplayText().indexOf( "i386" ) != -1)
-                        ec2Image.setArchitecture("i386");
-                    else
-                        ec2Image.setArchitecture("");
+                    // TODO: Currently we only support processor architecture families x86
+                    ec2Image.setArchitecture("x86_" + Integer.toString(temp.getBits())); 
                     List<CloudStackKeyValue> resourceTags = temp.getTags();
                     for(CloudStackKeyValue resourceTag : resourceTags) {
                         EC2TagKeyValue param = new EC2TagKeyValue();
@@ -2038,6 +2033,19 @@ public class EC2Engine extends ManagerBase {
                             param.setValue(resourceTag.getValue());
                         ec2Image.addResourceTag(param);
                     }
+
+                    // Special tags for QStack Hybrid installations, - also used in MeterorQloud for single QStack installations.
+                    EC2TagKeyValue osTag = new EC2TagKeyValue();
+                    osTag.setKey("hybrid-os");
+                    osTag.setValue(temp.getOsTypeName());
+                    ec2Image.addResourceTag(osTag);
+                    if (StringUtils.isNotEmpty(temp.getZoneName())) {
+                    	EC2TagKeyValue zoneTag = new EC2TagKeyValue();
+                    	osTag.setKey("hybrid-zone");
+                    	osTag.setValue(temp.getSize().toString());
+                        ec2Image.addResourceTag(zoneTag);
+                    }
+
                     images.addImage(ec2Image);
                 }
             }

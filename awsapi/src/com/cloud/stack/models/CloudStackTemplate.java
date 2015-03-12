@@ -86,6 +86,8 @@ public class CloudStackTemplate {
 	private String zoneName;
     @SerializedName(ApiConstants.TAGS)
     private List<CloudStackKeyValue> tags;
+	@SerializedName(ApiConstants.BITS)
+	private int bits; 
 
 	/**
 	 * 
@@ -316,4 +318,8 @@ public class CloudStackTemplate {
     public List<CloudStackKeyValue> getTags() {
         return tags;
     }
+
+	public int getBits() {
+		return bits;
+	}
 }
