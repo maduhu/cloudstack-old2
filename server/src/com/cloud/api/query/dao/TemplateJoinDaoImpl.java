@@ -180,6 +180,8 @@ public class TemplateJoinDaoImpl extends GenericDaoBase<TemplateJoinVO, Long> im
         Long templateSize = template.getSize();
 
         templateResponse.setSize(templateSize);
+        
+        templateResponse.setBits(template.getBits());
 
 
         templateResponse.setChecksum(template.getChecksum());

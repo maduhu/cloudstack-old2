@@ -1466,7 +1466,7 @@ public class EC2RestServlet extends HttpServlet {
             throws ADBException, XMLStreamException, IOException {
         EC2DescribeImages EC2request = new EC2DescribeImages();
 
-        // -> load in all the "ImageId.n" parameters if any, and ignore all other parameters
+        // -> load in all the "ImageId.n" parameters if any
         Enumeration<?> names = request.getParameterNames();
         while( names.hasMoreElements()) {
             String key = (String)names.nextElement();
@@ -1474,7 +1474,7 @@ public class EC2RestServlet extends HttpServlet {
                 String[] value = request.getParameterValues( key );
                 if (null != value && 0 < value.length) EC2request.addImageSet( value[0] );
             }
-        }		
+        }
         // add filters
         EC2Filter[] filterSet = extractFilters( request );
         if ( filterSet != null ) {

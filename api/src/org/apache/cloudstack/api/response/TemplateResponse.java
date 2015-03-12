@@ -135,6 +135,9 @@ public class TemplateResponse extends BaseResponse implements ControlledViewEnti
 
     @SerializedName(ApiConstants.DETAILS) @Param(description="additional key/value details tied with template")
     private Map details;
+    
+    @SerializedName(ApiConstants.BITS) @Param(description="the processor bit size")
+	private int bits;   
 
     // To avoid breaking backwards compatibility, we still treat a template at different zones as different templates, so not embedding
     // template_zone information in this TemplateZoneResponse set.
@@ -163,6 +166,10 @@ public class TemplateResponse extends BaseResponse implements ControlledViewEnti
 
     public String getId() {
         return id;
+    }
+    
+    public int getBits() {
+    	return bits;
     }
 
     public void setZoneId(String zoneId) {
@@ -198,6 +205,10 @@ public class TemplateResponse extends BaseResponse implements ControlledViewEnti
         this.name = name;
     }
 
+    public void setBits(int bits) {
+        this.bits = bits;
+    }
+    
     public void setDisplayText(String displayText) {
         this.displayText = displayText;
     }
