@@ -2024,7 +2024,7 @@ public class EC2Engine extends ManagerBase {
                     ec2Image.setDomainId(temp.getDomainId());
                     ec2Image.setHypervisor(mapToAmazonHypervisorType(temp.getHyperVisor()));
                     // TODO: Currently we only support processor architecture families x86
-                    ec2Image.setArchitecture("x86_" + temp.getBits()); 
+                    ec2Image.setArchitecture("x86_" + Integer.toString(temp.getBits())); 
                     List<CloudStackKeyValue> resourceTags = temp.getTags();
                     for(CloudStackKeyValue resourceTag : resourceTags) {
                         EC2TagKeyValue param = new EC2TagKeyValue();

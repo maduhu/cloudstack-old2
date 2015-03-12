@@ -132,6 +132,9 @@ public class TemplateResponse extends BaseResponse implements ControlledViewEnti
 
     @SerializedName(ApiConstants.PROJECT) @Param(description="the project name of the template")
     private String projectName;
+    
+    @SerializedName(ApiConstants.BITS) @Param(description="the bit size of the processor")
+    private int bits; 
 
     @SerializedName(ApiConstants.DETAILS) @Param(description="additional key/value details tied with template")
     private Map details;
@@ -246,6 +249,10 @@ public class TemplateResponse extends BaseResponse implements ControlledViewEnti
         this.size = size;
     }
 
+    public void setBits(int bits) {
+        this.bits = bits;
+    }
+    
     public void setTemplateType(String templateType) {
         this.templateType = templateType;
     }

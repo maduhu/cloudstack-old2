@@ -177,10 +177,12 @@ public class TemplateJoinDaoImpl extends GenericDaoBase<TemplateJoinVO, Long> im
             templateResponse.setZoneName(template.getDataCenterName());
         }
 
+        
         Long templateSize = template.getSize();
 
         templateResponse.setSize(templateSize);
-
+        
+        templateResponse.setBits(template.getBits());
 
         templateResponse.setChecksum(template.getChecksum());
         if (template.getSourceTemplateId() != null) {
