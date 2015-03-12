@@ -77,6 +77,8 @@ import com.cloud.stack.models.CloudStackVolume;
 import com.cloud.stack.models.CloudStackZone;
 import com.cloud.utils.component.ManagerBase;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
+
 /**
  * EC2Engine processes the ec2 commands and calls their cloudstack analogs
  *
@@ -898,7 +900,7 @@ public class EC2Engine extends ManagerBase {
             EC2ImageFilterSet ifs = request.getFilterSet();
 
             if ( templateIds.length == 0 ) {
-                images = listTemplates(null, images);
+                images = listTemplates(request, null, images);
             } else {
                 for (String s : templateIds) {
                     images = listTemplates(s, images);
@@ -1980,35 +1982,40 @@ public class EC2Engine extends ManagerBase {
      * @return the same object passed in as the "images" parameter modified with one or more
      *         EC2Image objects loaded.
      */
-    private EC2DescribeImagesResponse listTemplates( String templateId, EC2DescribeImagesResponse images ) throws Exception {
+    private EC2DescribeImagesResponse listTemplates(EC2DescribeImages request, String templateId, EC2DescribeImagesResponse images ) throws Exception {
         try {
             List<CloudStackTemplate> result = new ArrayList<CloudStackTemplate>();
-
+            List<String> typeFilter = new ArrayList<String>();
+            if (request != null) {
+            	String filterValue = request.getExcutableBySet() != null && request.getExcutableBySet().length > 0 ? request.getExcutableBySet()[0] : StringUtils.EMPTY;
+            	filterValue = request.getOwnersSet() != null && request.getOwnersSet().length > 0 ? request.getOwnersSet()[0] : filterValue;
+            	if ("self".equalsIgnoreCase(filterValue)) {
+            		typeFilter.add("selfexecutable");
+            	} else if ("featured".equalsIgnoreCase(filterValue)) {
+            		typeFilter.add("featured");
+            	} else if ("community".equalsIgnoreCase(filterValue)) {
+            		typeFilter.add("community");
+            	}
+            }
+            if (typeFilter.size() == 0) {
+            	typeFilter.add("selfexecutable");
+            	typeFilter.add("featured");
+            	typeFilter.add("sharedexecutable");
+            	typeFilter.add("community");
+            }
+            
             if(templateId != null){
                 List<CloudStackTemplate> template = getApi().listTemplates("executable", null, null, null, templateId , null, null, null);
                 if(template != null){
                     result.addAll(template);
                 }
-            }else{
-                List<CloudStackTemplate> selfExecutable = getApi().listTemplates("selfexecutable", null, null, null, null, null, null, null);
-                if(selfExecutable != null){
-                    result.addAll(selfExecutable);
-                }
-
-                List<CloudStackTemplate> featured = getApi().listTemplates("featured", null, null, null, null, null, null, null);
-                if(featured != null){
-                    result.addAll(featured);
-                }
-
-                List<CloudStackTemplate> sharedExecutable = getApi().listTemplates("sharedexecutable", null, null, null, null, null, null, null);
-                if(sharedExecutable != null){
-                    result.addAll(sharedExecutable);
-                }
-
-                List<CloudStackTemplate> community = getApi().listTemplates("community", null, null, null, null, null, null, null);
-                if(community != null){
-                    result.addAll(community);
-                }
+            } else {
+            	for (String type : typeFilter) {
+                    List<CloudStackTemplate> templateList = getApi().listTemplates(type, null, null, null, null, null, null, null);
+                    if(templateList != null){
+                        result.addAll(templateList);
+                    }           		
+            	}
             }
 
             if (result != null && result.size() > 0) {
@@ -2056,6 +2063,21 @@ public class EC2Engine extends ManagerBase {
             throw new Exception( e.getMessage() != null ? e.getMessage() : e.toString() );
         }
     }
+
+    /**
+     * Get one or more templates depending on the templateId parameter.
+     * 
+     * @param templateId - if null then return information on all existing templates, otherwise
+     *                     just return information on the matching template.
+     * @param images     - a container object to fill with one or more EC2Image objects
+     * 
+     * @return the same object passed in as the "images" parameter modified with one or more
+     *         EC2Image objects loaded.
+     */
+    private EC2DescribeImagesResponse listTemplates( String templateId, EC2DescribeImagesResponse images ) throws Exception {
+    	return listTemplates(null, templateId, images);
+    }
+    
 
     /**
      * List security groups
