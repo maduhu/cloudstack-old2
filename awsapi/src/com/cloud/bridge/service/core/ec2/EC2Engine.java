@@ -2041,8 +2041,8 @@ public class EC2Engine extends ManagerBase {
                     ec2Image.addResourceTag(osTag);
                     if (StringUtils.isNotEmpty(temp.getZoneName())) {
                     	EC2TagKeyValue zoneTag = new EC2TagKeyValue();
-                    	osTag.setKey("hybrid-zone");
-                    	osTag.setValue(temp.getSize().toString());
+                    	zoneTag.setKey("hybrid-zone");
+                    	zoneTag.setValue(temp.getSize().toString());
                         ec2Image.addResourceTag(zoneTag);
                     }
 
