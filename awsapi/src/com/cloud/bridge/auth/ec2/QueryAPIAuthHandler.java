@@ -331,11 +331,7 @@ public class QueryAPIAuthHandler {
 		case AWS4:
 			req.append(request.getMethod().toUpperCase());		// HTTPMethod
 			req.append("\n");
-			if (isPost2014_06_15()) {
-				req.append(request.getRequestURI());			// CanonicalURI
-			} else {
-				req.append(request.getPathInfo());				// CanonicalURI
-			}
+			req.append(request.getPathInfo());					// CanonicalURI
 			req.append("\n");
 			req.append(getCanonicalQueryString());				// CanonicalQueryString
 			req.append("\n");
@@ -348,11 +344,6 @@ public class QueryAPIAuthHandler {
 		}
 
 		return req.toString();
-	}
-
-	// There was a change in behavior of the tools starting with EC2_2014_10_01
-	private boolean isPost2014_06_15() {
-		return RequestContext.current().getNamespace() != null && RequestContext.current().getNamespace().isAtLeast(Namespace.EC2_2014_10_01);
 	}
 
 	public String getPayload() {

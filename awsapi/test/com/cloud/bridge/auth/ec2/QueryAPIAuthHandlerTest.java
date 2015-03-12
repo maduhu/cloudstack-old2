@@ -215,7 +215,6 @@ public class QueryAPIAuthHandlerTest {
 		HttpServletRequest request = setupRequest(payload, validAuthHeader, "?Version=123&SomeParam=value", "header-value", validAmzDateV4, "", "");
 		ApiKeyStore keystore = new DaoApiKeyStore(mock(CloudStackUserDao.class));
 		QueryAPIAuthHandler authHandler = new QueryAPIAuthHandler(request, keystore);
-		when(request.getRequestURI()).thenReturn("/");
 
 		assertTrue(authHandler.verifyAuthScheme());
 		assertTrue(authHandler.verifyAuthParams());
@@ -248,7 +247,7 @@ public class QueryAPIAuthHandlerTest {
 		when(request.getHeader("user-agent")).thenReturn(userAgent);
 		when(request.getHeader("content-type")).thenReturn(contentType);
 		when(request.getMethod()).thenReturn("POST");
-		when(request.getRequestURI()).thenReturn("/");
+		when(request.getPathInfo()).thenReturn("/");
 		when(request.getParameterMap()).thenReturn(getStringMapFromString("&", "=", ",", payload));
 		
 		// Default
