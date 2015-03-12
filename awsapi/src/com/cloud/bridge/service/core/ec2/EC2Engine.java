@@ -2039,7 +2039,8 @@ public class EC2Engine extends ManagerBase {
                     osTag.setKey("hybrid-os");
                     osTag.setValue(temp.getOsTypeName());
                     ec2Image.addResourceTag(osTag);
-                    if (StringUtils.isNotEmpty(temp.getZoneName())) {
+                    // Add zone if zone is specified and cross zones is not set or not set to true
+                    if (StringUtils.isNotEmpty(temp.getZoneName()) &&  (temp.getCrossZones() == null || temp.getCrossZones() == false)) {
                     	EC2TagKeyValue zoneTag = new EC2TagKeyValue();
                     	zoneTag.setKey("hybrid-zone");
                     	zoneTag.setValue(temp.getZoneName());

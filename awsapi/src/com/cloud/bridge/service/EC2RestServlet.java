@@ -1473,12 +1473,6 @@ public class EC2RestServlet extends HttpServlet {
             if (key.startsWith("ImageId")) {
                 String[] value = request.getParameterValues( key );
                 if (null != value && 0 < value.length) EC2request.addImageSet( value[0] );
-            } else if (key.startsWith("Owner.")) {
-                String[] value = request.getParameterValues( key );
-                if (null != value && 0 < value.length) EC2request.addOwnersSet( value[0] );
-            } else if (key.startsWith("ExecutableBy.")) {
-                String[] value = request.getParameterValues( key );
-                if (null != value && 0 < value.length) EC2request.addExecutableBySet( value[0] );
             }
         }
         // add filters
