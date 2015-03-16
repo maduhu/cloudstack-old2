@@ -2016,6 +2016,11 @@ public class EC2Engine extends ManagerBase {
                         result.addAll(templateList);
                     }           		
             	}
+            	// Add bootable ISOs
+            	List<CloudStackTemplate> isoList = getApi().listIsos(null, true, null, null, null, null, true, true, null, null, null);
+                if(isoList != null){
+                    result.addAll(isoList);
+                }
             }
 
             if (result != null && result.size() > 0) {
