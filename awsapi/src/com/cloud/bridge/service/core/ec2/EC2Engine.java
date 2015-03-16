@@ -2017,8 +2017,14 @@ public class EC2Engine extends ManagerBase {
                     }           		
             	}
             	// Add bootable ISOs
-            	List<CloudStackTemplate> isoList = getApi().listIsos(null, true, null, null, null, null, true, true, null, null, null);
-                if(isoList != null){
+            	List<CloudStackTemplate> isoList = null;
+            	try {
+            		isoList = getApi().listIsos(null, true, null, null, null, null, null, false, null, null, null);
+            	} catch (Exception e) {
+            		logger.error(e);
+            	}
+                if (isoList != null) {
+                	addIsoTag(isoList);
                     result.addAll(isoList);
                 }
             }
@@ -2069,7 +2075,15 @@ public class EC2Engine extends ManagerBase {
         }
     }
 
-    /**
+    private void addIsoTag(List<CloudStackTemplate> isoList) {
+    	CloudStackKeyValue isoTag = new CloudStackKeyValue();
+    	isoTag.setKeyValue("hybrid-iso", "true");
+		for (CloudStackTemplate iso : isoList) {
+			iso.getTags().add(isoTag);
+		}
+	}
+
+	/**
      * Get one or more templates depending on the templateId parameter.
      * 
      * @param templateId - if null then return information on all existing templates, otherwise
