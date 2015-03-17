@@ -107,8 +107,6 @@ public class ApiServlet extends HttpServlet {
         auditTrailSb.append(" -- " + req.getMethod() + " ");
         // get the response format since we'll need it in a couple of places
         String responseType = BaseCmd.RESPONSE_TYPE_XML;
-        Map<String, Object[]> originalParams = new HashMap<String, Object[]>();
-        originalParams.putAll(req.getParameterMap());
         Map<String, Object[]> params = new HashMap<String, Object[]>();
         params.putAll(req.getParameterMap());
 
@@ -285,7 +283,7 @@ public class ApiServlet extends HttpServlet {
                 }
             }
 
-            if (_apiServer.verifyRequest(originalParams, userId)) {
+            if (_apiServer.verifyRequest(params, userId)) {
                 /*
                  * if (accountObj != null) { Account userAccount = (Account)accountObj; if (userAccount.getType() ==
                  * Account.ACCOUNT_TYPE_NORMAL) { params.put(BaseCmd.Properties.USER_ID.getName(), new String[] { userId });
