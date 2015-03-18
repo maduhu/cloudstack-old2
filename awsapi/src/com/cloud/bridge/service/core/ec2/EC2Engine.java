@@ -1805,7 +1805,7 @@ public class EC2Engine extends ManagerBase {
      */
     private String serviceOfferingIdToInstanceType( String serviceOfferingId ) throws Exception {
         try{
-            List<CloudStackServiceOffering> offerings = getApi().listServiceOfferings(null, serviceOfferingId, false, null, null, null, null);
+            List<CloudStackServiceOffering> offerings = getApi().listServiceOfferingsWithDeleted(null, serviceOfferingId, false, null, null, null, null);
             if (offerings.size() != 1) {
                 logger.warn( "No instanceType match for serviceOfferingId: [" + serviceOfferingId + "]" );
                 return "m1.small";

@@ -1431,6 +1431,40 @@ public class CloudStackApi {
 		return _client.listCall(cmd, apiKey, secretKey, ApiConstants.LIST_OS_CATEGORIES_RESPONSE, ApiConstants.OS_CATEGORY, 
 				new TypeToken<List<CloudStackOsCategory>>() {}.getType());
 	}
+
+	
+	
+	// Service Offering including deleted offerings
+	/**
+	 * list available Service offerings
+	 * 
+	 * @param domainId
+	 * @param id
+	 * @param isSystem
+	 * @param keyWord
+	 * @param name
+	 * @param systemVmType
+	 * @param virtualMachineId
+	 * @return
+	 * @throws Exception
+	 */
+	public List<CloudStackServiceOffering> listServiceOfferingsWithDeleted(String domainId, String id, Boolean isSystem, String keyWord, String name, 
+			String systemVmType, String virtualMachineId) throws Exception {
+		CloudStackCommand cmd = new CloudStackCommand(ApiConstants.LIST_SERVICE_OFFERINGS);
+		if (cmd != null) {
+			if (domainId != null) cmd.setParam(ApiConstants.DOMAIN_ID, domainId);
+			if (id != null) cmd.setParam(ApiConstants.ID, id);
+			if (isSystem != null) cmd.setParam(ApiConstants.IS_SYSTEM, isSystem.toString());
+			if (keyWord != null) cmd.setParam(ApiConstants.KEYWORD, keyWord);
+			if (name != null) cmd.setParam(ApiConstants.NAME, name);
+			if (systemVmType != null) cmd.setParam(ApiConstants.SYSTEM_VM_TYPE, systemVmType);
+			if (virtualMachineId != null) cmd.setParam(ApiConstants.VIRTUAL_MACHINE_ID, virtualMachineId);
+			cmd.setParam(ApiConstants.GET_DELETED, "true");
+		}
+		return _client.listCall(cmd, apiKey, secretKey, ApiConstants.LIST_SERVICE_OFFERINGS_RESPONSE, ApiConstants.SERVICE_OFFERING, 
+				new TypeToken<List<CloudStackServiceOffering>>() {}.getType());
+	}
+	
 	
 	// Service Offering
 	/**
