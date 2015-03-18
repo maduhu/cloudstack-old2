@@ -5,9 +5,9 @@
 -- to you under the Apache License, Version 2.0 (the
 -- "License"); you may not use this file except in compliance
 -- with the License.  You may obtain a copy of the License at
--- 
+--
 --   http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing,
 -- software distributed under the License is distributed on an
 -- "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -276,7 +276,7 @@ INSERT INTO `cloud`.`guest_os` (id, uuid, category_id, display_name) VALUES (201
 INSERT INTO `cloud`.`guest_os` (id, uuid, category_id, display_name) VALUES (202, UUID(), 5, 'Other SUSE Linux(32-bit)');
 INSERT INTO `cloud`.`guest_os` (id, uuid, category_id, display_name) VALUES (203, UUID(), 5, 'Other SUSE Linux(64-bit)');
 
-INSERT INTO `cloud`.`guest_os` (id, uuid, category_id, display_name) VALUES (204, UUID(), 12, 'CoreOS');
+INSERT INTO `cloud`.`guest_os` (id, uuid, category_id, display_name) VALUES (225, UUID(), 12, 'CoreOS');
 
 
 INSERT INTO `cloud`.`guest_os_hypervisor` (hypervisor_type, guest_os_name, guest_os_id) VALUES  ("XenServer", 'CentOS 4.5 (32-bit)', 1);
@@ -590,4 +590,4 @@ INSERT INTO `cloud`.`guest_os_hypervisor` (hypervisor_type, guest_os_name, guest
 INSERT INTO `cloud`.`guest_os_hypervisor` (hypervisor_type, guest_os_name, guest_os_id) VALUES ('KVM', 'Other', 60);
 INSERT INTO `cloud`.`guest_os_hypervisor` (hypervisor_type, guest_os_name, guest_os_id) VALUES ('KVM', 'Other', 103);
 
-INSERT INTO `cloud`.`guest_os_hypervisor` (hypervisor_type, guest_os_name, guest_os_id) VALUES ('KVM', 'CoreOS', 204);
+INSERT INTO `cloud`.`guest_os_hypervisor` (hypervisor_type, guest_os_name, guest_os_id) VALUES ('KVM', 'CoreOS', 225);
