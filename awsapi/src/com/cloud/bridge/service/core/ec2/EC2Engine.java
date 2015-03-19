@@ -2054,13 +2054,13 @@ public class EC2Engine extends ManagerBase {
 
                     // Special tags for QStack Hybrid installations, - also used in MeterorQloud for single QStack installations.
                     EC2TagKeyValue osTag = new EC2TagKeyValue();
-                    osTag.setKey("hybrid-os");
+                    osTag.setKey("qstack-os");
                     osTag.setValue(temp.getOsTypeName());
                     ec2Image.addResourceTag(osTag);
                     // Add zone if zone is specified and cross zones is not set or not set to true
                     if (StringUtils.isNotEmpty(temp.getZoneName()) &&  (temp.getCrossZones() == null || temp.getCrossZones() == false)) {
                     	EC2TagKeyValue zoneTag = new EC2TagKeyValue();
-                    	zoneTag.setKey("hybrid-zone");
+                    	zoneTag.setKey("qstack-zone");
                     	zoneTag.setValue(temp.getZoneName());
                         ec2Image.addResourceTag(zoneTag);
                     }
@@ -2077,7 +2077,7 @@ public class EC2Engine extends ManagerBase {
 
     private void addIsoTag(List<CloudStackTemplate> isoList) {
     	CloudStackKeyValue isoTag = new CloudStackKeyValue();
-    	isoTag.setKeyValue("hybrid-iso", "true");
+    	isoTag.setKeyValue("qstack-iso", "true");
 		for (CloudStackTemplate iso : isoList) {
 			iso.getTags().add(isoTag);
 		}
