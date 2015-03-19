@@ -88,6 +88,7 @@ public class ApiConstants {
     public static final String FOR_VIRTUAL_NETWORK = "forvirtualnetwork";
     public static final String GATEWAY = "gateway";
     public static final String IP6_GATEWAY = "ip6gateway";
+    public static final String GET_DELETED = "getdeleted";
     public static final String GROUP = "group";
     public static final String GROUP_ID = "groupid";
     public static final String GSLB_LB_METHOD = "gslblbmethod";

@@ -180,6 +180,7 @@ public class ApiConstants {
     public static final String GATEWAY = "gateway";
     public static final String GET_CLOUD_IDENTIFIER = "getCloudIdentifier";
     public static final String GET_CLOUD_IDENTIFIER_RESPONSE = "getcloudidentifierresponse";
+    public static final String GET_DELETED = "getdeleted";
     public static final String GET_VM_PASSWORD = "getVMPassword";
     public static final String GET_VM_PASSWORD_RESPONSE = "getvmpasswordresponse";
     public static final String GROUP = "group";

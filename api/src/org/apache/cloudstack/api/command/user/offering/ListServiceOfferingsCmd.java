@@ -57,6 +57,9 @@ public class ListServiceOfferingsCmd extends BaseListCmd {
 
     @Parameter(name=ApiConstants.SYSTEM_VM_TYPE, type=CommandType.STRING, description="the system VM type. Possible types are \"consoleproxy\", \"secondarystoragevm\" or \"domainrouter\".")
     private String systemVmType;
+    
+    @Parameter(name=ApiConstants.GET_DELETED, type=CommandType.BOOLEAN, description="Should deleted service offerings be included?")
+    private Boolean getDeleted = false;
 
 
     /////////////////////////////////////////////////////
@@ -85,6 +88,10 @@ public class ListServiceOfferingsCmd extends BaseListCmd {
 
     public String getSystemVmType(){
         return systemVmType;
+    }
+    
+    public Boolean getDeleted() {
+    	return getDeleted;
     }
 
     /////////////////////////////////////////////////////
