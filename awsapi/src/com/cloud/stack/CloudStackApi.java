@@ -667,7 +667,7 @@ public class CloudStackApi {
 			if (name != null) cmd.setParam(ApiConstants.NAME, name);
 			if (zoneId != null) cmd.setParam(ApiConstants.ZONE_ID, zoneId);
 		}
-		return _client.listCall(cmd, apiKey, secretKey, ApiConstants.LIST_ISOS_RESPONSE, ApiConstants.TEMPLATE, 
+		return _client.listCall(cmd, apiKey, secretKey, ApiConstants.LIST_ISOS_RESPONSE, ApiConstants.ISO, 
 				new TypeToken<List<CloudStackTemplate>>() {}.getType());
 	}
 	

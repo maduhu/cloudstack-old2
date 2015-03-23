@@ -2019,7 +2019,8 @@ public class EC2Engine extends ManagerBase {
             	// Add bootable ISOs
             	List<CloudStackTemplate> isoList = null;
             	try {
-            		isoList = getApi().listIsos(null, true, null, null, null, null, null, false, null, null, null);
+            		String isoFilter = typeFilter.size() == 1 ? typeFilter.get(0) : null;
+            		isoList = getApi().listIsos(null, true, null, null, null, isoFilter, null, false, null, null, null);
             	} catch (Exception e) {
             		logger.error(e);
             	}
@@ -2632,7 +2633,9 @@ public class EC2Engine extends ManagerBase {
      * @return Amazon hypervisor
      */
     private String mapToAmazonHypervisorType( String hypervisor) {
-        if (hypervisor.equalsIgnoreCase("Xenserver"))
+    	if (StringUtils.isEmpty(hypervisor)) {
+    		return StringUtils.EMPTY;
+    	} else if (hypervisor.equalsIgnoreCase("Xenserver"))
             return("xen");
         else if(hypervisor.equalsIgnoreCase("Ovm"))
             return("ovm");
@@ -2641,7 +2644,7 @@ public class EC2Engine extends ManagerBase {
         else if (hypervisor.equalsIgnoreCase("BareMetal"))
             return("baremetal");
         else
-            return ("");
+            return StringUtils.EMPTY;
     }
 
     /**
