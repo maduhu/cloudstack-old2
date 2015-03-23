@@ -160,12 +160,14 @@ install:
 	mkdir $(DESTDIR)/usr/share/$(PACKAGE)-bridge/setup
 	ln -s /usr/share/$(PACKAGE)-bridge/webapps/awsapi $(DESTDIR)/usr/share/$(PACKAGE)-management/webapps7080/awsapi
 	cp -r awsapi/target/cloud-awsapi-$(VERSION)$(MVNADD)/* $(DESTDIR)/usr/share/$(PACKAGE)-bridge/webapps/awsapi
+	install -D awsapi/target/WEB-INF/services/cloud-ec2.aar $(DESTDIR)/usr/share/$(PACKAGE)-bridge/webapps/awsapi/WEB-INF/services
 	install -D awsapi-setup/setup/cloud-setup-bridge $(DESTDIR)/usr/bin/cloudstack-setup-bridge
 	install -D awsapi-setup/setup/cloudstack-aws-api-register $(DESTDIR)/usr/bin/cloudstack-aws-api-register
 	cp -r awsapi-setup/db/mysql/* $(DESTDIR)/usr/share/$(PACKAGE)-bridge/setup
 	# do not copy log4j-cloud.xml here, because we want it to remain in the WEB-INF/classes directory, so it gets picked up
-	# before the /etc/cloudstack/management/ one for awsapi.
-	for i in cloud-bridge.properties commons-logging.properties crypto.properties xes.keystore ec2-service.properties ; do \
+	# before the /etc/cloudstack/management/ one for awsapi. also do not copy xes.keystore because ec2-service.properties
+	# expects it to under the awsapi webapp
+	for i in cloud-bridge.properties commons-logging.properties crypto.properties ec2-service.properties ; do \
 		mv $(DESTDIR)/usr/share/$(PACKAGE)-bridge/webapps/awsapi/WEB-INF/classes/$$i $(DESTDIR)/$(SYSCONFDIR)/$(PACKAGE)/management/; \
 	done
 	rm $(DESTDIR)/usr/share/$(PACKAGE)-bridge/webapps/awsapi/WEB-INF/classes/log4j-vmops.xml

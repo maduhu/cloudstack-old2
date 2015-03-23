@@ -61,7 +61,7 @@ function packaging() {
 	    # which means this is for the next version to be released. rather
 	    # than actually calculate the next version it is simpler (lazier) to
 	    # just put nextver on the line.
-	    GQREL="${GQREL}+nextver"
+	    GQREL="${GQREL}+nextver${commits}"
 	fi
     fi
 

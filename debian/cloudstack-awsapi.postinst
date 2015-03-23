@@ -1,3 +1,4 @@
+#!/bin/sh -e
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,11 +16,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
-/etc/cloudstack/management/cloud-bridge.properties
-/etc/cloudstack/management/commons-logging.properties
-/etc/cloudstack/management/crypto.properties
-/etc/cloudstack/management/ec2-service.properties
-/var/log/cloudstack/awsapi
-/usr/bin/cloudstack-setup-bridge
-/usr/bin/cloudstack-aws-api-register
-/usr/share/cloudstack-bridge
+if [ "$1" = configure ]; then
+    # normally this will be done by cloudstack-mgmt, but we should add
+    # it here too just in case.
+    if ! getent passwd cloud >/dev/null; then
+        adduser --quiet --system --group --no-create-home --home /var/lib/cloudstack/management cloud
+    else
+        usermod -m -d /var/lib/cloudstack/management cloud || true
+    fi
+
+    # make cloud the owner of xes.keystore, because on debian we run
+    # under the cloud user.
+    find /usr/share/cloudstack-bridge/ -name xes.keystore -exec chown cloud:cloud {} \;
+fi

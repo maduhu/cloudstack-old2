@@ -190,10 +190,10 @@ echo $(git rev-parse HEAD) > build/gitrev.txt
 
 if [ "%{_ossnoss}" == "NONOSS" -o "%{_ossnoss}" == "nonoss" ] ; then
    echo "Executing mvn packaging for NONOSS ..."
-   mvn -T 4.0C -Pimpatient,awsapi,systemvm -DskipTests=true -Dnonoss package clean install
+   mvn -Pimpatient,awsapi,systemvm -DskipTests=true -Dnonoss package clean install
 else
    echo "Executing mvn packaging for OSS ..."
-   mvn -T 4.0C -Pimpatient,awsapi -DskipTests=true package -Dsystemvm clean install
+   mvn -Pimpatient,awsapi -DskipTests=true package -Dsystemvm clean install
 fi
 
 %install
