@@ -28,4 +28,9 @@ if [ "$1" = configure ]; then
     # make cloud the owner of xes.keystore, because on debian we run
     # under the cloud user.
     find /usr/share/cloudstack-bridge/ -name xes.keystore -exec chown cloud:cloud {} \;
+
+    # /var/log/cloudstack is all owned by cloud, so awsapi must also
+    # be owned by cloud.
+    chmod 0770 /var/log/cloudstack/awsapi/
+    chgrp cloud /var/log/cloudstack/awsapi/
 fi
