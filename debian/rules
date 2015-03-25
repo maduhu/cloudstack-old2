@@ -111,7 +111,7 @@ install:
 	# Remove some config files from WEB-INF/classes because they are normally in etc.
 	for i in db.properties tomcat6-nonssl.conf tomcat6.conf tomcat6-ssl.conf tomcat-users.xml \
 			server.xml server-ssl.xml server-nonssl.xml catalina.policy catalina.properties \
-			classpath.conf context.xml db.properties environment.properties web.xml
+			classpath.conf context.xml db.properties environment.properties web.xml \
 			scripts vms; do \
 		rm -rf $(DESTDIR)/usr/share/$(PACKAGE)-management/webapps/client/WEB-INF/classes/$$i; \
 	done
