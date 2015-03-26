@@ -3260,7 +3260,7 @@ public class NetworkManagerImpl extends ManagerBase implements NetworkManager, L
                 }
                 
                 Account owner = _accountDao.findById(network.getAccountId());
-                GlobalLock lock = GlobalLock.getInternLock(owner.getUuid());
+                GlobalLock lock = GlobalLock.getInternLock("ResyncIPs_" + owner.getUuid());
                 
                 if (!lock.lock(30)) {
                     s_logger.warn("Could not acquire user global lock for IP resync. Try again later.");
