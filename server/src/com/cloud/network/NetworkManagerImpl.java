@@ -3260,19 +3260,25 @@ public class NetworkManagerImpl extends ManagerBase implements NetworkManager, L
                 }
                 
                 Account owner = _accountDao.findById(network.getAccountId());
-                GlobalLock lock = GlobalLock.getInternLock("ResyncIPs_" + owner.getUuid());
                 
-                if (!lock.lock(30)) {
-                    s_logger.warn("Could not acquire user global lock for IP resync. Try again later.");
-                    return false;
+                if (owner != null) {
+                    GlobalLock lock = GlobalLock.getInternLock("ResyncIPs_" + owner.getUuid());
+                    
+                    if (!lock.lock(30)) {
+                        s_logger.warn("Could not acquire user global lock for IP resync. Try again later.");
+                        return false;
+                    }
+                    
+                    try {
+                        success = deployer.resyncIps(network, ips, services);
+                    }
+                    finally {
+                        lock.unlock();
+                        lock.releaseRef();
+                    }
                 }
-                
-                try {
-                    success = deployer.resyncIps(network, ips, services);
-                }
-                finally {
-                    lock.unlock();
-                    lock.releaseRef();
+                else {
+                    s_logger.warn("Could not sync IPs for network " + network.getId() + " as it apparently has no owner.");
                 }
             }
             catch (ResourceUnavailableException e) {
