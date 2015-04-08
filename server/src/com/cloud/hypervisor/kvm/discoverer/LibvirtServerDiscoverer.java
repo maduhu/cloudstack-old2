@@ -155,6 +155,11 @@ public abstract class LibvirtServerDiscoverer extends DiscovererBase implements 
             String hostname = uri.getHost();
             InetAddress ia = InetAddress.getByName(hostname);
             agentIp = ia.getHostAddress();
+            int sshPort = 22;
+            if (uri.getPort() != -1) {
+                sshPort = uri.getPort();
+            }
+
             String guid = UUID.nameUUIDFromBytes(agentIp.getBytes()).toString();
             String guidWithTail = guid + "-LibvirtComputingResource";/*
                                                                       * tail
@@ -167,7 +172,7 @@ public abstract class LibvirtServerDiscoverer extends DiscovererBase implements 
                 return null;
             }
 
-            sshConnection = new com.trilead.ssh2.Connection(agentIp, 22);
+            sshConnection = new com.trilead.ssh2.Connection(agentIp, sshPort);
 
             sshConnection.connect(null, 60000, 60000);
             if (!sshConnection.authenticateWithPassword(username, password)) {
