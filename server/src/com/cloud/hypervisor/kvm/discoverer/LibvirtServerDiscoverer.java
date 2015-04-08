@@ -257,6 +257,7 @@ public abstract class LibvirtServerDiscoverer extends DiscovererBase implements 
             Map<String, String> hostDetails = connectedHost.getDetails();
             hostDetails.put("password", password);
             hostDetails.put("username", username);
+            hostDetails.put("ssh.port", Integer.toString(sshPort));
             _hostDao.saveDetails(connectedHost);
             return resources;
         } catch (DiscoveredWithErrorException e) {
