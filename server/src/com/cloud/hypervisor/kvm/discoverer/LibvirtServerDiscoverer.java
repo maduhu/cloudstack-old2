@@ -26,6 +26,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.naming.ConfigurationException;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import com.cloud.agent.AgentManager;
@@ -155,7 +156,21 @@ public abstract class LibvirtServerDiscoverer extends DiscovererBase implements 
             String hostname = uri.getHost();
             InetAddress ia = InetAddress.getByName(hostname);
             agentIp = ia.getHostAddress();
-            String guid = UUID.nameUUIDFromBytes(agentIp.getBytes()).toString();
+            int sshPort = 22;
+            if (uri.getPort() != -1) {
+                sshPort = uri.getPort();
+            }
+
+            // We base the guid on the host address if no port is specified;
+            // otherwise we base it on both the host address and port.
+            String guid;
+            if (uri.getPort() != -1) {
+                byte[] namedBytes = ArrayUtils.addAll(agentIp.getBytes(), String.valueOf(sshPort).getBytes());
+                guid = UUID.nameUUIDFromBytes(namedBytes).toString();
+            } else {
+                guid = UUID.nameUUIDFromBytes(agentIp.getBytes()).toString();
+            }
+
             String guidWithTail = guid + "-LibvirtComputingResource";/*
                                                                       * tail
                                                                       * added by
@@ -167,7 +182,7 @@ public abstract class LibvirtServerDiscoverer extends DiscovererBase implements 
                 return null;
             }
 
-            sshConnection = new com.trilead.ssh2.Connection(agentIp, 22);
+            sshConnection = new com.trilead.ssh2.Connection(agentIp, sshPort);
 
             sshConnection.connect(null, 60000, 60000);
             if (!sshConnection.authenticateWithPassword(username, password)) {
@@ -252,6 +267,7 @@ public abstract class LibvirtServerDiscoverer extends DiscovererBase implements 
             Map<String, String> hostDetails = connectedHost.getDetails();
             hostDetails.put("password", password);
             hostDetails.put("username", username);
+            hostDetails.put("ssh.port", Integer.toString(sshPort));
             _hostDao.saveDetails(connectedHost);
             return resources;
         } catch (DiscoveredWithErrorException e) {

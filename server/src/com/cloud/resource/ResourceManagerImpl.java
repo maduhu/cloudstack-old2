@@ -2163,11 +2163,13 @@ public class ResourceManagerImpl extends ManagerBase implements ResourceManager,
                 _hostDao.loadDetails(host);
                 String password = host.getDetail("password");
                 String username = host.getDetail("username");
+                int sshPort = host.getDetail("ssh.port") != null ? Integer.parseInt(host.getDetail("sshport")) : 22;
+
                 if (password == null || username == null) {
                     s_logger.debug("Can't find password/username");
                     return false;
                 }
-                com.trilead.ssh2.Connection connection = SSHCmdHelper.acquireAuthorizedConnection(host.getPrivateIpAddress(), 22, username, password);
+                com.trilead.ssh2.Connection connection = SSHCmdHelper.acquireAuthorizedConnection(host.getPrivateIpAddress(), sshPort, username, password);
                 if (connection == null) {
                     s_logger.debug("Failed to connect to host: " + host.getPrivateIpAddress());
                     return false;
