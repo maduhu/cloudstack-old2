@@ -1230,8 +1230,8 @@ public class RulesManagerImpl extends ManagerBase implements RulesManager, Rules
 
     @Override
     public boolean disableStaticNat(final long ipId, final Account caller, final long callerUserId, final boolean releaseIpIfElastic) throws ResourceUnavailableException {
-        IPAddressVO ip = _ipAddressDao.findById(ipId);
-        Account acct = _accountDao.findById(ip.getAccountId());
+        IPAddressVO ip = _ipAddressDao.findByIdIncludingRemoved(ipId);
+        Account acct = _accountDao.findByIdIncludingRemoved(ip.getAccountId());
         GlobalLock lock = GlobalLock.getInternLock(acct.getUuid());
         
         //5 minute timeout

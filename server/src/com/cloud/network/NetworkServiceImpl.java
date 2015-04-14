@@ -853,8 +853,8 @@ public class NetworkServiceImpl extends ManagerBase implements  NetworkService {
 
     @DB
     private boolean releaseIpAddressInternal(final long ipAddressId) throws InsufficientAddressCapacityException {
-        IPAddressVO ip = _ipAddressDao.findById(ipAddressId);
-        Account acct = _accountDao.findById(ip.getAccountId());
+        IPAddressVO ip = _ipAddressDao.findByIdIncludingRemoved(ipAddressId);
+        Account acct = _accountDao.findByIdIncludingRemoved(ip.getAccountId());
         GlobalLock lock = GlobalLock.getInternLock(acct.getUuid());
         
         //5 minute timeout

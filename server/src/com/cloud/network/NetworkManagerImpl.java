@@ -3259,7 +3259,7 @@ public class NetworkManagerImpl extends ManagerBase implements NetworkManager, L
                     services.addAll(ipToServices.get(ip));
                 }
                 
-                Account owner = _accountDao.findById(network.getAccountId());
+                Account owner = _accountDao.findByIdIncludingRemoved(network.getAccountId());
                 GlobalLock lock = GlobalLock.getInternLock(owner.getUuid());
                 
                 if (!lock.lock(30)) {
