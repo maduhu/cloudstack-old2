@@ -2058,13 +2058,20 @@ public class EC2Engine extends ManagerBase {
                     osTag.setKey("qstack-os");
                     osTag.setValue(temp.getOsTypeName());
                     ec2Image.addResourceTag(osTag);
-                    // Add zone if zone is specified and cross zones is not set or not set to true
-                    if (StringUtils.isNotEmpty(temp.getZoneName()) &&  (temp.getCrossZones() == null || temp.getCrossZones() == false)) {
+                    // Add zone if zone is specified and cross zones is not set to true (Note: null == CrossZones is true).
+                    String crossZoneValue = "true";
+                    if (StringUtils.isNotEmpty(temp.getZoneName()) && temp.getCrossZones() != null && temp.getCrossZones() == false) {
                     	EC2TagKeyValue zoneTag = new EC2TagKeyValue();
                     	zoneTag.setKey("qstack-zone");
                     	zoneTag.setValue(temp.getZoneName());
                         ec2Image.addResourceTag(zoneTag);
+                        crossZoneValue = "false";
                     }
+                    // Cross zones flag.
+                	EC2TagKeyValue crossZoneTag = new EC2TagKeyValue();
+                	crossZoneTag.setKey("qstack-crosszones");
+                	crossZoneTag.setValue(crossZoneValue);
+                    ec2Image.addResourceTag(crossZoneTag);
 
                     images.addImage(ec2Image);
                 }
