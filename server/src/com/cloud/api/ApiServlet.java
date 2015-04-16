@@ -99,6 +99,31 @@ public class ApiServlet extends HttpServlet {
             }
         }
     }
+    
+    
+    private void utf8FixupPost(HttpServletRequest req, Map<String, Object[]> params) {
+
+            for (String param : params.keySet()) {
+           
+                    String name = param;
+                    String value = ((String[]) params.get(param))[0];
+
+                    try {
+                    	byte[] utf8 = new String(name.getBytes(), "UTF-8").getBytes("ISO-8859-1");
+                        name = new String(utf8, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                    }
+                    try {
+                    	byte[] utf8 = new String(value.getBytes(), "UTF-8").getBytes("ISO-8859-1");
+                        value = new String(utf8, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                    }
+                    params.put(name, new String[] { value });
+         
+            }
+        }
+   
+    
 
     @SuppressWarnings("unchecked")
     private void processRequest(HttpServletRequest req, HttpServletResponse resp) {
@@ -114,7 +139,10 @@ public class ApiServlet extends HttpServlet {
         // to unwrap URL encoded content from ISO-9959-1.
         // After failed in using setCharacterEncoding() to control it, end up with following hacking:
         // for all GET requests, we will override it with our-own way of UTF-8 based URL decoding.
-        utf8Fixup(req, params);
+        if (req.getMethod().equals("GET"))
+        	utf8Fixup(req, params);
+        else
+        	utf8FixupPost(req, params);
 
         // logging the request start and end in management log for easy debugging
         String reqStr = "";
