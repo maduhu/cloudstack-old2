@@ -32,6 +32,12 @@ patch_console_proxy() {
    return 0
 }
 
+patch_conntrackd() {
+   sed -i '/Stats {/,/}/ s/LogFile on/LogFile off/' /etc/conntrackd/conntrackd.conf
+   /etc/init.d/conntrackd restart
+   rm -f /var/log/conntrackd-stats.log
+}
+
 consoleproxy_svcs() {
    chkconfig cloud on
    chkconfig postinit on
@@ -207,6 +213,7 @@ fi
 
 if [ "$TYPE" == "router" ] || [ "$TYPE" == "vpcrouter" ]
 then
+  patch_conntrackd
   routing_svcs
   if [ $? -gt 0 ]
   then
