@@ -35,7 +35,7 @@ patch_console_proxy() {
 patch_conntrackd() {
    sed -i '/Stats {/,/}/ s/LogFile on/LogFile off/' /etc/conntrackd/conntrackd.conf
    /etc/init.d/conntrackd restart
-   rm -f /var/log/conntrackd-stats.log
+   rm -f /var/log/conntrackd-stats.log*
 }
 
 consoleproxy_svcs() {
