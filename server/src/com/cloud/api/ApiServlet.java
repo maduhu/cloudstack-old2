@@ -19,6 +19,7 @@ package com.cloud.api;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -102,12 +103,20 @@ public class ApiServlet extends HttpServlet {
     
     
     private void utf8FixupPost(HttpServletRequest req, Map<String, Object[]> params) {
-
+    		String command = "";
+    		try {
+    			command =  ((String[])params.get("command"))[0];
+    		}
+    		catch (Exception e){
+    		}
+    		
             for (String param : params.keySet()) {
-           
+
                     String name = param;
                     String value = ((String[]) params.get(param))[0];
-
+            		if (param.equals("command")) {
+            			command = value;
+            		}
                     try {
                     	byte[] utf8 = new String(name.getBytes(), "UTF-8").getBytes("ISO-8859-1");
                         name = new String(utf8, "UTF-8");
@@ -116,14 +125,42 @@ public class ApiServlet extends HttpServlet {
                     try {
                     	byte[] utf8 = new String(value.getBytes(), "UTF-8").getBytes("ISO-8859-1");
                         value = new String(utf8, "UTF-8");
+                    	if (command.equals("createTags") && name.equals("tags[0].value")) {
+                    		// BEHOLD THE HACK
+                    		value = URLDecoder.decode(value, "UTF-8");
+                    		String v1 = "";
+                    		 for (String s : value.split(" ")){
+                    			 if (!v1.equals(""))
+                    				 v1 += "%20";
+                    			 v1 += s;
+                    		 }
+                    		value = v1;
+                    		value = URLEncoder.encode(value, "UTF-8");
+                    	}
+                       
                     } catch (UnsupportedEncodingException e) {
+                    	
                     }
                     params.put(name, new String[] { value });
          
             }
         }
    
-    
+    private void dehackify(Map<String, Object[]> params) {
+    	// this just undoes the hack for tags
+    	String command = "";
+		try {
+			command =  ((String[])params.get("command"))[0];
+			if (command.equals("createTags")) {
+				String value = ((String[]) params.get("tags[0].value"))[0];
+				value = URLDecoder.decode(value, "UTF-8");
+				value = URLDecoder.decode(value, "UTF-8");
+				params.put("tags[0].value", new String[] { value });
+			}
+		}
+		catch (Exception e){
+		}
+    }
 
     @SuppressWarnings("unchecked")
     private void processRequest(HttpServletRequest req, HttpServletResponse resp) {
@@ -325,6 +362,9 @@ public class ApiServlet extends HttpServlet {
                  * key mechanism updateUserContext(params, session != null ? session.getId() : null);
                  */
 
+            	
+            	dehackify(params);
+            	
                 auditTrailSb.insert(0, "(userId=" + UserContext.current().getCallerUserId() + " accountId="
                         + UserContext.current().getCaller().getId() + " sessionId=" + (session != null ? session.getId() : null) + ")");
 
