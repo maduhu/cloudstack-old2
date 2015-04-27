@@ -1995,13 +1995,20 @@ public class EC2Engine extends ManagerBase {
             		typeFilter.add("featured");
             	} else if ("community".equalsIgnoreCase(filterValue)) {
             		typeFilter.add("community");
+            	} else if ("sharedexecutable".equalsIgnoreCase(filterValue)) {
+            		typeFilter.add("sharedexecutable");
+            	} else if ("executable".equalsIgnoreCase(filterValue)) {
+            		typeFilter.add("executable");
             	}
+//"featured", "self", "selfexecutable","sharedexecutable","executable", and "community". * featured : templates that have been marked as featured and public. * self : templates that have been registered or created by the calling user. * selfexecutable : same as self, but only returns templates that can be used to deploy a new VM. * sharedexecutable : templates ready to be deployed that have been granted to the calling user by another user. * executable : templates that are owned by the calling user, or public templates, that can be used to deploy a VM. * community : templates that have been marked as public but not featured. * all : all templates (only usable by admins).
             }
             if (typeFilter.size() == 0) {
             	typeFilter.add("selfexecutable");
             	typeFilter.add("featured");
             	typeFilter.add("sharedexecutable");
             	typeFilter.add("community");
+            	typeFilter.add("executable");
+            	typeFilter.add("self");
             }
             
             if(templateId != null){
@@ -2058,18 +2065,17 @@ public class EC2Engine extends ManagerBase {
                     osTag.setKey("qstack-os");
                     osTag.setValue(temp.getOsTypeName());
                     ec2Image.addResourceTag(osTag);
-                    // Add zone if zone is specified and cross zones is not set to true (Note: null == CrossZones is true).
-                    String crossZoneValue = "true";
-                    if (StringUtils.isNotEmpty(temp.getZoneName()) && temp.getCrossZones() != null && temp.getCrossZones() == false) {
+                    // Add zone if zone is specified.
+                    if (StringUtils.isNotEmpty(temp.getZoneName())) {
                     	EC2TagKeyValue zoneTag = new EC2TagKeyValue();
                     	zoneTag.setKey("qstack-zone");
                     	zoneTag.setValue(temp.getZoneName());
                         ec2Image.addResourceTag(zoneTag);
-                        crossZoneValue = "false";
                     }
                     // Cross zones flag.
                 	EC2TagKeyValue crossZoneTag = new EC2TagKeyValue();
                 	crossZoneTag.setKey("qstack-crosszones");
+                    String crossZoneValue = temp.getCrossZones() != null ? temp.getCrossZones().toString().toLowerCase() : "false";
                 	crossZoneTag.setValue(crossZoneValue);
                     ec2Image.addResourceTag(crossZoneTag);
 
