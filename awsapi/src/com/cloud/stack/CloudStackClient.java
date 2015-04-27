@@ -210,6 +210,7 @@ public class CloudStackClient {
         HttpURLConnection connect = (HttpURLConnection)url.openConnection();
         connect.setDoOutput(true);
         connect.setRequestMethod("POST");
+        connect.setRequestProperty("charset", "utf-8");
         connect.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         connect.setRequestProperty("Content-Length", String.valueOf(encodedData.length()));
         
