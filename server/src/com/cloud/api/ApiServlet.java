@@ -100,66 +100,75 @@ public class ApiServlet extends HttpServlet {
             }
         }
     }
-    
-    
-    private void utf8FixupPost(HttpServletRequest req, Map<String, Object[]> params) {
-    		String command = "";
-    		try {
-    			command =  ((String[])params.get("command"))[0];
-    		}
-    		catch (Exception e){
-    		}
-    		
-            for (String param : params.keySet()) {
 
-                    String name = param;
-                    String value = ((String[]) params.get(param))[0];
-            		if (param.equals("command")) {
-            			command = value;
-            		}
-                    try {
-                    	byte[] utf8 = new String(name.getBytes(), "UTF-8").getBytes("ISO-8859-1");
-                        name = new String(utf8, "UTF-8");
-                    } catch (UnsupportedEncodingException e) {
+
+    private void utf8FixupPost(HttpServletRequest req, Map<String, Object[]> params) {
+        String command = "";
+        
+        if (params.containsKey("command")) {
+            command = ((String[])params.get("command"))[0];
+        }
+       
+        for (String param : params.keySet()) {
+
+            String name = param;
+            String value = ((String[]) params.get(param))[0];
+            if (param.equals("command")) {
+                command = value;
+            }
+            try {
+                byte[] utf8 = new String(name.getBytes(), "UTF-8").getBytes("ISO-8859-1");
+                name = new String(utf8, "UTF-8");
+            }
+            catch (UnsupportedEncodingException e) {
+                s_logger.error(e.getMessage(), e);
+            }
+            
+            try {
+                // BEHOLD THE HACK for accented characters
+                // We are forcibly decoding and re-encoding the string as UTF-8.
+                // But we need to handle spaces properly on the decoded string, forcing them to %20.
+                // Many other handlers encode/decode the string and they all have different ideas on how to do it.
+                byte[] utf8 = new String(value.getBytes(), "UTF-8").getBytes("ISO-8859-1");
+                value = new String(utf8, "UTF-8");
+                if (command.equals("createTags") && name.equals("tags[0].value")) {                    
+                    value = URLDecoder.decode(value, "UTF-8");
+                    String v1 = "";
+                    for (String s : value.split(" ")) {
+                        if (!v1.equals("")) {
+                            v1 += "%20";
+                        }
+                        v1 += s;
                     }
-                    try {
-                    	byte[] utf8 = new String(value.getBytes(), "UTF-8").getBytes("ISO-8859-1");
-                        value = new String(utf8, "UTF-8");
-                    	if (command.equals("createTags") && name.equals("tags[0].value")) {
-                    		// BEHOLD THE HACK
-                    		value = URLDecoder.decode(value, "UTF-8");
-                    		String v1 = "";
-                    		 for (String s : value.split(" ")){
-                    			 if (!v1.equals(""))
-                    				 v1 += "%20";
-                    			 v1 += s;
-                    		 }
-                    		value = v1;
-                    		value = URLEncoder.encode(value, "UTF-8");
-                    	}
-                       
-                    } catch (UnsupportedEncodingException e) {
-                    	
-                    }
-                    params.put(name, new String[] { value });
-         
+                    
+                    value = v1;
+                    value = URLEncoder.encode(value, "UTF-8");
+                }
+
+            }
+            catch (UnsupportedEncodingException e) {
+                s_logger.error(e.getMessage(), e);
+            }
+            
+            params.put(name, new String[] { value });
+        }
+    }
+
+    private void dehackify(Map<String, Object[]> params) {
+        // this just undoes the hack for tags
+        String command = "";
+        try {
+            command =  ((String[])params.get("command"))[0];
+            if (command.equals("createTags")) {
+                String value = ((String[]) params.get("tags[0].value"))[0];
+                value = URLDecoder.decode(value, "UTF-8");
+                value = URLDecoder.decode(value, "UTF-8");
+                params.put("tags[0].value", new String[] { value });
             }
         }
-   
-    private void dehackify(Map<String, Object[]> params) {
-    	// this just undoes the hack for tags
-    	String command = "";
-		try {
-			command =  ((String[])params.get("command"))[0];
-			if (command.equals("createTags")) {
-				String value = ((String[]) params.get("tags[0].value"))[0];
-				value = URLDecoder.decode(value, "UTF-8");
-				value = URLDecoder.decode(value, "UTF-8");
-				params.put("tags[0].value", new String[] { value });
-			}
-		}
-		catch (Exception e){
-		}
+        catch (UnsupportedEncodingException e) {
+            s_logger.error(e.getMessage(), e);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -177,9 +186,9 @@ public class ApiServlet extends HttpServlet {
         // After failed in using setCharacterEncoding() to control it, end up with following hacking:
         // for all GET requests, we will override it with our-own way of UTF-8 based URL decoding.
         if (req.getMethod().equals("GET"))
-        	utf8Fixup(req, params);
+            utf8Fixup(req, params);
         else
-        	utf8FixupPost(req, params);
+            utf8FixupPost(req, params);
 
         // logging the request start and end in management log for easy debugging
         String reqStr = "";
@@ -362,9 +371,9 @@ public class ApiServlet extends HttpServlet {
                  * key mechanism updateUserContext(params, session != null ? session.getId() : null);
                  */
 
-            	
-            	dehackify(params);
-            	
+
+                dehackify(params);
+
                 auditTrailSb.insert(0, "(userId=" + UserContext.current().getCallerUserId() + " accountId="
                         + UserContext.current().getCaller().getId() + " sessionId=" + (session != null ? session.getId() : null) + ")");
 
