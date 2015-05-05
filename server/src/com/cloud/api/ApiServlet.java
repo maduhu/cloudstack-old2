@@ -131,19 +131,19 @@ public class ApiServlet extends HttpServlet {
                 // Many other handlers encode/decode the string and they all have different ideas on how to do it.
                 byte[] utf8 = new String(value.getBytes(), "UTF-8").getBytes("ISO-8859-1");
                 value = new String(utf8, "UTF-8");
-//                if (command.equals("createTags") && name.equals("tags[0].value")) {                    
-//                    value = URLDecoder.decode(value, "UTF-8");
-//                    String v1 = "";
-//                    for (String s : value.split(" ")) {
-//                        if (!v1.equals("")) {
-//                            v1 += "%20";
-//                        }
-//                        v1 += s;
-//                    }
-//                    
-//                    value = v1;
-//                    value = URLEncoder.encode(value, "UTF-8");
-//                }
+                if (command.equals("createTags") && name.equals("tags[0].value")) {                    
+                    value = URLDecoder.decode(value, "UTF-8");
+                    String v1 = "";
+                    for (String s : value.split(" ")) {
+                        if (!v1.equals("")) {
+                            v1 += "%20";
+                        }
+                        v1 += s;
+                    }
+                    
+                    value = v1;
+                    value = URLEncoder.encode(value, "UTF-8");
+                }
 
             }
             catch (UnsupportedEncodingException e) {
