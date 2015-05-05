@@ -68,7 +68,7 @@ public class TemplateResponse extends BaseResponse implements ControlledViewEnti
     @SerializedName(ApiConstants.IS_FEATURED) @Param(description="true if this template is a featured template, false otherwise")
     private boolean featured;
 
-    @SerializedName("crossZones") @Param(description="true if the template is managed across all Zones, false otherwise")
+    @SerializedName("crosszones") @Param(description="true if the template is managed across all Zones, false otherwise")
     private boolean crossZones;
 
     @SerializedName(ApiConstants.OS_TYPE_ID) @Param(description="the ID of the OS type for this template.")
