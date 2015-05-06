@@ -135,51 +135,41 @@ public class CloudStackCommand {
    	    return result.trim();
     }
 
-
-    private static final List VALID_CHARACTERS = Arrays.asList(
-            '%'
-    );
     private static boolean needsUrlEncode(final String decode) {
-        boolean needs=false;
+        //This method actually fails when a % is passed in as a raw value...
         for (char c : decode.toCharArray()) {
-            if (VALID_CHARACTERS.indexOf(c) != -1 || Character.isLetterOrDigit(c)) {
-            } else {
-                needs=true;
+            if (Character.UnicodeBlock.of(c) != Character.UnicodeBlock.BASIC_LATIN ||
+                    !Character.isLetterOrDigit(c)) {
+                return true;
             }
         }
-        return needs;
+        
+        if (decode.contains("%")) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
    
     private String urlSafe(String value) {
-    	try {
-    		if (value != null){
-                        String out = null;
-                        if (needsUrlEncode(value)){
-                                out=URLEncoder.encode(value, "UTF-8");
-                        }
-                        else{
-                                out=value;
-                        }
-                        return out.replaceAll("\\+", "%20");
-    		} else {
-    			return null;
+        try {
+            if (value != null){
+                String out = null;
+                if (needsUrlEncode(value)){
+                    out=URLEncoder.encode(value, "UTF-8");
                 }
-		} catch (UnsupportedEncodingException e) {
-			assert(false);
-		}
-		
-		return value;
-    }
-
-    public static void main(String[] args){
-         CloudStackCommand test = new CloudStackCommand("");
-         String[] testArr=new String[]{"test", "test=","test%3D","test+test","test test"};
-         for (int i=0; i<testArr.length; i++) {
-             String value=testArr[i];
-             String output=test.urlSafe(value);
-             System.out.println("String value: "+value+" , output: "+output);
+                else{
+                    out=value;
+                }
+                return out.replaceAll("\\+", "%20");
+            } else {
+                return null;
+            }
+        } catch (UnsupportedEncodingException e) {
+            assert(false);
         }
 
+        return value;
     }
-
 }
