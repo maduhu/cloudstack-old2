@@ -1942,6 +1942,7 @@ public class EC2RestServlet extends HttpServlet {
             throw new EC2ServiceException( ClientError.MissingParamter, "Missing required parameter - PublicKeyMaterial");
         }
 
+        publicKeyMaterial = StringUtils.replace(publicKeyMaterial, "\n", StringUtils.EMPTY);
         if (!publicKeyMaterial.contains(" "))
             publicKeyMaterial = new String(Base64.decodeBase64(publicKeyMaterial.getBytes())); 
 
