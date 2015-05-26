@@ -21,6 +21,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -79,8 +80,9 @@ public class SSHKeysHelper {
 	}
 	
 	public static String getPublicKeyFromKeyMaterial(String keyMaterial) {
+		// If it is Base64 then remove newlines and decode it.
 		if (!keyMaterial.contains(" ")) 
-			keyMaterial = new String(Base64.decodeBase64(keyMaterial.getBytes()));
+			keyMaterial = new String(Base64.decodeBase64(StringUtils.replace(keyMaterial, "\n", StringUtils.EMPTY).getBytes()));
 		
 		if ((!keyMaterial.startsWith("ssh-rsa") && !keyMaterial.startsWith("ssh-dss")) || !keyMaterial.contains(" "))
 			return null;
