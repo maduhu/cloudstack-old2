@@ -87,6 +87,7 @@ public class SSHKeysHelper {
 		if ((!keyMaterial.startsWith("ssh-rsa") && !keyMaterial.startsWith("ssh-dss")) || !keyMaterial.contains(" "))
 			return null;
 		
+		keyMaterial = StringUtils.replace(keyMaterial, "\n", StringUtils.EMPTY);
 		String[] key = keyMaterial.split(" ");
 		if (key.length < 2)
 			return null;
