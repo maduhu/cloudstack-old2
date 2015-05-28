@@ -221,7 +221,7 @@ public class SecondaryStorageManagerImpl extends ManagerBase implements Secondar
     //@Inject			// TODO this is a very strange usage, a singleton class need to inject itself?
     protected SecondaryStorageVmManager _ssvmMgr;
     @Inject
-    NetworkDao _networkDao;
+    protected NetworkDao _networkDao;
     @Inject
     NetworkOfferingDao _networkOfferingDao;
     @Inject
