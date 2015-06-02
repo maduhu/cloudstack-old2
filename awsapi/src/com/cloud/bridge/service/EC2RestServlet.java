@@ -171,6 +171,7 @@ import com.cloud.bridge.util.EC2RestAuth;
 import com.cloud.stack.models.CloudStackAccount;
 import com.cloud.utils.Pair;
 import com.cloud.utils.db.Transaction;
+import com.cloud.utils.ssh.SSHKeysHelper;
 
 @Component("EC2RestServlet")
 public class EC2RestServlet extends HttpServlet {
@@ -1942,11 +1943,8 @@ public class EC2RestServlet extends HttpServlet {
             throw new EC2ServiceException( ClientError.MissingParamter, "Missing required parameter - PublicKeyMaterial");
         }
 
-        publicKeyMaterial = StringUtils.replace(publicKeyMaterial, "\n", StringUtils.EMPTY);
-        if (!publicKeyMaterial.contains(" "))
-            publicKeyMaterial = new String(Base64.decodeBase64(publicKeyMaterial.getBytes())); 
-
-
+        // This is just to catch syntax error, we continue to send (possibly) Base64 encoded public key to the engine below.
+        publicKeyMaterial = SSHKeysHelper.getPublicKeyFromKeyMaterial(request.getParameter("PublicKeyMaterial"));
 
         EC2ImportKeyPair ec2Request = new EC2ImportKeyPair();
         if (ec2Request != null) {
