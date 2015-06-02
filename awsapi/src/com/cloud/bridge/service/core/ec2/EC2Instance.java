@@ -41,6 +41,7 @@ public class EC2Instance {
     private String      rootDeviceType;
     private String      rootDeviceId;
     private String      keyPairName;
+    private String		jobResult;
     private List<EC2SecurityGroup>  groupSet;
     private List<EC2TagKeyValue>    tagsSet;
     
@@ -62,6 +63,7 @@ public class EC2Instance {
 		rootDeviceType   = null;
 		rootDeviceId     = null;
 		keyPairName		 = null;
+		jobResult		 = null;
         groupSet         = new ArrayList<EC2SecurityGroup>();
         tagsSet          = new ArrayList<EC2TagKeyValue>();
 	}
@@ -201,7 +203,15 @@ public class EC2Instance {
 	public void setKeyPairName(String param) {
 		keyPairName = param;
     }
-
+	
+	public void setJobesult(String result) {
+		jobResult = result;
+	}
+	
+	public String getJobResult() {
+		return jobResult;
+	}
+	
     public void addGroupName( EC2SecurityGroup param ) {
         groupSet.add( param );
     }

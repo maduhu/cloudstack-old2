@@ -24,6 +24,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.ejb.Local;
 import javax.inject.Inject;
@@ -39,6 +41,8 @@ import org.springframework.stereotype.Component;
 import com.cloud.api.ApiDBUtils;
 import com.cloud.api.query.vo.ResourceTagJoinVO;
 import com.cloud.api.query.vo.UserVmJoinVO;
+import com.cloud.async.AsyncJobVO;
+import com.cloud.async.dao.AsyncJobDao;
 import com.cloud.configuration.dao.ConfigurationDao;
 import com.cloud.hypervisor.Hypervisor.HypervisorType;
 import com.cloud.user.Account;
@@ -49,6 +53,11 @@ import com.cloud.utils.db.SearchCriteria;
 import com.cloud.vm.VirtualMachine.State;
 import com.cloud.vm.VmDetailConstants;
 import com.cloud.vm.VmStats;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+
 
 
 @Component
@@ -58,6 +67,8 @@ public class UserVmJoinDaoImpl extends GenericDaoBase<UserVmJoinVO, Long> implem
 
     @Inject
     private ConfigurationDao  _configDao;
+    @Inject 
+    private AsyncJobDao _jobDao;
 
     private final SearchBuilder<UserVmJoinVO> VmDetailSearch;
     private final SearchBuilder<UserVmJoinVO> activeVmByIsoSearch;
@@ -156,10 +167,38 @@ public class UserVmJoinDaoImpl extends GenericDaoBase<UserVmJoinVO, Long> implem
                 userVmResponse.setRootDeviceType(userVm.getVolumeType().toString());
             }
         }
+      
         userVmResponse.setPassword(userVm.getPassword());
-        if (userVm.getJobId() != null) {
-            userVmResponse.setJobId(userVm.getJobUuid());
-            userVmResponse.setJobStatus(userVm.getJobStatus());
+        
+        Long jobId = userVm.getJobId();
+        AsyncJobVO job = null;
+        if (jobId == null) {
+        	// find the latest completed job ran on this instance
+        	SearchBuilder<AsyncJobVO> sbuilder = _jobDao.createSearchBuilder();
+            AsyncJobVO entity = sbuilder.entity(); 
+            sbuilder.and("instance_type", entity.getInstanceType() , SearchCriteria.Op.EQ) 	
+                      .and("instance_id", entity.getInstanceId(), SearchCriteria.Op.EQ)
+                      .and("status", entity.getStatus(), SearchCriteria.Op.NEQ)
+                      .done();
+            SearchCriteria<AsyncJobVO> sc = sbuilder.create();
+            sc.setParameters("instance_type", "VirtualMachine"); 
+            sc.setParameters("instance_id", userVm.getId()); 
+            sc.setParameters("status", 0);
+            com.cloud.utils.db.Filter f = new com.cloud.utils.db.Filter(AsyncJobVO.class, "lastUpdated", false, 0l, 1l);
+            List<AsyncJobVO> jobs = _jobDao.search(sc, f); 
+            if (jobs.size() != 0) {
+            	jobId = jobs.get(0).getId();
+            }
+        }
+        
+        if (jobId != null) {
+        	job = _jobDao.findById(jobId);
+            userVmResponse.setJobId(job.getUuid());
+            userVmResponse.setJobStatus(job.getStatus());
+            String result = getErrorText(_jobDao.findById(jobId).getResult());
+            
+            
+            userVmResponse.setJobResult(result);
         }
         //userVmResponse.setForVirtualNetwork(userVm.getForVirtualNetwork());
 
@@ -281,6 +320,38 @@ public class UserVmJoinDaoImpl extends GenericDaoBase<UserVmJoinVO, Long> implem
         return userVmResponse;
     }
 
+    /**
+     * extracts the error message, if any, from the job result
+     * @param reason
+     * @return
+     */
+    private String getErrorText(String result) {
+    	String ret = "";
+    	if (result == null) {
+    		return ret;
+    	}
+    	Pattern p = Pattern.compile("^.*\\{");
+    	Matcher m = p.matcher(result);
+    	if(m.find()){
+    		String reason = result.substring(m.end() - 1);
+    		try {
+    			JsonParser parser = new JsonParser();
+    			JsonElement e = parser.parse(reason).getAsJsonObject().get("errortext");
+    			if (e != null) {
+    				ret = e.getAsString();
+    			}
+    		}
+    		catch (JsonSyntaxException jsone) {
+    			// meh
+    		}
+    		catch (Exception e) {
+    			e.printStackTrace();
+    		}
+    	}
+    	return ret;
+    }
+    
+    
     @Override
     public UserVmResponse setUserVmResponse(UserVmResponse userVmData, UserVmJoinVO uvo) {
         Long securityGroupId = uvo.getSecurityGroupId();

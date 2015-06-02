@@ -1931,6 +1931,8 @@ public class EC2Engine extends ManagerBase {
 	                ec2Vm.setRootDeviceId(cloudVm.getRootDeviceId());
 	                ec2Vm.setServiceOffering(serviceOfferingIdToInstanceType(cloudVm.getServiceOfferingId().toString()));
 	                ec2Vm.setKeyPairName(cloudVm.getKeyPairName());
+	                ec2Vm.setJobesult(cloudVm.getJobResult());
+	                
 	
 	                List<CloudStackNic> nics = cloudVm.getNics();
 	                for(CloudStackNic nic : nics) {

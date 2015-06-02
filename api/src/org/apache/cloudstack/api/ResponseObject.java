@@ -76,4 +76,8 @@ public interface ResponseObject {
      * @param jobStatus
      */
     void setJobStatus(Integer jobStatus);
+
+	void setJobResult(String result);
+
+	String getJobResult();
 }

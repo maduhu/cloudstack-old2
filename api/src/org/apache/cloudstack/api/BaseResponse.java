@@ -50,6 +50,10 @@ public abstract class BaseResponse implements ResponseObject {
 
     @SerializedName(ApiConstants.JOB_ID) @Param(description="the UUID of the latest async job acting on this object")
     protected String jobId;
+    
+
+    @SerializedName(ApiConstants.JOB_RESULT) @Param(description="result of the job")
+    protected String jobResult;
 
     @SerializedName(ApiConstants.JOB_STATUS) @Param(description="the current status of the latest async job acting on this object")
     private Integer jobStatus;
@@ -72,5 +76,15 @@ public abstract class BaseResponse implements ResponseObject {
     @Override
     public void setJobStatus(Integer jobStatus) {
         this.jobStatus = jobStatus;
+    }
+    
+    @Override 
+    public void setJobResult(String result) {
+    	this.jobResult = result;
+    }
+    
+    @Override
+    public String getJobResult() {
+    	return this.jobResult;
     }
 }

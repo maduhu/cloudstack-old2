@@ -191,8 +191,12 @@ public class UserVmResponse extends BaseResponse implements ControlledEntityResp
 
     @SerializedName(ApiConstants.IS_DYNAMICALLY_SCALABLE) @Param(description="true if vm contains XS/VMWare tools inorder to support dynamic scaling of VM cpu/memory.")
     private Boolean isDynamicallyScalable;
+   
     @SerializedName(ApiConstants.SERVICE_STATE) @Param(description="State of the Service from LB rule")
     private String serviceState;
+    
+    @SerializedName(ApiConstants.JOB_STATUS) @Param(description="Status of the last async job ran on this vm")
+    private String jobStatus;
     
     @SerializedName(ApiConstants.DETAILS) @Param(description="Template details in key/value pairs.", since="4.2.1")
     private Map details;
@@ -204,6 +208,10 @@ public class UserVmResponse extends BaseResponse implements ControlledEntityResp
         affinityGroupList = new LinkedHashSet<AffinityGroupResponse>();
     }
 
+    public void setJobStatus(String status) {
+    	this.jobStatus = status;
+    }
+    
     public void setHypervisor(String hypervisor) {
         this.hypervisor = hypervisor;
     }

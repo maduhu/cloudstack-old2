@@ -525,6 +525,7 @@ public class ApiConstants {
     public static final String SERVICE_STATE = "servicestate";
     public static final String MAX_CONNECTIONS = "maxconnections";
     public static final String EXPUNGE = "expunge";
+	public static final String JOB_RESULT = "jobresult";
 
     public enum HostDetails {
         all, capacity, events, stats, min;

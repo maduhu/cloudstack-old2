@@ -1589,7 +1589,12 @@ public class EC2SoapServiceImpl implements AmazonEC2SkeletonInterface  {
 
 			StateReasonType param13 = new StateReasonType();
 			param13.setCode( "" );
-			param13.setMessage( "" );
+			if (inst.getJobResult() != null) {
+				param13.setMessage( inst.getJobResult());
+			}
+			else {
+				param13.setMessage( "");
+			}
 			param7.setStateReason( param13 );
 			param7.setArchitecture( "" );
 			param7.setRootDeviceType( "" );

@@ -67,6 +67,8 @@ public class CloudStackUserVm {
     private String jobId;
     @SerializedName(ApiConstants.JOB_STATUS)
     private Integer jobStatus;
+    @SerializedName(ApiConstants.JOB_RESULT)
+    private String jobResult;
     @SerializedName(ApiConstants.SSH_KEYPAIR)
     private String keyPairName;
     @SerializedName(ApiConstants.MEMORY)
@@ -272,6 +274,14 @@ public class CloudStackUserVm {
 		return jobStatus;
 	}
 
+	/**
+	 * return the jobResult
+	 * @return
+	 */
+	public String getJobResult() {
+		return jobResult;
+	}
+	
 	/**
 	 * @return the memory
 	 */

@@ -233,6 +233,7 @@ public class ApiConstants {
     public static final String ISOLATION_URI = "isolationuri";
     public static final String JOB_ID = "jobid";
     public static final String JOB_STATUS = "jobstatus";
+	public static final String JOB_RESULT = "jobresult";	
     public static final String KEY = "key";
     public static final String KEY_PAIR = "keypair";
     public static final String KEYWORD = "keyword";
@@ -515,5 +516,5 @@ public class ApiConstants {
 	public static final String ZONE_ID = "zoneid";
 	public static final String ZONE_NAME = "zonename";
 	public static final String ZONE_TOKEN = "zonetoken";
-	public static final String ISO = "iso";	
+	public static final String ISO = "iso";
 }

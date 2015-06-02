@@ -252,8 +252,8 @@ public class AsyncJobManagerImpl extends ManagerBase implements AsyncJobManager,
             publishOnEventBus(job, "complete"); // publish before the instance type and ID are wiped out
 
             // reset attached object
-            job.setInstanceType(null);
-            job.setInstanceId(null);
+           // job.setInstanceType(null);
+            //job.setInstanceId(null);
 
             if (resultObject != null) {
                 job.setResult(ApiSerializerHelper.toSerializedStringOld(resultObject));
